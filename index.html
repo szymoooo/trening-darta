@@ -710,6 +710,8 @@ async function handleLogin(){
     S.isAdmin=S.user.is_admin;
     await updateStreak();
     await loadExercises();
+    saveSession(S.user.id);
+    startInactivityTimer();
     if(S.isAdmin){showScreen('admin');renderAdminEx();renderLB();}
     else{goTab('home');}
   }catch(e){showErr('Błąd: '+e.message);}
@@ -725,7 +727,15 @@ async function updateStreak(){
   S.user.streak=ns;S.user.last_day=today;
 }
 
-function logout(){S.user=null;S.exercises=[];document.getElementById('l-name').value='';document.getElementById('l-pass').value='';hideErr();showScreen('login');}
+function logout(){
+  S.user=null;S.exercises=[];
+  clearSession();
+  document.getElementById('l-name').value='';
+  document.getElementById('l-pass').value='';
+  hideErr();
+  history.replaceState({screen:'login'},'',window.location.pathname+'#login');
+  showScreen('login');
+}
 
 // ═══════════════════════════════════════════════
 //  EXERCISES
@@ -744,10 +754,16 @@ async function loadExercises(){
 function showScreen(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
+  // Push to browser history so system back works
+  if(history.state?.screen !== name){
+    history.pushState({screen:name},'',window.location.pathname+'#'+name);
+  }
 }
 
 async function goTab(tab){
-  showScreen(tab==='home'?'home':tab==='history'?'history':tab==='profile'?'profile':tab==='match'?'match':'home');
+  const screen=tab==='home'?'home':tab==='history'?'history':tab==='profile'?'profile':tab==='match'?'match':'home';
+  showScreen(screen);
+  resetInactivityTimer();
   if(tab==='home')await renderHome();
   if(tab==='history')renderHistory();
   if(tab==='profile')renderProfile();
@@ -1412,11 +1428,167 @@ async function renderLB(){
 // ═══════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+//  SESSION PERSISTENCE
+// ═══════════════════════════════════════════════
+const SESSION_KEY='dartpro_session';
+const SESSION_TTL=8*60*60*1000; // 8 godzin
+
+function saveSession(userId){
+  sessionStorage.setItem(SESSION_KEY,JSON.stringify({userId,ts:Date.now()}));
+  // też localStorage jako backup
+  localStorage.setItem(SESSION_KEY,JSON.stringify({userId,ts:Date.now()}));
+}
+
+function clearSession(){
+  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(SESSION_KEY);
+}
+
+function loadSession(){
+  // sessionStorage pierwsze, potem localStorage
+  let raw=sessionStorage.getItem(SESSION_KEY)||localStorage.getItem(SESSION_KEY);
+  if(!raw)return null;
+  try{
+    const s=JSON.parse(raw);
+    if(Date.now()-s.ts>SESSION_TTL){clearSession();return null;}
+    return s;
+  }catch{return null;}
+}
+
+async function tryAutoLogin(){
+  const session=loadSession();
+  if(!session)return false;
+  try{
+    const users=await dbGet('users',`id=eq.${session.userId}&select=*`);
+    if(!users||!users.length){clearSession();return false;}
+    S.user=users[0];S.isAdmin=S.user.is_admin;
+    await updateStreak();
+    await loadExercises();
+    saveSession(S.user.id); // odśwież timestamp
+    startInactivityTimer();
+    return true;
+  }catch(e){clearSession();return false;}
+}
+
+// ═══════════════════════════════════════════════
+//  INACTIVITY TIMER — wylogowanie po 8h braku aktywności
+// ═══════════════════════════════════════════════
+let inactivityTimer=null;
+const INACTIVITY_LIMIT=8*60*60*1000; // 8 godzin
+
+function startInactivityTimer(){
+  resetInactivityTimer();
+  // Nasłuchuj aktywności użytkownika
+  ['touchstart','click','keydown','scroll'].forEach(ev=>{
+    document.addEventListener(ev,resetInactivityTimer,{passive:true});
+  });
+  // Sprawdzaj czas przy powrocie z tła
+  document.addEventListener('visibilitychange',onVisibilityChange);
+}
+
+function resetInactivityTimer(){
+  if(!S.user)return;
+  clearTimeout(inactivityTimer);
+  // Zapisz czas ostatniej aktywności
+  localStorage.setItem('dartpro_last_active',Date.now().toString());
+  inactivityTimer=setTimeout(()=>{
+    showToast('⏱ Sesja wygasła — zaloguj się ponownie');
+    setTimeout(()=>logout(),2000);
+  },INACTIVITY_LIMIT);
+}
+
+function onVisibilityChange(){
+  if(document.hidden)return; // wchodzi w tło — nic nie rób
+  if(!S.user)return;
+  // Wróciło z tła — sprawdź czy sesja nie wygasła
+  const lastActive=parseInt(localStorage.getItem('dartpro_last_active')||'0');
+  const elapsed=Date.now()-lastActive;
+  if(elapsed>INACTIVITY_LIMIT){
+    showToast('⏱ Sesja wygasła — zaloguj się ponownie');
+    setTimeout(()=>logout(),1500);
+    return;
+  }
+  // Sprawdź czy token sesji nadal ważny
+  const session=loadSession();
+  if(!session&&S.user){
+    showToast('⏱ Sesja wygasła — zaloguj się ponownie');
+    setTimeout(()=>logout(),1500);
+  } else if(session){
+    saveSession(S.user.id); // odśwież timestamp
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  SYSTEM BACK BUTTON
+// ═══════════════════════════════════════════════
+const SCREEN_BACK={
+  'history':'home',
+  'profile':'home',
+  'match':'home',
+  'summary':'home',
+  'training':'home',
+  'admin':'login',
+};
+
+window.addEventListener('popstate',(e)=>{
+  const screen=e.state?.screen;
+  if(!screen||screen==='login'){
+    // Jeśli zalogowany i próbuje wyjść — zostań
+    if(S.user){
+      history.pushState({screen:'home'},'',window.location.pathname+'#home');
+      goTab('home');
+    }else{
+      showScreen('login');
+    }
+    return;
+  }
+  // Specjalna obsługa — jeśli był na training/summary wróć do home
+  if(screen==='training'||screen==='summary'){
+    if(S.training&&S.training.sessScore>0&&document.getElementById('screen-training').classList.contains('active')){
+      if(!confirm('Trening w toku! Wyjść bez zapisywania?')){
+        history.pushState({screen:'training'},'',window.location.pathname+'#training');
+        return;
+      }
+    }
+    goTab('home');
+    return;
+  }
+  if(S.user){
+    // Zalogowany — nawiguj do odpowiedniego ekranu
+    if(screen==='home')goTab('home');
+    else if(screen==='history')goTab('history');
+    else if(screen==='profile')goTab('profile');
+    else if(screen==='match')goTab('match');
+    else showScreen(screen);
+  }else{
+    showScreen('login');
+  }
+});
+
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
 (async()=>{
   loading(true,'Łączenie z bazą...');
-  try{await loadExercises();}
-  catch(e){console.warn('Błąd ładowania ćwiczeń:',e.message);}
-  finally{loading(false);showScreen('login');initNewRules('shanghai');}
+  try{
+    await loadExercises();
+    // Próbuj auto-login z zapisanej sesji
+    const autoLogged=await tryAutoLogin();
+    if(autoLogged){
+      if(S.isAdmin){
+        history.replaceState({screen:'admin'},'',window.location.pathname+'#admin');
+        showScreen('admin');renderAdminEx();renderLB();
+      }else{
+        history.replaceState({screen:'home'},'',window.location.pathname+'#home');
+        showScreen('home');await renderHome();
+      }
+    }else{
+      history.replaceState({screen:'login'},'',window.location.pathname+'#login');
+      showScreen('login');
+    }
+  }catch(e){console.warn('Błąd inicjalizacji:',e.message);showScreen('login');}
+  finally{loading(false);initNewRules('shanghai');}
 })();
 </script>
 </body>
