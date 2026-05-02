@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>DartPro – Trening Darta</title>
+<title>DartPro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -20,20 +20,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 .screen{display:none;height:100%;flex-direction:column;overflow:hidden}
 .screen.active{display:flex}
 .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
-
-/* HEADER */
 .hdr{padding:13px 16px 11px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;z-index:10}
 .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;letter-spacing:-0.5px}
 .logo em{color:var(--accent);font-style:normal}
-
-/* LOADING OVERLAY */
 .loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px}
 .loading-overlay.hidden{display:none}
-.spinner{width:40px;height:40px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.spinner{width:38px;height:38px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-msg{font-size:13px;color:var(--muted)}
-
-/* BTNS */
 .btn{font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:8px 14px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--text);cursor:pointer;transition:all .15s}
 .btn:active{transform:scale(.97)}
 .block-btn{display:block;width:100%;padding:13px;text-align:center;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;border:none}
@@ -41,14 +35,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max
 .bb-primary{background:var(--accent);color:#0a0a0f}
 .bb-outline{background:transparent;color:var(--text);border:1.5px solid var(--border2)}
 .bb-danger{background:transparent;color:var(--danger);border:1.5px solid rgba(248,113,113,.3)}
-
-/* INPUTS */
+.bb-info{background:rgba(96,165,250,.1);color:var(--info);border:1.5px solid rgba(96,165,250,.3)}
 .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;display:block}
 .inp{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 13px;outline:none;transition:border-color .15s}
 .inp:focus{border-color:var(--accent)}
 .inp::placeholder{color:var(--muted)}
 textarea.inp{resize:none;line-height:1.5}
-.inp-num{width:68px;text-align:center;padding:8px 6px;font-size:13px;font-weight:700}
+.inp-sm{padding:8px 10px;font-size:13px}
+.err-msg{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:10px 13px;font-size:13px;color:var(--danger);display:none}
+.err-msg.show{display:block}
+.sec{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:16px 0 9px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:15px;margin-bottom:10px}
+.g10{display:flex;flex-direction:column;gap:10px}
+.g8{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
 /* LOGIN */
 #screen-login{overflow-y:auto}
@@ -62,33 +61,27 @@ textarea.inp{resize:none;line-height:1.5}
 .note{font-size:11px;color:var(--muted);text-align:center;line-height:1.65}
 .divrow{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px}
 .divrow::before,.divrow::after{content:'';flex:1;height:1px;background:var(--border)}
-.err-msg{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);border-radius:10px;padding:10px 13px;font-size:13px;color:var(--danger);display:none}
-.err-msg.show{display:block}
 
 /* HOME */
 .home-scroll{padding:13px 15px 0}
-.welcome{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:15px 17px;margin-bottom:13px;position:relative;overflow:hidden}
-.welcome::after{content:'🎯';position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:42px;opacity:.18}
+.welcome{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:15px 17px;margin-bottom:13px;position:relative;overflow:hidden;display:flex;align-items:center;gap:13px}
+.avatar-sm{width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);flex-shrink:0;background:var(--surface)}
+.avatar-placeholder{width:44px;height:44px;border-radius:50%;background:rgba(232,255,71,.1);border:2px solid rgba(232,255,71,.3);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.welcome-text{flex:1;min-width:0}
 .greet{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px}
-.wname{font-family:'Syne',sans-serif;font-weight:800;font-size:19px}
-.streak{font-size:12px;color:var(--accent);margin-top:4px}
-.sec{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:16px 0 9px}
+.wname{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.streak{font-size:12px;color:var(--accent);margin-top:3px}
 .sg{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:3px}
 .sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px}
 .sc-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px}
-.sc-val{font-family:'Syne',sans-serif;font-size:23px;font-weight:700}
+.sc-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:700}
 .sc-val.ac{color:var(--accent)}
 .sc-unit{font-size:11px;color:var(--muted);margin-left:2px;font-weight:400;font-family:'DM Sans',sans-serif}
-
-/* EXERCISE CARD */
 .exc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:8px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:13px}
 .exc:active{transform:scale(.98);border-color:var(--border2)}
 .exn{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:14px;font-weight:800;flex-shrink:0}
-.c1{background:rgba(232,255,71,.1);color:var(--accent)}
-.c2{background:rgba(255,107,53,.1);color:var(--accent2)}
-.c3{background:rgba(96,165,250,.1);color:var(--info)}
-.c4{background:rgba(74,222,128,.1);color:var(--success)}
-.c5{background:rgba(251,191,36,.1);color:var(--warn)}
+.c1{background:rgba(232,255,71,.1);color:var(--accent)}.c2{background:rgba(255,107,53,.1);color:var(--accent2)}
+.c3{background:rgba(96,165,250,.1);color:var(--info)}.c4{background:rgba(74,222,128,.1);color:var(--success)}.c5{background:rgba(251,191,36,.1);color:var(--warn)}
 .ex-inf{flex:1;min-width:0}
 .ex-nm{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ex-ds{font-size:12px;color:var(--muted);line-height:1.4}
@@ -98,7 +91,7 @@ textarea.inp{resize:none;line-height:1.5}
 /* TRAINING */
 .prog-wrap{height:3px;background:var(--surface2);flex-shrink:0}
 .prog-fill{height:3px;background:var(--accent);transition:width .3s}
-.tr-scroll{padding:11px 15px;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:20px}
+.tr-scroll{padding:11px 15px;flex:1;overflow-y:auto;padding-bottom:20px}
 .rnd-hdr{display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:4px 0 9px}
 .rbadge{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);padding:4px 9px;border-radius:20px;border:1px solid var(--border);background:var(--surface2)}
 .rname{font-family:'Syne',sans-serif;font-size:14px;font-weight:700}
@@ -130,8 +123,6 @@ textarea.inp{resize:none;line-height:1.5}
 .sbar{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-top:1px solid var(--border);margin-top:3px;margin-bottom:7px}
 .sbar-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
 .sbar-v{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;color:var(--accent)}
-
-/* BONUS TOAST */
 .btoast{position:fixed;top:65px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0a0a0f;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;padding:10px 20px;border-radius:30px;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap}
 .btoast.show{opacity:1}
 
@@ -160,14 +151,61 @@ textarea.inp{resize:none;line-height:1.5}
 .hi-sc{font-family:'Syne',sans-serif;font-size:21px;font-weight:700;color:var(--accent)}
 .hi-dt{font-size:11px;color:var(--muted);margin-top:2px}
 
+/* PROFILE */
+.profile-scroll{padding:0 15px;flex:1;overflow-y:auto;padding-bottom:100px}
+.avatar-wrap{text-align:center;padding:20px 0 10px;position:relative;display:inline-block;left:50%;transform:translateX(-50%)}
+.avatar-big{width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid var(--accent);background:var(--surface2)}
+.avatar-big-placeholder{width:88px;height:88px;border-radius:50%;background:rgba(232,255,71,.08);border:3px solid rgba(232,255,71,.3);display:flex;align-items:center;justify-content:center;font-size:36px}
+.avatar-edit-btn{position:absolute;bottom:2px;right:2px;width:26px;height:26px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px}
+.doubles-grid{display:flex;flex-wrap:wrap;gap:7px}
+.dbl-chip{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border2);font-size:13px;cursor:pointer;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .15s}
+.dbl-chip.on{border-color:var(--accent);color:var(--accent);background:rgba(232,255,71,.08)}
+.profile-stat{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.profile-stat:last-child{border-bottom:none}
+.ps-lbl{font-size:13px;color:var(--muted)}
+.ps-val{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;color:var(--text)}
+
+/* MATCH 501 */
+.match-scroll{padding:13px 15px;flex:1;overflow-y:auto;padding-bottom:20px}
+.score-big{font-family:'Syne',sans-serif;font-size:72px;font-weight:800;color:var(--accent);text-align:center;line-height:1;margin:10px 0 4px}
+.score-sub{font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px}
+.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.np-btn{padding:16px 0;border-radius:var(--r);border:1.5px solid var(--border2);background:var(--surface);font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--text);cursor:pointer;transition:all .15s;text-align:center}
+.np-btn:active{transform:scale(.93);background:var(--surface2)}
+.np-btn.del{font-size:16px;color:var(--danger);border-color:rgba(248,113,113,.3)}
+.np-btn.ok{background:var(--accent);color:#0a0a0f;border-color:var(--accent)}
+.np-input-display{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:14px;text-align:center;font-family:'Syne',sans-serif;font-size:28px;font-weight:700;margin-bottom:10px;min-height:56px;color:var(--text)}
+.hint-box{background:var(--surface2);border:1px solid rgba(232,255,71,.2);border-radius:var(--r);padding:13px;margin-bottom:10px}
+.hint-title{font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:.8px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+.hint-main{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--text);margin-bottom:4px}
+.hint-fav{font-size:12px;color:var(--accent);margin-bottom:4px}
+.hint-info-btn{font-size:11px;padding:3px 8px;border-radius:8px;background:rgba(96,165,250,.15);color:var(--info);border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+.hint-no{font-size:13px;color:var(--muted)}
+.rounds-list{margin-top:8px}
+.round-item{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-bottom:6px}
+.ri-rnd{font-size:11px;color:var(--muted)}
+.ri-score{font-family:'Syne',sans-serif;font-weight:700;font-size:15px}
+.ri-after{font-size:12px;color:var(--muted)}
+
+/* CHECKOUT MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal-box{background:var(--surface);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:430px;max-height:80vh;overflow-y:auto;transform:translateY(20px);transition:transform .2s}
+.modal-overlay.show .modal-box{transform:translateY(0)}
+.modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+.checkout-table{width:100%;border-collapse:collapse}
+.checkout-table th{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
+.checkout-table td{padding:8px 8px;font-size:13px;border-bottom:1px solid var(--border)}
+.checkout-table tr:last-child td{border-bottom:none}
+.checkout-table tr.fav-row td{color:var(--accent);font-weight:700}
+
 /* ADMIN */
 .admin-scroll{padding:13px 15px;flex:1;overflow-y:auto;padding-bottom:100px}
 .atabs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);flex-shrink:0}
 .atab{padding:12px;text-align:center;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;font-family:'DM Sans',sans-serif;transition:all .15s}
 .atab.on{color:var(--accent);border-bottom-color:var(--accent)}
 .asec{display:none}.asec.on{display:block}
-
-/* EXERCISE EDIT CARD */
 .ecard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
 .ecard-hdr{display:flex;justify-content:space-between;align-items:center;padding:13px 15px;cursor:pointer;user-select:none}
 .ecard-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px}
@@ -185,12 +223,22 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 .chevron{font-size:14px;color:var(--muted);transition:transform .2s}
 .chevron.open{transform:rotate(180deg)}
 .scoring-panel{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:11px}
-.sp-title{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin-bottom:10px;font-weight:700}
-.sp-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:8px}
-.sp-row:last-child{margin-bottom:0}
-.sp-lbl{font-size:12px;color:var(--muted);flex:1}
-.sp-val{display:flex;align-items:center;gap:5px}
-.sp-val span{font-size:11px;color:var(--muted)}
+.sp-title{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin-bottom:10px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.sp-title button{font-size:11px;font-family:'DM Sans',sans-serif;font-weight:600;color:#0a0a0f;background:var(--accent);border:none;border-radius:6px;padding:3px 9px;cursor:pointer}
+.rule-row{display:flex;align-items:center;gap:7px;margin-bottom:7px;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.rule-row:last-child{margin-bottom:0}
+.rule-desc{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;padding:8px 10px;outline:none;min-width:0}
+.rule-desc:focus{border-color:var(--accent)}
+.rule-pts{width:56px;text-align:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--accent);font-family:'Syne',sans-serif;font-size:14px;font-weight:700;padding:8px 4px;outline:none}
+.rule-pts:focus{border-color:var(--accent)}
+.rule-unit{font-size:11px;color:var(--muted);flex-shrink:0}
+.rule-type-badge{font-size:10px;padding:3px 7px;border-radius:10px;font-weight:600;flex-shrink:0;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+.rule-type-badge.hit{background:rgba(74,222,128,.15);color:var(--success)}
+.rule-type-badge.bonus{background:rgba(232,255,71,.15);color:var(--accent)}
+.rule-del{width:26px;height:26px;border-radius:50%;border:1px solid rgba(248,113,113,.3);background:transparent;color:var(--danger);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.saving-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;margin-left:6px;animation:pulse .6s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .type-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px}
 .topt{padding:9px;border-radius:10px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;text-align:center;transition:all .15s}
 .topt.on{border-color:var(--accent);color:var(--accent);background:rgba(232,255,71,.05)}
@@ -201,32 +249,29 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 .lb-sub{font-size:11px;color:var(--muted);margin-top:1px}
 .add-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:15px;margin-bottom:11px}
 .add-form-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--info);margin-bottom:13px}
-
-/* BOTTOM NAV */
-.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(10,10,15,.96);border-top:1px solid var(--border);display:grid;padding:7px 0 max(7px,env(safe-area-inset-bottom));z-index:50;backdrop-filter:blur(8px)}
-.bnav.c3{grid-template-columns:repeat(3,1fr)}.bnav.c4{grid-template-columns:repeat(4,1fr)}
-.ni{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:color .15s}
-.ni.on{color:var(--accent)}
-.ni-ic{font-size:19px}.ni-lb{font-size:10px;letter-spacing:.4px}
-
-/* EMPTY */
 .empty{text-align:center;padding:34px 18px;color:var(--muted)}
 .empty-ic{font-size:36px;display:block;margin-bottom:10px;opacity:.4}
 .empty-t{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:5px;color:var(--text)}
 .empty-s{font-size:12px;line-height:1.5}
-.g10{display:flex;flex-direction:column;gap:10px}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(10,10,15,.96);border-top:1px solid var(--border);display:grid;padding:7px 0 max(7px,env(safe-area-inset-bottom));z-index:50;backdrop-filter:blur(8px)}
+.bnav.c5{grid-template-columns:repeat(5,1fr)}
+.bnav.c3{grid-template-columns:repeat(3,1fr)}
+.ni{display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:'DM Sans',sans-serif;transition:color .15s}
+.ni.on{color:var(--accent)}
+.ni-ic{font-size:19px}.ni-lb{font-size:9px;letter-spacing:.3px}
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
 <div class="loading-overlay" id="loading">
   <div style="font-size:40px">🎯</div>
   <div class="spinner"></div>
   <div class="loading-msg" id="loading-msg">Łączenie z bazą...</div>
 </div>
 
-<!-- ════════════════════ LOGIN ════════════════════ -->
+<!-- LOGIN -->
 <div id="screen-login" class="screen">
   <div class="login-wrap">
     <div class="login-hero">
@@ -241,22 +286,22 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
       <button class="block-btn bb-primary" id="login-btn" onclick="handleLogin()">Wejdź do aplikacji</button>
     </div>
     <div class="divrow">info</div>
-    <p class="note">Pierwsze logowanie? Wpisz wybrany pseudonim i hasło — konto zostanie utworzone automatycznie.<br><br>
-      Konto admina: <strong style="color:var(--accent)">Szymon1</strong> / <strong style="color:var(--accent)">adminSzymon</strong></p>
+    <p class="note">Pierwsze logowanie = automatyczna rejestracja.<br>
+      Admin: <strong style="color:var(--accent)">Szymon1</strong> / <strong style="color:var(--accent)">adminSzymon1</strong></p>
   </div>
 </div>
 
-<!-- ════════════════════ HOME ════════════════════ -->
+<!-- HOME -->
 <div id="screen-home" class="screen">
-  <div class="hdr">
-    <div class="logo">Dart<em>Pro</em></div>
-    <button class="btn" onclick="logout()">Wyloguj</button>
-  </div>
+  <div class="hdr"><div class="logo">Dart<em>Pro</em></div><button class="btn" onclick="logout()">Wyloguj</button></div>
   <div class="scroll home-scroll" style="padding-bottom:90px">
     <div class="welcome">
-      <div class="greet">Dzień dobry</div>
-      <div class="wname" id="home-name">—</div>
-      <div class="streak" id="home-streak">🔥 Ładowanie...</div>
+      <div id="home-avatar"></div>
+      <div class="welcome-text">
+        <div class="greet">Dzień dobry</div>
+        <div class="wname" id="home-name">—</div>
+        <div class="streak" id="home-streak">🔥 Ładowanie...</div>
+      </div>
     </div>
     <div class="sg">
       <div class="sc"><div class="sc-lbl">Najlepszy wynik</div><div class="sc-val ac" id="stat-best">—</div></div>
@@ -267,15 +312,16 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
     <div class="sec">Ostatnie wyniki</div>
     <div id="mini-hist"></div>
   </div>
-  <div class="bnav c4">
-    <button class="ni on" onclick="showScreen('home')"><span class="ni-ic">🏠</span><span class="ni-lb">Start</span></button>
-    <button class="ni" onclick="showScreen('history')"><span class="ni-ic">📊</span><span class="ni-lb">Historia</span></button>
+  <div class="bnav c5">
+    <button class="ni on" onclick="goTab('home')"><span class="ni-ic">🏠</span><span class="ni-lb">Start</span></button>
+    <button class="ni" onclick="goTab('history')"><span class="ni-ic">📊</span><span class="ni-lb">Historia</span></button>
     <button class="ni" onclick="startFirst()"><span class="ni-ic">🎯</span><span class="ni-lb">Trenuj</span></button>
-    <button class="ni" onclick="logout()"><span class="ni-ic">👤</span><span class="ni-lb">Konto</span></button>
+    <button class="ni" onclick="goTab('match')"><span class="ni-ic">🏹</span><span class="ni-lb">Mecz 501</span></button>
+    <button class="ni" onclick="goTab('profile')"><span class="ni-ic">👤</span><span class="ni-lb">Profil</span></button>
   </div>
 </div>
 
-<!-- ════════════════════ TRAINING ════════════════════ -->
+<!-- TRAINING -->
 <div id="screen-training" class="screen">
   <div class="hdr">
     <button class="btn" onclick="confirmExit()">← Wróć</button>
@@ -284,10 +330,7 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
   </div>
   <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
   <div class="tr-scroll">
-    <div class="rnd-hdr">
-      <span class="rbadge" id="rbadge">Cel 1 z 6</span>
-      <span class="rname" id="rname">—</span>
-    </div>
+    <div class="rnd-hdr"><span class="rbadge" id="rbadge">Cel 1 z 6</span><span class="rname" id="rname">—</span></div>
     <div class="tgt-box">
       <div class="tgt-num" id="tgt-num">10</div>
       <div class="tgt-lbl" id="tgt-lbl">Cel</div>
@@ -298,22 +341,16 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
       <div class="throws-row" id="throws-row"></div>
     </div>
     <div id="dart-btns" class="dg dg4"></div>
-    <div class="sbar">
-      <div class="sbar-l">Wynik sesji</div>
-      <div class="sbar-v" id="sess-score">0 pkt</div>
-    </div>
+    <div class="sbar"><div class="sbar-l">Wynik sesji</div><div class="sbar-v" id="sess-score">0 pkt</div></div>
     <div id="next-wrap" style="display:none"><button class="block-btn bb-outline" onclick="nextTarget()">Następny cel →</button></div>
     <div id="fin-wrap" style="display:none;margin-top:8px"><button class="block-btn bb-primary" onclick="finishTraining()">🏁 Zakończ sesję</button></div>
   </div>
   <div class="btoast" id="btoast"></div>
 </div>
 
-<!-- ════════════════════ SUMMARY ════════════════════ -->
+<!-- SUMMARY -->
 <div id="screen-summary" class="screen">
-  <div class="hdr">
-    <div class="logo">Dart<em>Pro</em></div>
-    <div style="font-size:11px;color:var(--muted)">Podsumowanie</div>
-  </div>
+  <div class="hdr"><div class="logo">Dart<em>Pro</em></div><div style="font-size:11px;color:var(--muted)">Podsumowanie</div></div>
   <div class="sum-scroll">
     <div class="sum-hero">
       <span class="sum-trophy" id="sum-trophy">🏆</span>
@@ -328,25 +365,110 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
     </div>
     <div class="g10" style="margin-top:4px">
       <button class="block-btn bb-primary" onclick="startFirst()">🎯 Trenuj ponownie</button>
-      <button class="block-btn bb-outline" onclick="showScreen('home')">← Wróć do menu</button>
+      <button class="block-btn bb-outline" onclick="goTab('home')">← Wróć do menu</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════ HISTORY ════════════════════ -->
+<!-- HISTORY -->
 <div id="screen-history" class="screen">
   <div class="hdr">
-    <button class="btn" onclick="showScreen('home')">← Wróć</button>
+    <button class="btn" onclick="goTab('home')">← Wróć</button>
     <div style="font-family:Syne;font-weight:700">Historia sesji</div>
     <div style="width:56px"></div>
   </div>
   <div class="hist-scroll" id="hist-list"></div>
 </div>
 
-<!-- ════════════════════ ADMIN ════════════════════ -->
+<!-- PROFILE -->
+<div id="screen-profile" class="screen">
+  <div class="hdr"><div class="logo">Dart<em>Pro</em></div><button class="btn" onclick="saveProfile()">Zapisz</button></div>
+  <div class="scroll profile-scroll" style="padding-bottom:100px">
+    <div style="text-align:center;padding:20px 0 8px">
+      <div style="position:relative;display:inline-block">
+        <div id="profile-avatar-big"></div>
+        <button class="avatar-edit-btn" onclick="document.getElementById('avatar-input').click()">📷</button>
+        <input type="file" id="avatar-input" accept="image/*" capture="environment" style="display:none" onchange="handleAvatarUpload(this)"/>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">Kliknij 📷 aby zmienić zdjęcie</div>
+    </div>
+
+    <div class="sec" style="margin-top:4px">Dane podstawowe</div>
+    <div class="card">
+      <div class="erow"><label class="lbl">Imię</label><input class="inp" id="p-firstname" placeholder="Twoje imię"/></div>
+      <div class="erow"><label class="lbl">Wiek</label><input class="inp" id="p-age" type="number" placeholder="np. 24" min="5" max="99"/></div>
+      <div class="erow" style="margin-bottom:0"><label class="lbl">Ulubiony zawodnik</label><input class="inp" id="p-favplayer" placeholder="np. Michael van Gerwen"/></div>
+    </div>
+
+    <div class="sec">Sprzęt</div>
+    <div class="card">
+      <div class="erow"><label class="lbl">Marka lotek</label><input class="inp" id="p-dartbrand" placeholder="np. Target, Harrows, Winmau"/></div>
+      <div class="erow" style="margin-bottom:0"><label class="lbl">Waga lotek (g)</label><input class="inp" id="p-dartweight" type="number" placeholder="np. 22" min="12" max="50" step="0.5"/></div>
+    </div>
+
+    <div class="sec">Ulubione zakończenia (double)</div>
+    <div class="card">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Wybierz swoje ulubione double — będą podpowiadane podczas meczu gdy masz szansę na checkout.</p>
+      <div class="doubles-grid" id="doubles-picker"></div>
+    </div>
+
+    <div class="sec">Statystyki</div>
+    <div class="card" id="profile-stats"></div>
+  </div>
+  <div class="bnav c5">
+    <button class="ni" onclick="goTab('home')"><span class="ni-ic">🏠</span><span class="ni-lb">Start</span></button>
+    <button class="ni" onclick="goTab('history')"><span class="ni-ic">📊</span><span class="ni-lb">Historia</span></button>
+    <button class="ni" onclick="startFirst()"><span class="ni-ic">🎯</span><span class="ni-lb">Trenuj</span></button>
+    <button class="ni" onclick="goTab('match')"><span class="ni-ic">🏹</span><span class="ni-lb">Mecz 501</span></button>
+    <button class="ni on" onclick="goTab('profile')"><span class="ni-ic">👤</span><span class="ni-lb">Profil</span></button>
+  </div>
+</div>
+
+<!-- MATCH 501 -->
+<div id="screen-match" class="screen">
+  <div class="hdr">
+    <button class="btn" onclick="goTab('home')">← Wróć</button>
+    <div style="font-family:Syne;font-weight:700;font-size:15px">Mecz 501</div>
+    <button class="btn" id="new-match-btn" onclick="newMatch()" style="color:var(--accent)">Nowy</button>
+  </div>
+  <div class="match-scroll">
+    <div class="score-big" id="match-score">501</div>
+    <div class="score-sub" id="match-sub">Wpisz wynik rzutu</div>
+
+    <div id="hint-area"></div>
+
+    <div class="np-input-display" id="np-display">—</div>
+    <div class="numpad">
+      <button class="np-btn" onclick="npPress('1')">1</button>
+      <button class="np-btn" onclick="npPress('2')">2</button>
+      <button class="np-btn" onclick="npPress('3')">3</button>
+      <button class="np-btn" onclick="npPress('4')">4</button>
+      <button class="np-btn" onclick="npPress('5')">5</button>
+      <button class="np-btn" onclick="npPress('6')">6</button>
+      <button class="np-btn" onclick="npPress('7')">7</button>
+      <button class="np-btn" onclick="npPress('8')">8</button>
+      <button class="np-btn" onclick="npPress('9')">9</button>
+      <button class="np-btn del" onclick="npDel()">⌫</button>
+      <button class="np-btn" onclick="npPress('0')">0</button>
+      <button class="np-btn ok" onclick="npConfirm()">✓</button>
+    </div>
+
+    <div class="sec">Historia rund</div>
+    <div id="rounds-list"></div>
+  </div>
+  <div class="bnav c5">
+    <button class="ni" onclick="goTab('home')"><span class="ni-ic">🏠</span><span class="ni-lb">Start</span></button>
+    <button class="ni" onclick="goTab('history')"><span class="ni-ic">📊</span><span class="ni-lb">Historia</span></button>
+    <button class="ni" onclick="startFirst()"><span class="ni-ic">🎯</span><span class="ni-lb">Trenuj</span></button>
+    <button class="ni on"><span class="ni-ic">🏹</span><span class="ni-lb">Mecz 501</span></button>
+    <button class="ni" onclick="goTab('profile')"><span class="ni-ic">👤</span><span class="ni-lb">Profil</span></button>
+  </div>
+</div>
+
+<!-- ADMIN -->
 <div id="screen-admin" class="screen">
   <div class="hdr">
-    <div class="logo">Dart<em>Pro</em> <span style="color:var(--accent2);font-size:11px;font-family:'DM Sans'">ADMIN</span></div>
+    <div class="logo">Dart<em>Pro</em> <span style="color:var(--accent2);font-size:11px">ADMIN</span></div>
     <button class="btn" onclick="logout()">Wyloguj</button>
   </div>
   <div class="atabs">
@@ -359,7 +481,7 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
       <div class="add-form">
         <div class="add-form-title">+ Nowe ćwiczenie</div>
         <div class="erow"><label class="lbl">Nazwa</label><input class="inp" id="new-nm" placeholder="np. Shanghai 1-9"/></div>
-        <div class="erow"><label class="lbl">Opis</label><input class="inp" id="new-ds" placeholder="Krótki opis dla zawodnika"/></div>
+        <div class="erow"><label class="lbl">Opis</label><input class="inp" id="new-ds" placeholder="Krótki opis"/></div>
         <div class="erow">
           <label class="lbl">Typ</label>
           <div class="type-grid">
@@ -367,20 +489,12 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
             <button class="topt" id="nt-doubles" onclick="selNewType('doubles')">✌️ Doublesy<br><small style="opacity:.7">1 lotka / double</small></button>
           </div>
         </div>
-        <div class="erow"><label class="lbl">Sektory (oddzielone przecinkiem, np. 10,11,12 lub BULL)</label><input class="inp" id="new-tg" placeholder="10,11,12,13,14,15"/></div>
-        <div class="scoring-panel" id="new-sc-shanghai">
-          <div class="sp-title">⚡ Punktacja – Shanghai</div>
-          <div class="sp-row"><span class="sp-lbl">Single</span><div class="sp-val"><input class="inp inp-num" id="ns-single" type="number" value="1" min="0"/><span>pkt</span></div></div>
-          <div class="sp-row"><span class="sp-lbl">Double</span><div class="sp-val"><input class="inp inp-num" id="ns-double" type="number" value="2" min="0"/><span>pkt</span></div></div>
-          <div class="sp-row"><span class="sp-lbl">Treble</span><div class="sp-val"><input class="inp inp-num" id="ns-triple" type="number" value="3" min="0"/><span>pkt</span></div></div>
-          <div class="sp-row"><span class="sp-lbl">Bonus za Shanghai (S+D+T)</span><div class="sp-val"><input class="inp inp-num" id="ns-bonus" type="number" value="100" min="0"/><span>pkt</span></div></div>
+        <div class="erow"><label class="lbl">Sektory (przecinkami, np. 10,11,12 lub BULL)</label><input class="inp" id="new-tg" placeholder="10,11,12,13,14,15"/></div>
+        <div class="scoring-panel">
+          <div class="sp-title">⚡ Reguły punktacji <button onclick="addNewRule()">+ Dodaj regułę</button></div>
+          <div id="new-rules-list"></div>
         </div>
-        <div class="scoring-panel" id="new-sc-doubles" style="display:none">
-          <div class="sp-title">⚡ Punktacja – Doublesy</div>
-          <div class="sp-row"><span class="sp-lbl">Za trafiony double</span><div class="sp-val"><input class="inp inp-num" id="nd-double" type="number" value="50" min="0"/><span>pkt</span></div></div>
-          <div class="sp-row"><span class="sp-lbl">Bonus za BULL</span><div class="sp-val"><input class="inp inp-num" id="nd-bonus" type="number" value="50" min="0"/><span>pkt</span></div></div>
-        </div>
-        <div class="erow"><label class="lbl">Zasady (puste = auto)</label><textarea class="inp" id="new-rl" rows="2" placeholder="Zostanie wygenerowane automatycznie..."></textarea></div>
+        <div class="erow"><label class="lbl">Własne zasady (puste = auto)</label><textarea class="inp" id="new-rl" rows="2"></textarea></div>
         <button class="block-btn bb-primary" onclick="addExercise()">+ Dodaj ćwiczenie</button>
       </div>
       <div class="sec">Zarządzaj ćwiczeniami</div>
@@ -394,702 +508,855 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
   </div>
 </div>
 
+<!-- CHECKOUT MODAL -->
+<div class="modal-overlay" id="checkout-modal" onclick="closeCheckoutModal(event)">
+  <div class="modal-box">
+    <div class="modal-title">
+      📋 Wszystkie zakończenia
+      <button class="modal-close" onclick="document.getElementById('checkout-modal').classList.remove('show')">×</button>
+    </div>
+    <div id="checkout-modal-content"></div>
+  </div>
+</div>
+
 <script>
-// ══════════════════════════════════════════════════════
-//  SUPABASE CONFIG
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+//  SUPABASE
+// ═══════════════════════════════════════════════
 const SB_URL = 'https://femoshkoumxikrcjhool.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlbW9zaGtvdW14aWtyY2pob29sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODQ3NjIsImV4cCI6MjA5MzE2MDc2Mn0.JEbU2gvcsq6WQxheyktkYDhf1gaoHYyYCzVmzer9hKY';
+const HDR = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
 
-const SB_HEADERS = {
-  'apikey': SB_KEY,
-  'Authorization': 'Bearer ' + SB_KEY,
-  'Content-Type': 'application/json',
-  'Prefer': 'return=representation'
-};
-
-async function sb(method, table, params = '', body = null) {
-  const opts = { method, headers: { ...SB_HEADERS } };
-  if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(`${SB_URL}/rest/v1/${table}${params ? '?' + params : ''}`, opts);
-  if (res.status === 204) return null;
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || data.error || 'DB error');
+async function sb(method,table,params='',body=null){
+  const opts={method,headers:{...HDR}};
+  if(body) opts.body=JSON.stringify(body);
+  const res=await fetch(`${SB_URL}/rest/v1/${table}${params?'?'+params:''}`,opts);
+  if(res.status===204) return null;
+  const data=await res.json();
+  if(!res.ok) throw new Error(data.message||data.error||'DB error');
   return data;
 }
+const dbGet=(t,p)=>sb('GET',t,p);
+const dbPost=(t,b)=>sb('POST',t,'',b);
+const dbPatch=(t,p,b)=>sb('PATCH',t,p,b);
+const dbDelete=(t,p)=>sb('DELETE',t,p);
 
-const dbGet    = (t, p)    => sb('GET',    t, p);
-const dbPost   = (t, b)    => sb('POST',   t, '', b);
-const dbPatch  = (t, p, b) => sb('PATCH',  t, p, b);
-const dbDelete = (t, p)    => sb('DELETE', t, p);
-
-// ══════════════════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════════════════
-function hash(s) {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  return h.toString(36);
-}
-
-function defaultScoring(type) {
-  if (type === 'shanghai') return { single: 1, double: 2, triple: 3, shanghaiBonus: 100 };
-  return { doubleHit: 50, bullBonus: 50 };
-}
-
-function autoRules(ex) {
-  const sc = ex.scoring || defaultScoring(ex.type);
-  if (ex.type === 'shanghai') {
-    return `3 lotki na każdą liczbę.\nSingle = ${sc.single} pkt | Double = ${sc.double} pkt | Treble = ${sc.triple} pkt\nSzanghaj (S+D+T) → BONUS +${sc.shanghaiBonus} pkt!`;
-  }
-  return `1 lotka na każdy double.\nTrafiony double = ${sc.doubleHit} pkt\nBULL = ${sc.doubleHit} + bonus ${sc.bullBonus} = ${sc.doubleHit + sc.bullBonus} pkt!`;
-}
-
-function loading(show, msg = 'Ładowanie...') {
-  document.getElementById('loading').classList.toggle('hidden', !show);
-  document.getElementById('loading-msg').textContent = msg;
-}
-
-let toastTm = null;
-function showToast(msg) {
-  const el = document.getElementById('btoast');
-  el.textContent = msg; el.classList.add('show');
-  if (toastTm) clearTimeout(toastTm);
-  toastTm = setTimeout(() => el.classList.remove('show'), 2600);
-}
-
-function showErr(msg) {
-  const el = document.getElementById('login-err');
-  el.textContent = msg; el.classList.add('show');
-}
-function hideErr() { document.getElementById('login-err').classList.remove('show'); }
-
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  STATE
-// ══════════════════════════════════════════════════════
-let S = {
-  user: null,       // { id, username, is_admin, streak, last_day }
-  exercises: [],    // array from DB
-  training: {},
-  newType: 'shanghai'
-};
+// ═══════════════════════════════════════════════
+let S={user:null,isAdmin:false,exercises:[],training:{},newType:'shanghai',match:null};
+let NEW_RULES=[];
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════
+function hash(s){let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return h.toString(36)}
+function uid(){return Math.random().toString(36).slice(2,8)}
+function loading(show,msg='Ładowanie...'){
+  document.getElementById('loading').classList.toggle('hidden',!show);
+  document.getElementById('loading-msg').textContent=msg;
+}
+let toastTm=null;
+function showToast(msg){
+  const el=document.getElementById('btoast');
+  el.textContent=msg;el.classList.add('show');
+  if(toastTm)clearTimeout(toastTm);
+  toastTm=setTimeout(()=>el.classList.remove('show'),2600);
+}
+function showErr(msg){const el=document.getElementById('login-err');el.textContent=msg;el.classList.add('show')}
+function hideErr(){document.getElementById('login-err').classList.remove('show')}
+
+// ═══════════════════════════════════════════════
+//  SCORING — dynamiczne reguły
+// ═══════════════════════════════════════════════
+function defaultRules(type){
+  if(type==='shanghai') return[
+    {id:uid(),label:'Single',points:1,type:'hit',trigger:'single'},
+    {id:uid(),label:'Double',points:2,type:'hit',trigger:'double'},
+    {id:uid(),label:'Treble',points:3,type:'hit',trigger:'triple'},
+    {id:uid(),label:'Bonus Shanghai (S+D+T)',points:100,type:'bonus',trigger:'shanghai'}
+  ];
+  return[
+    {id:uid(),label:'Trafiony double',points:50,type:'hit',trigger:'double'},
+    {id:uid(),label:'Trafiony BULL',points:50,type:'hit',trigger:'bull'},
+    {id:uid(),label:'Bonus za BULL',points:50,type:'bonus',trigger:'bull'}
+  ];
+}
+
+function getRules(ex){
+  const sc=ex.scoring;
+  if(Array.isArray(sc)) return sc;
+  return defaultRules(ex.type);
+}
+
+function autoRules(ex){
+  return getRules(ex).map(r=>`${r.label}: ${r.points} pkt${r.type==='bonus'?' (bonus)':''}`).join('\n');
+}
+
+function initNewRules(type){
+  NEW_RULES=defaultRules(type).map(r=>({...r,id:uid()}));
+  renderNewRules();
+}
+
+function renderNewRules(){
+  const el=document.getElementById('new-rules-list');
+  if(!el) return;
+  el.innerHTML=NEW_RULES.map((r,i)=>ruleRowHTML(r,i,'new')).join('');
+}
+
+function addNewRule(){
+  NEW_RULES.push({id:uid(),label:'',points:0,type:'hit',trigger:'custom'});
+  renderNewRules();
+  const inputs=document.querySelectorAll('#new-rules-list .rule-desc');
+  if(inputs.length) inputs[inputs.length-1].focus();
+}
+
+function ruleRowHTML(r,idx,scope){
+  const bc=r.type==='bonus'?'bonus':'hit';
+  const bl=r.type==='bonus'?'bonus':'trafienie';
+  return`<div class="rule-row">
+    <input class="rule-desc" placeholder="Opis reguły..." value="${r.label||''}"
+      oninput="updateRuleLabel('${scope}','${r.id}',this.value)"/>
+    <input class="rule-pts" type="number" min="0" value="${r.points}"
+      oninput="updateRulePoints('${scope}','${r.id}',+this.value)"/>
+    <span class="rule-unit">pkt</span>
+    <button class="rule-type-badge ${bc}" onclick="toggleRuleType('${scope}','${r.id}')">${bl}</button>
+    <button class="rule-del" onclick="removeRule('${scope}','${r.id}')">×</button>
+  </div>`;
+}
+
+function updateRuleLabel(scope,rid,val){
+  if(scope==='new'){const r=NEW_RULES.find(r=>r.id===rid);if(r)r.label=val;}
+  else{const ex=S.exercises.find(e=>e.id===scope);if(ex){const r=getRules(ex).find(r=>r.id===rid);if(r)r.label=val;}scheduleAutoSave(scope);}
+}
+function updateRulePoints(scope,rid,val){
+  if(scope==='new'){const r=NEW_RULES.find(r=>r.id===rid);if(r)r.points=val;}
+  else{const ex=S.exercises.find(e=>e.id===scope);if(ex){const r=getRules(ex).find(r=>r.id===rid);if(r)r.points=val;}scheduleAutoSave(scope);}
+}
+function toggleRuleType(scope,rid){
+  const rules=scope==='new'?NEW_RULES:getRules(S.exercises.find(e=>e.id===scope));
+  const r=rules.find(r=>r.id===rid);if(!r)return;
+  r.type=r.type==='hit'?'bonus':'hit';
+  if(scope==='new')renderNewRules();
+  else{renderExRules(scope);scheduleAutoSave(scope);}
+}
+function removeRule(scope,rid){
+  if(scope==='new'){NEW_RULES=NEW_RULES.filter(r=>r.id!==rid);renderNewRules();}
+  else{const ex=S.exercises.find(e=>e.id===scope);if(!ex)return;ex.scoring=getRules(ex).filter(r=>r.id!==rid);renderExRules(scope);scheduleAutoSave(scope);}
+}
+function addExRule(exId){
+  const ex=S.exercises.find(e=>e.id===exId);if(!ex)return;
+  const rules=getRules(ex);rules.push({id:uid(),label:'',points:0,type:'hit',trigger:'custom'});
+  ex.scoring=rules;renderExRules(exId);scheduleAutoSave(exId);
+}
+function renderExRules(exId){
+  const ex=S.exercises.find(e=>e.id===exId);if(!ex)return;
+  const el=document.getElementById('rules-list-'+exId);
+  if(el)el.innerHTML=getRules(ex).map((r,i)=>ruleRowHTML(r,i,exId)).join('');
+}
+
+const autoSaveTimers={};
+function scheduleAutoSave(exId){
+  clearTimeout(autoSaveTimers[exId]);
+  const dot=document.getElementById('saving-dot-'+exId);
+  if(dot)dot.style.display='inline-block';
+  autoSaveTimers[exId]=setTimeout(async()=>{
+    const ex=S.exercises.find(e=>e.id===exId);if(!ex)return;
+    try{
+      await dbPatch('exercises',`id=eq.${exId}`,{
+        name:ex.name,description:ex.description,rules:ex.rules,
+        scoring:JSON.stringify(getRules(ex)),enabled:ex.enabled
+      });
+      if(dot)dot.style.display='none';
+      showToast('✅ Zapisano automatycznie');
+    }catch(e){if(dot)dot.style.display='none';showToast('⚠️ Błąd auto-zapisu');}
+  },800);
+}
+
+// ═══════════════════════════════════════════════
 //  AUTH
-// ══════════════════════════════════════════════════════
-async function handleLogin() {
+// ═══════════════════════════════════════════════
+async function handleLogin(){
   hideErr();
-  const name = document.getElementById('l-name').value.trim();
-  const pass = document.getElementById('l-pass').value;
-  if (name.length < 2) { showErr('Wpisz pseudonim (min. 2 znaki)'); return; }
-  if (!pass) { showErr('Wpisz hasło lub PIN'); return; }
-
-  const btn = document.getElementById('login-btn');
-  btn.textContent = 'Łączenie...'; btn.disabled = true;
-
-  try {
-    const ph = hash(pass);
-    // Szukaj usera
-    const users = await dbGet('users', `username=eq.${encodeURIComponent(name)}&select=*`);
-
-    if (!users || users.length === 0) {
-      // Nowe konto
-      const created = await dbPost('users', { username: name, password_hash: ph, is_admin: false, streak: 0 });
-      S.user = created[0];
-    } else {
-      const u = users[0];
-      if (u.password_hash !== ph) { showErr('Błędne hasło!'); return; }
-      S.user = u;
+  const name=document.getElementById('l-name').value.trim();
+  const pass=document.getElementById('l-pass').value;
+  if(name.length<2){showErr('Wpisz pseudonim (min. 2 znaki)');return}
+  if(!pass){showErr('Wpisz hasło');return}
+  const btn=document.getElementById('login-btn');
+  btn.textContent='Łączenie...';btn.disabled=true;
+  try{
+    const ph=hash(pass);
+    const users=await dbGet('users',`username=eq.${encodeURIComponent(name)}&select=*`);
+    if(!users||!users.length){
+      const created=await dbPost('users',{username:name,password_hash:ph,is_admin:false,streak:0});
+      S.user=created[0];
+    }else{
+      if(users[0].password_hash!==ph){showErr('Błędne hasło!');return}
+      S.user=users[0];
     }
-
+    S.isAdmin=S.user.is_admin;
     await updateStreak();
     await loadExercises();
-
-    if (S.user.is_admin) {
-      showScreen('admin');
-      renderAdminEx();
-      renderLB();
-    } else {
-      showScreen('home');
-      await renderHome();
-    }
-  } catch (e) {
-    showErr('Błąd połączenia: ' + e.message);
-  } finally {
-    btn.textContent = 'Wejdź do aplikacji'; btn.disabled = false;
-  }
+    if(S.isAdmin){showScreen('admin');renderAdminEx();renderLB();}
+    else{goTab('home');}
+  }catch(e){showErr('Błąd: '+e.message);}
+  finally{btn.textContent='Wejdź do aplikacji';btn.disabled=false;}
 }
 
-async function updateStreak() {
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const u = S.user;
-  if (u.last_day === today) return;
-  const yest = new Date(Date.now() - 86400000).toISOString().slice(0, 10);
-  const newStreak = u.last_day === yest ? (u.streak || 0) + 1 : 0;
-  await dbPatch('users', `id=eq.${u.id}`, { streak: newStreak, last_day: today });
-  S.user.streak = newStreak;
-  S.user.last_day = today;
+async function updateStreak(){
+  const today=new Date().toISOString().slice(0,10);
+  const u=S.user;if(u.last_day===today)return;
+  const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  const ns=u.last_day===yest?(u.streak||0)+1:0;
+  await dbPatch('users',`id=eq.${u.id}`,{streak:ns,last_day:today});
+  S.user.streak=ns;S.user.last_day=today;
 }
 
-function logout() {
-  S.user = null; S.exercises = [];
-  document.getElementById('l-name').value = '';
-  document.getElementById('l-pass').value = '';
-  hideErr();
-  showScreen('login');
-}
+function logout(){S.user=null;S.exercises=[];document.getElementById('l-name').value='';document.getElementById('l-pass').value='';hideErr();showScreen('login');}
 
-// ══════════════════════════════════════════════════════
-//  EXERCISES (DB)
-// ══════════════════════════════════════════════════════
-async function loadExercises() {
-  const rows = await dbGet('exercises', 'order=sort_order.asc,created_at.asc');
-  S.exercises = (rows || []).map(r => ({
-    ...r,
-    scoring: typeof r.scoring === 'string' ? JSON.parse(r.scoring) : r.scoring,
-    targets: typeof r.targets === 'string' ? JSON.parse(r.targets) : r.targets
+// ═══════════════════════════════════════════════
+//  EXERCISES
+// ═══════════════════════════════════════════════
+async function loadExercises(){
+  const rows=await dbGet('exercises','order=sort_order.asc,created_at.asc');
+  S.exercises=(rows||[]).map(r=>({...r,
+    scoring:typeof r.scoring==='string'?JSON.parse(r.scoring):r.scoring,
+    targets:typeof r.targets==='string'?JSON.parse(r.targets):r.targets
   }));
 }
 
-// ══════════════════════════════════════════════════════
-//  SCREENS
-// ══════════════════════════════════════════════════════
-function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
-  if (name === 'home') renderHome();
-  if (name === 'history') renderHistory();
+// ═══════════════════════════════════════════════
+//  SCREENS & NAV
+// ═══════════════════════════════════════════════
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
 }
 
-// ══════════════════════════════════════════════════════
+async function goTab(tab){
+  showScreen(tab==='home'?'home':tab==='history'?'history':tab==='profile'?'profile':tab==='match'?'match':'home');
+  if(tab==='home')await renderHome();
+  if(tab==='history')renderHistory();
+  if(tab==='profile')renderProfile();
+  if(tab==='match')initMatch();
+}
+
+// ═══════════════════════════════════════════════
 //  HOME
-// ══════════════════════════════════════════════════════
-async function renderHome() {
-  const u = S.user;
-  document.getElementById('home-name').textContent = u.username;
-  const sk = u.streak || 0;
-  document.getElementById('home-streak').textContent = sk > 0 ? `🔥 ${sk} dzień z rzędu!` : '👋 Zacznij serię treningową!';
-
-  // Pobierz sesje usera
-  const sessions = await dbGet('sessions', `user_id=eq.${u.id}&order=created_at.desc`);
-  const all = sessions || [];
-  const best = all.length ? Math.max(...all.map(s => s.total_score)) : null;
-  document.getElementById('stat-best').innerHTML = best != null ? best + '<span class="sc-unit">pkt</span>' : '—';
-  document.getElementById('stat-sess').textContent = all.length;
-
-  const todayStr = new Date().toISOString().slice(0, 10);
-  const todaySess = all.filter(s => s.created_at.slice(0, 10) === todayStr);
-
-  const active = S.exercises.filter(e => e.enabled !== false);
-  document.getElementById('ex-list').innerHTML = active.length
-    ? active.map((ex, i) => {
-        const done = todaySess.some(s => s.exercise_id === ex.id);
-        return `<div class="exc" onclick="startTraining('${ex.id}')">
-          <div class="exn ${ex.color}">${i + 1}</div>
-          <div class="ex-inf"><div class="ex-nm">${ex.name}</div><div class="ex-ds">${ex.description || ''}</div></div>
-          <div class="badge${done ? ' done' : ''}">${done ? '✓ Zrobione' : 'Start'}</div>
+// ═══════════════════════════════════════════════
+async function renderHome(){
+  const u=S.user;
+  // avatar
+  const avEl=document.getElementById('home-avatar');
+  if(u.avatar_url) avEl.innerHTML=`<img class="avatar-sm" src="${u.avatar_url}" alt="avatar"/>`;
+  else avEl.innerHTML=`<div class="avatar-placeholder">🎯</div>`;
+  document.getElementById('home-name').textContent=u.first_name||u.username;
+  const sk=u.streak||0;
+  document.getElementById('home-streak').textContent=sk>0?`🔥 ${sk} dzień z rzędu!`:'👋 Zacznij serię treningową!';
+  const sessions=await dbGet('sessions',`user_id=eq.${u.id}&order=created_at.desc`);
+  const all=sessions||[];
+  const best=all.length?Math.max(...all.map(s=>s.total_score)):null;
+  document.getElementById('stat-best').innerHTML=best!=null?best+'<span class="sc-unit">pkt</span>':'—';
+  document.getElementById('stat-sess').textContent=all.length;
+  const todayStr=new Date().toISOString().slice(0,10);
+  const todaySess=all.filter(s=>s.created_at.slice(0,10)===todayStr);
+  const active=S.exercises.filter(e=>e.enabled!==false);
+  document.getElementById('ex-list').innerHTML=active.length
+    ?active.map((ex,i)=>{
+        const done=todaySess.some(s=>s.exercise_id===ex.id);
+        return`<div class="exc" onclick="startTraining('${ex.id}')">
+          <div class="exn ${ex.color}">${i+1}</div>
+          <div class="ex-inf"><div class="ex-nm">${ex.name}</div><div class="ex-ds">${ex.description||''}</div></div>
+          <div class="badge${done?' done':''}"> ${done?'✓ Zrobione':'Start'}</div>
         </div>`;
       }).join('')
-    : `<div class="empty"><span class="empty-ic">😴</span><div class="empty-t">Brak aktywnych ćwiczeń</div></div>`;
-
-  const recent = all.slice(0, 3);
-  document.getElementById('mini-hist').innerHTML = recent.length
-    ? recent.map(s => `<div class="hi">
-        <div><div class="hi-d">${new Date(s.created_at).toLocaleDateString('pl-PL', { weekday: 'short', day: 'numeric', month: 'short' })}</div>
-        <div style="font-size:12px">${s.exercise_name || '—'}</div></div>
+    :`<div class="empty"><span class="empty-ic">😴</span><div class="empty-t">Brak aktywnych ćwiczeń</div></div>`;
+  const recent=all.slice(0,3);
+  document.getElementById('mini-hist').innerHTML=recent.length
+    ?recent.map(s=>`<div class="hi">
+        <div><div class="hi-d">${new Date(s.created_at).toLocaleDateString('pl-PL',{weekday:'short',day:'numeric',month:'short'})}</div>
+        <div style="font-size:12px">${s.exercise_name||'—'}</div></div>
         <div class="hi-sc">${s.total_score}</div>
       </div>`).join('')
-    : `<div class="empty"><span class="empty-ic">📊</span><div class="empty-t">Brak historii</div><p class="empty-s">Zrób pierwsze ćwiczenie!</p></div>`;
+    :`<div class="empty"><span class="empty-ic">📊</span><div class="empty-t">Brak historii</div></div>`;
 }
+function startFirst(){const a=S.exercises.filter(e=>e.enabled!==false);if(a.length)startTraining(a[0].id);else alert('Brak aktywnych ćwiczeń!');}
 
-function startFirst() {
-  const a = S.exercises.filter(e => e.enabled !== false);
-  if (a.length) startTraining(a[0].id);
-  else alert('Brak aktywnych ćwiczeń!');
-}
-
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  TRAINING
-// ══════════════════════════════════════════════════════
-function startTraining(exId) {
-  const ex = S.exercises.find(e => e.id === exId);
-  if (!ex || ex.enabled === false) { alert('To ćwiczenie jest wyłączone.'); return; }
-  S.training = { exId, ti: 0, curThrows: [], sessScore: 0, bonuses: [], rounds: [] };
-  document.getElementById('tr-title').textContent = ex.name;
-  showScreen('training');
-  renderTarget();
+// ═══════════════════════════════════════════════
+function startTraining(exId){
+  const ex=S.exercises.find(e=>e.id===exId);
+  if(!ex||ex.enabled===false){alert('To ćwiczenie jest wyłączone.');return}
+  S.training={exId,ti:0,curThrows:[],sessScore:0,bonuses:[],rounds:[]};
+  document.getElementById('tr-title').textContent=ex.name;
+  showScreen('training');renderTarget();
 }
-
-function renderTarget() {
-  const t = S.training;
-  const ex = S.exercises.find(e => e.id === t.exId);
-  const ti = t.ti, tot = ex.targets.length, target = ex.targets[ti];
-  document.getElementById('prog').style.width = (ti / tot * 100) + '%';
-  document.getElementById('rbadge').textContent = `Cel ${ti + 1} z ${tot}`;
-  document.getElementById('rname').textContent = ex.name;
-  document.getElementById('tr-step').textContent = `${ti + 1}/${tot}`;
-  const ne = document.getElementById('tgt-num');
-  ne.textContent = target;
-  ne.className = 'tgt-num' + (ex.color === 'c2' ? ' org' : ex.color === 'c3' ? ' blu' : '');
-  document.getElementById('tgt-lbl').textContent = target === 'BULL' ? 'Byk' : `Liczba ${target}`;
-  const rules = ex.rules && ex.rules.trim() ? ex.rules : autoRules(ex);
-  const hl = document.getElementById('tgt-hint');
-  hl.textContent = rules; hl.style.display = 'block';
-  t.curThrows = [];
-  renderChips(ex.throws_per_target);
-  renderDartBtns(ex, target);
-  document.getElementById('next-wrap').style.display = 'none';
-  document.getElementById('fin-wrap').style.display = 'none';
-  document.getElementById('sess-score').textContent = t.sessScore + ' pkt';
+function renderTarget(){
+  const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
+  const ti=t.ti,tot=ex.targets.length,target=ex.targets[ti];
+  document.getElementById('prog').style.width=(ti/tot*100)+'%';
+  document.getElementById('rbadge').textContent=`Cel ${ti+1} z ${tot}`;
+  document.getElementById('rname').textContent=ex.name;
+  document.getElementById('tr-step').textContent=`${ti+1}/${tot}`;
+  const ne=document.getElementById('tgt-num');
+  ne.textContent=target;
+  ne.className='tgt-num'+(ex.color==='c2'?' org':ex.color==='c3'?' blu':'');
+  document.getElementById('tgt-lbl').textContent=target==='BULL'?'Byk':`Liczba ${target}`;
+  const rules=ex.rules&&ex.rules.trim()?ex.rules:autoRules(ex);
+  const hl=document.getElementById('tgt-hint');hl.textContent=rules;hl.style.display='block';
+  t.curThrows=[];
+  renderChips(ex.throws_per_target);renderDartBtns(ex,target);
+  document.getElementById('next-wrap').style.display='none';
+  document.getElementById('fin-wrap').style.display='none';
+  document.getElementById('sess-score').textContent=t.sessScore+' pkt';
 }
-
-function renderChips(n) {
-  document.getElementById('throws-row').innerHTML = Array(n).fill(0).map((_, i) =>
-    `<div class="chip" id="chip-${i}">?</div>`).join('');
+function renderChips(n){
+  document.getElementById('throws-row').innerHTML=Array(n).fill(0).map((_,i)=>`<div class="chip" id="chip-${i}">?</div>`).join('');
 }
-
-function renderDartBtns(ex, target) {
-  const el = document.getElementById('dart-btns');
-  const sc = ex.scoring || defaultScoring(ex.type);
-  if (ex.type === 'doubles') {
-    const isBull = target === 'BULL';
-    el.className = 'dg dg2';
-    el.innerHTML = `
+function renderDartBtns(ex,target){
+  const el=document.getElementById('dart-btns');
+  const rules=getRules(ex);const isBull=target==='BULL';
+  if(ex.type==='doubles'){
+    const hitRule=rules.find(r=>r.type==='hit'&&r.trigger===(isBull?'bull':'double'))||rules.find(r=>r.type==='hit');
+    const pts=hitRule?hitRule.points:50;
+    el.className='dg dg2';
+    el.innerHTML=`
       <button class="dbtn" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudło</div><div class="zsc cm">0 pkt</div></div></button>
-      <button class="dbtn" onclick="recThrow('${isBull ? 'bull' : 'double'}',${sc.doubleHit},'d')"><div class="dbtn-in"><div class="zlbl">${isBull ? 'BULL' : 'Double'}</div><div class="zsc cd">${sc.doubleHit} pkt</div></div></button>`;
-  } else {
-    el.className = 'dg dg4';
-    el.innerHTML = `
+      <button class="dbtn" onclick="recThrow('${isBull?'bull':'double'}',${pts},'d')"><div class="dbtn-in"><div class="zlbl">${isBull?'BULL':'Double'}</div><div class="zsc cd">${pts} pkt</div></div></button>`;
+  }else{
+    const sr=rules.find(r=>r.trigger==='single')||{points:1};
+    const dr=rules.find(r=>r.trigger==='double')||{points:2};
+    const tr=rules.find(r=>r.trigger==='triple')||{points:3};
+    el.className='dg dg4';
+    el.innerHTML=`
       <button class="dbtn" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudło</div><div class="zsc cm">0</div></div></button>
-      <button class="dbtn" onclick="recThrow('single',${sc.single},'s')"><div class="dbtn-in"><div class="zlbl">Single</div><div class="zsc cs">${sc.single} pkt</div></div></button>
-      <button class="dbtn" onclick="recThrow('double',${sc.double},'d')"><div class="dbtn-in"><div class="zlbl">Double</div><div class="zsc cd">${sc.double} pkt</div></div></button>
-      <button class="dbtn" onclick="recThrow('triple',${sc.triple},'t')"><div class="dbtn-in"><div class="zlbl">Treble</div><div class="zsc ct">${sc.triple} pkt</div></div></button>`;
+      <button class="dbtn" onclick="recThrow('single',${sr.points},'s')"><div class="dbtn-in"><div class="zlbl">Single</div><div class="zsc cs">${sr.points} pkt</div></div></button>
+      <button class="dbtn" onclick="recThrow('double',${dr.points},'d')"><div class="dbtn-in"><div class="zlbl">Double</div><div class="zsc cd">${dr.points} pkt</div></div></button>
+      <button class="dbtn" onclick="recThrow('triple',${tr.points},'t')"><div class="dbtn-in"><div class="zlbl">Treble</div><div class="zsc ct">${tr.points} pkt</div></div></button>`;
   }
 }
-
-function recThrow(zone, pts, cc) {
-  const t = S.training;
-  const ex = S.exercises.find(e => e.id === t.exId);
-  if (t.curThrows.length >= ex.throws_per_target) return;
-  t.curThrows.push({ zone, pts, cc });
-  const i = t.curThrows.length - 1;
-  const chip = document.getElementById('chip-' + i);
-  if (chip) {
-    chip.className = 'chip f' + cc;
-    chip.textContent = cc === 'm' ? '✗' : cc === 's' ? 'S' : cc === 'd' ? 'D' : 'T';
-  }
-  if (t.curThrows.length === ex.throws_per_target) {
-    const rndPts = t.curThrows.reduce((a, th) => a + th.pts, 0);
-    let bonus = 0;
-    const sc = ex.scoring || defaultScoring(ex.type);
-    if (ex.type === 'shanghai') {
-      const zones = t.curThrows.map(th => th.zone);
-      if (zones.includes('single') && zones.includes('double') && zones.includes('triple')) {
-        bonus = sc.shanghaiBonus;
-        showToast(`🎯 SHANGHAI! +${bonus} pkt`);
+function recThrow(zone,pts,cc){
+  const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
+  if(t.curThrows.length>=ex.throws_per_target)return;
+  t.curThrows.push({zone,pts,cc});
+  const i=t.curThrows.length-1;
+  const chip=document.getElementById('chip-'+i);
+  if(chip){chip.className='chip f'+cc;chip.textContent=cc==='m'?'✗':cc==='s'?'S':cc==='d'?'D':'T';}
+  if(t.curThrows.length===ex.throws_per_target){
+    const rndPts=t.curThrows.reduce((a,th)=>a+th.pts,0);
+    let bonus=0;
+    const rules=getRules(ex);const zones=t.curThrows.map(th=>th.zone);
+    rules.filter(r=>r.type==='bonus').forEach(r=>{
+      if(r.trigger==='shanghai'&&zones.includes('single')&&zones.includes('double')&&zones.includes('triple')){
+        bonus+=r.points;showToast(`🎯 SHANGHAI! +${r.points} pkt`);
+      }else if(r.trigger==='bull'&&ex.targets[t.ti]==='BULL'&&zones.includes('bull')){
+        bonus+=r.points;showToast(`🔴 BULL BONUS! +${r.points} pkt`);
       }
-    } else if (ex.type === 'doubles') {
-      const isBull = ex.targets[t.ti] === 'BULL';
-      if (isBull && t.curThrows.some(th => th.zone === 'bull')) {
-        bonus = sc.bullBonus;
-        showToast(`🔴 BULL BONUS! +${bonus} pkt`);
-      }
-    }
-    if (bonus > 0) t.bonuses.push(bonus);
-    t.sessScore += rndPts + bonus;
-    t.rounds.push({ target: ex.targets[t.ti], pts: rndPts, bonus });
-    document.getElementById('sess-score').textContent = t.sessScore + ' pkt';
-    const isLast = t.ti >= ex.targets.length - 1;
-    document.getElementById(isLast ? 'fin-wrap' : 'next-wrap').style.display = 'block';
-  }
-}
-
-function nextTarget() { S.training.ti++; renderTarget(); }
-
-function confirmExit() {
-  if (S.training.sessScore > 0 && !confirm('Trening w toku! Wyjść bez zapisywania?')) return;
-  showScreen('home');
-}
-
-async function finishTraining() {
-  const t = S.training;
-  const ex = S.exercises.find(e => e.id === t.exId);
-  const bonTotal = t.bonuses.reduce((a, b) => a + b, 0);
-
-  loading(true, 'Zapisywanie wyniku...');
-  try {
-    const sessionRows = await dbPost('sessions', {
-      user_id: S.user.id,
-      exercise_id: ex.id,
-      exercise_name: ex.name,
-      total_score: t.sessScore,
-      base_score: t.sessScore - bonTotal,
-      bonus_score: bonTotal
     });
-    const session = sessionRows[0];
-
-    // Zapisz rzuty
-    if (t.rounds.length > 0) {
-      const throwsPayload = [];
-      let order = 0;
-      t.rounds.forEach(r => {
-        t.training && t.training.curThrows; // not needed, using rounds
-      });
-      // simplified: save per-round summary as throws
-      t.rounds.forEach((r, idx) => {
-        throwsPayload.push({
-          session_id: session.id,
-          target: String(r.target),
-          zone: 'round',
-          points: r.pts + r.bonus,
-          throw_order: idx
-        });
-      });
-      await dbPost('throws', throwsPayload);
-    }
-
-    // Pobierz historię do summary
-    const allSess = await dbGet('sessions',
-      `user_id=eq.${S.user.id}&exercise_id=eq.${ex.id}&order=created_at.asc`);
-    renderSummary(session, allSess || []);
-    showScreen('summary');
-  } catch (e) {
-    alert('Błąd zapisu: ' + e.message);
-  } finally {
-    loading(false);
+    if(bonus>0)t.bonuses.push(bonus);
+    t.sessScore+=rndPts+bonus;
+    t.rounds.push({target:ex.targets[t.ti],pts:rndPts,bonus});
+    document.getElementById('sess-score').textContent=t.sessScore+' pkt';
+    const isLast=t.ti>=ex.targets.length-1;
+    document.getElementById(isLast?'fin-wrap':'next-wrap').style.display='block';
   }
 }
-
-function renderSummary(session, allSess) {
-  const scores = allSess.map(s => s.total_score);
-  const best = Math.max(...scores);
-  const isPB = session.total_score === best && scores.length > 1;
-  document.getElementById('sum-trophy').textContent = isPB ? '🏆' : '🎯';
-  document.getElementById('sum-title').textContent = isPB ? 'Nowy rekord osobisty!' : 'Dobry trening!';
-  document.getElementById('sum-total').textContent = session.total_score;
-  document.getElementById('sum-break').innerHTML = `
+function nextTarget(){S.training.ti++;renderTarget();}
+function confirmExit(){if(S.training.sessScore>0&&!confirm('Trening w toku! Wyjść bez zapisywania?'))return;goTab('home');}
+async function finishTraining(){
+  const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
+  const bonTotal=t.bonuses.reduce((a,b)=>a+b,0);
+  loading(true,'Zapisywanie wyniku...');
+  try{
+    const sessionRows=await dbPost('sessions',{
+      user_id:S.user.id,exercise_id:ex.id,exercise_name:ex.name,
+      total_score:t.sessScore,base_score:t.sessScore-bonTotal,bonus_score:bonTotal
+    });
+    const session=sessionRows[0];
+    if(t.rounds.length){
+      await dbPost('throws',t.rounds.map((r,idx)=>({
+        session_id:session.id,target:String(r.target),zone:'round',points:r.pts+r.bonus,throw_order:idx
+      })));
+    }
+    const allSess=await dbGet('sessions',`user_id=eq.${S.user.id}&exercise_id=eq.${ex.id}&order=created_at.asc`);
+    renderSummary(session,allSess||[]);showScreen('summary');
+  }catch(e){alert('Błąd zapisu: '+e.message);}
+  finally{loading(false);}
+}
+function renderSummary(session,allSess){
+  const scores=allSess.map(s=>s.total_score);
+  const best=Math.max(...scores);const isPB=session.total_score===best&&scores.length>1;
+  document.getElementById('sum-trophy').textContent=isPB?'🏆':'🎯';
+  document.getElementById('sum-title').textContent=isPB?'Nowy rekord osobisty!':'Dobry trening!';
+  document.getElementById('sum-total').textContent=session.total_score;
+  document.getElementById('sum-break').innerHTML=`
     <div class="srow"><span class="sl">Ćwiczenie</span><span class="sv">${session.exercise_name}</span></div>
     <div class="srow"><span class="sl">Wynik bazowy</span><span class="sv">${session.base_score} pkt</span></div>
     <div class="srow bon"><span class="sl">Bonusy łącznie</span><span class="sv">+${session.bonus_score} pkt</span></div>
     <div class="srow"><span class="sl">Rekord osobisty</span><span class="sv">${best} pkt</span></div>
     <div class="srow"><span class="sl">Liczba sesji</span><span class="sv">${scores.length}</span></div>`;
-  const recent = allSess.slice(-5);
-  const chart = document.getElementById('sum-chart');
-  if (recent.length > 1) {
-    chart.style.display = 'block';
-    const mx = Math.max(...recent.map(s => s.total_score));
-    document.getElementById('sum-bars').innerHTML = recent.map(s => {
-      const pct = mx > 0 ? Math.round(s.total_score / mx * 100) : 0;
-      const lbl = new Date(s.created_at).toLocaleDateString('pl-PL', { day: 'numeric', month: 'short' });
-      return `<div class="brow"><div class="bmeta"><span>${lbl}</span><span>${s.total_score} pkt</span></div>
-        <div class="bbg"><div class="bfill" style="width:${pct}%"></div></div></div>`;
+  const recent=allSess.slice(-5);
+  const chart=document.getElementById('sum-chart');
+  if(recent.length>1){
+    chart.style.display='block';const mx=Math.max(...recent.map(s=>s.total_score));
+    document.getElementById('sum-bars').innerHTML=recent.map(s=>{
+      const pct=mx>0?Math.round(s.total_score/mx*100):0;
+      const lbl=new Date(s.created_at).toLocaleDateString('pl-PL',{day:'numeric',month:'short'});
+      return`<div class="brow"><div class="bmeta"><span>${lbl}</span><span>${s.total_score} pkt</span></div><div class="bbg"><div class="bfill" style="width:${pct}%"></div></div></div>`;
     }).join('');
-  } else chart.style.display = 'none';
+  }else chart.style.display='none';
 }
 
-// ══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 //  HISTORY
-// ══════════════════════════════════════════════════════
-async function renderHistory() {
-  const el = document.getElementById('hist-list');
-  el.innerHTML = '<div class="empty"><div class="spinner" style="margin:30px auto"></div></div>';
-  try {
-    const sessions = await dbGet('sessions',
-      `user_id=eq.${S.user.id}&order=created_at.desc`);
-    const all = sessions || [];
-    if (!all.length) {
-      el.innerHTML = '<div class="empty"><span class="empty-ic">📊</span><div class="empty-t">Brak historii</div><p class="empty-s">Zrób pierwsze ćwiczenie!</p></div>';
-      return;
-    }
-    const grp = {};
-    all.forEach(s => {
-      const day = s.created_at.slice(0, 10);
-      (grp[day] = grp[day] || []).push(s);
-    });
-    el.innerHTML = Object.entries(grp).map(([day, ss]) => {
-      const lbl = new Date(day).toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long' });
-      return `<div style="margin-bottom:18px"><div class="sec" style="margin-top:0">${lbl}</div>
-        ${ss.map(s => `<div class="hi">
-          <div>
-            <div class="hi-d">${new Date(s.created_at).toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' })}</div>
-            <div style="font-size:12px">${s.exercise_name || '—'}</div>
-            <div class="hi-dt">Baza: ${s.base_score} pkt | Bonusy: +${s.bonus_score} pkt</div>
-          </div>
+// ═══════════════════════════════════════════════
+async function renderHistory(){
+  const el=document.getElementById('hist-list');
+  el.innerHTML='<div class="empty"><div class="spinner" style="margin:30px auto"></div></div>';
+  try{
+    const sessions=await dbGet('sessions',`user_id=eq.${S.user.id}&order=created_at.desc`);
+    const all=sessions||[];
+    if(!all.length){el.innerHTML='<div class="empty"><span class="empty-ic">📊</span><div class="empty-t">Brak historii</div></div>';return}
+    const grp={};all.forEach(s=>{const d=s.created_at.slice(0,10);(grp[d]=grp[d]||[]).push(s)});
+    el.innerHTML=Object.entries(grp).map(([day,ss])=>{
+      const lbl=new Date(day).toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long'});
+      return`<div style="margin-bottom:18px"><div class="sec" style="margin-top:0">${lbl}</div>
+        ${ss.map(s=>`<div class="hi">
+          <div><div class="hi-d">${new Date(s.created_at).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})}</div>
+          <div style="font-size:12px">${s.exercise_name||'—'}</div>
+          <div class="hi-dt">Baza: ${s.base_score} pkt | Bonusy: +${s.bonus_score} pkt</div></div>
           <div class="hi-sc">${s.total_score}</div>
-        </div>`).join('')}
-      </div>`;
+        </div>`).join('')}</div>`;
     }).join('');
-  } catch (e) {
-    el.innerHTML = '<div class="empty"><span class="empty-ic">⚠️</span><div class="empty-t">Błąd ładowania</div></div>';
-  }
+  }catch(e){el.innerHTML='<div class="empty"><span class="empty-ic">⚠️</span><div class="empty-t">Błąd ładowania</div></div>';}
 }
 
-// ══════════════════════════════════════════════════════
-//  ADMIN – TABS
-// ══════════════════════════════════════════════════════
-function aTab(t) {
-  document.querySelectorAll('.atab').forEach((el, i) => el.classList.toggle('on', ['exercises', 'leaderboard'][i] === t));
-  document.getElementById('tab-exercises').classList.toggle('on', t === 'exercises');
-  document.getElementById('tab-leaderboard').classList.toggle('on', t === 'leaderboard');
-  if (t === 'leaderboard') renderLB();
+// ═══════════════════════════════════════════════
+//  PROFILE
+// ═══════════════════════════════════════════════
+async function renderProfile(){
+  const u=S.user;
+  // Avatar
+  const avEl=document.getElementById('profile-avatar-big');
+  if(u.avatar_url) avEl.innerHTML=`<img class="avatar-big" src="${u.avatar_url}" alt="avatar"/>`;
+  else avEl.innerHTML=`<div class="avatar-big-placeholder">🎯</div>`;
+  // Pola
+  document.getElementById('p-firstname').value=u.first_name||'';
+  document.getElementById('p-age').value=u.age||'';
+  document.getElementById('p-favplayer').value=u.favorite_player||'';
+  document.getElementById('p-dartbrand').value=u.dart_brand||'';
+  document.getElementById('p-dartweight').value=u.dart_weight||'';
+  // Doubles picker
+  const favDoubles=u.favorite_doubles||[];
+  const dp=document.getElementById('doubles-picker');
+  dp.innerHTML=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,'BULL'].map(d=>{
+    const val=d==='BULL'?25:d;
+    const on=favDoubles.includes(val);
+    return`<button class="dbl-chip${on?' on':''}" onclick="toggleDouble(${val},this)">D${d}</button>`;
+  }).join('');
+  // Stats
+  try{
+    const sessions=await dbGet('sessions',`user_id=eq.${u.id}&select=total_score,exercise_name`);
+    const all=sessions||[];
+    const best=all.length?Math.max(...all.map(s=>s.total_score)):0;
+    document.getElementById('profile-stats').innerHTML=`
+      <div class="profile-stat"><span class="ps-lbl">Pseudonim</span><span class="ps-val">${u.username}</span></div>
+      <div class="profile-stat"><span class="ps-lbl">Sesji treningowych</span><span class="ps-val">${all.length}</span></div>
+      <div class="profile-stat"><span class="ps-lbl">Najlepszy wynik</span><span class="ps-val">${best} pkt</span></div>
+      <div class="profile-stat"><span class="ps-lbl">Streak</span><span class="ps-val">🔥 ${u.streak||0} dni</span></div>`;
+  }catch(e){document.getElementById('profile-stats').innerHTML='<p style="color:var(--muted);font-size:13px">Błąd ładowania statystyk</p>';}
 }
 
-// ══════════════════════════════════════════════════════
-//  ADMIN – NEW EXERCISE
-// ══════════════════════════════════════════════════════
-function selNewType(t) {
-  S.newType = t;
-  document.getElementById('nt-shanghai').classList.toggle('on', t === 'shanghai');
-  document.getElementById('nt-doubles').classList.toggle('on', t === 'doubles');
-  document.getElementById('new-sc-shanghai').style.display = t === 'shanghai' ? 'block' : 'none';
-  document.getElementById('new-sc-doubles').style.display = t === 'doubles' ? 'block' : 'none';
+function toggleDouble(val,btn){
+  let favDoubles=S.user.favorite_doubles||[];
+  if(favDoubles.includes(val)){favDoubles=favDoubles.filter(d=>d!==val);btn.classList.remove('on');}
+  else{favDoubles.push(val);btn.classList.add('on');}
+  S.user.favorite_doubles=favDoubles;
 }
 
-async function addExercise() {
-  const name = document.getElementById('new-nm').value.trim();
-  const desc = document.getElementById('new-ds').value.trim();
-  const rules = document.getElementById('new-rl').value.trim();
-  const tgRaw = document.getElementById('new-tg').value.trim();
-  if (!name) { alert('Wpisz nazwę'); return; }
-  if (!tgRaw) { alert('Wpisz sektory'); return; }
-  const targets = tgRaw.split(',').map(t => {
-    const s = t.trim(); return s === 'BULL' ? 'BULL' : parseInt(s);
-  }).filter(t => t === 'BULL' || !isNaN(t));
-  if (!targets.length) { alert('Nieprawidłowe sektory'); return; }
-
-  let scoring;
-  if (S.newType === 'shanghai') {
-    scoring = {
-      single: +document.getElementById('ns-single').value || 1,
-      double: +document.getElementById('ns-double').value || 2,
-      triple: +document.getElementById('ns-triple').value || 3,
-      shanghaiBonus: +document.getElementById('ns-bonus').value || 100
+async function saveProfile(){
+  loading(true,'Zapisywanie profilu...');
+  try{
+    const payload={
+      first_name:document.getElementById('p-firstname').value.trim()||null,
+      age:+document.getElementById('p-age').value||null,
+      favorite_player:document.getElementById('p-favplayer').value.trim()||null,
+      dart_brand:document.getElementById('p-dartbrand').value.trim()||null,
+      dart_weight:+document.getElementById('p-dartweight').value||null,
+      favorite_doubles:S.user.favorite_doubles||[]
     };
-  } else {
-    scoring = {
-      doubleHit: +document.getElementById('nd-double').value || 50,
-      bullBonus: +document.getElementById('nd-bonus').value || 50
-    };
+    await dbPatch('users',`id=eq.${S.user.id}`,payload);
+    Object.assign(S.user,payload);
+    showToast('✅ Profil zapisany!');
+  }catch(e){alert('Błąd: '+e.message);}
+  finally{loading(false);}
+}
+
+async function handleAvatarUpload(input){
+  const file=input.files[0];if(!file)return;
+  // Walidacja
+  const allowed=['image/jpeg','image/png','image/webp','image/gif'];
+  if(!allowed.includes(file.type)){alert('Dozwolone formaty: JPG, PNG, WebP');input.value='';return}
+  if(file.size>5*1024*1024){alert('Plik za duży! Maksymalnie 5 MB');input.value='';return}
+  loading(true,'Przesyłanie zdjęcia...');
+  try{
+    const ext=file.name.split('.').pop().toLowerCase();
+    const fileName=`${S.user.id}_${Date.now()}.${ext}`;
+    // Upload do Supabase Storage
+    const uploadRes=await fetch(`${SB_URL}/storage/v1/object/avatars/${fileName}`,{
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':file.type},
+      body:file
+    });
+    if(!uploadRes.ok){const e=await uploadRes.json();throw new Error(e.message||'Upload failed');}
+    const avatarUrl=`${SB_URL}/storage/v1/object/public/avatars/${fileName}`;
+    await dbPatch('users',`id=eq.${S.user.id}`,{avatar_url:avatarUrl});
+    S.user.avatar_url=avatarUrl;
+    renderProfile();
+    showToast('✅ Zdjęcie zaktualizowane!');
+  }catch(e){alert('Błąd przesyłania: '+e.message);}
+  finally{loading(false);input.value='';}
+}
+
+// ═══════════════════════════════════════════════
+//  CHECKOUT HINTS — tabela zakończeń
+// ═══════════════════════════════════════════════
+const CHECKOUTS={
+  170:'T20, T20, DB',167:'T20, T19, DB',164:'T20, T18, DB',161:'T20, T17, DB',
+  160:'T20, T20, D20',158:'T20, T20, D19',157:'T20, T19, D20',156:'T20, T20, D18',
+  155:'T20, T19, D19',154:'T20, T18, D20',153:'T20, T19, D18',152:'T20, T20, D16',
+  151:'T20, T17, D20',150:'T20, T18, D18',149:'T20, T19, D16',148:'T20, T16, D20',
+  147:'T19, T18, D18',146:'T20, T18, D16',145:'T20, T15, D20',144:'T18, T18, D18',
+  143:'T20, T17, D16',142:'T20, T14, D20',141:'T17, T18, D18',140:'T20, T20, D10',
+  139:'T19, T14, D20',138:'T20, T18, D12',137:'T19, T20, D10',136:'T20, T20, D8',
+  135:'T17, T20, D12',134:'T20, T14, D16',133:'T20, T11, D20',132:'T20, T12, D18',
+  131:'T20, T17, D10',130:'T20, S20, DB',129:'T19, T12, D18',128:'T18, T14, D16',
+  127:'T20, T17, D8',126:'T19, S19, DB',125:'25, T20, D20',124:'T18, S20, DB',
+  123:'T19, T10, D18',122:'T18, T12, D16',121:'T20, T7, D20',120:'T20, S20, D20',
+  119:'T20, S19, D20',118:'T20, S18, D20',117:'T20, S17, D20',116:'T20, S16, D20',
+  115:'T20, S15, D20',114:'T20, S14, D20',113:'T20, S13, D20',112:'T20, S20, D16',
+  111:'T20, S19, D16',110:'T20, S18, D16',109:'T20, S17, D16',108:'T20, S16, D16',
+  107:'T19, DB',106:'T20, S10, D18',105:'T20, S14, D16',104:'T18, DB',
+  103:'T20, S3, D20',102:'T20, S10, D16',101:'T17, DB',100:'T20, D20',
+  99:'T20, S7, D16',98:'T20, D18',97:'T19, D20',96:'T20, D18',95:'T19, D19',
+  94:'T18, D20',93:'T17, D16',92:'T20, D16',91:'T17, D20',90:'T18, D18',
+  89:'T19, D16',88:'T16, D20',87:'T17, D18',86:'T18, D16',85:'T15, D20',
+  84:'T20, D12',83:'T17, D16',82:'T14, D20',81:'T15, D18',80:'T20, D10',
+  79:'T13, D20',78:'T18, D12',77:'T19, D10',76:'T20, D8',75:'T17, D12',
+  74:'T18, D10',73:'T19, D8',72:'T12, D18',71:'T17, D10',70:'T10, D20',
+  69:'T13, D15',68:'T20, D4',67:'T17, D8',66:'T10, D18',65:'25, D20',
+  64:'T16, D8',63:'T13, D12',62:'T10, D16',61:'25, D18',60:'S20, D20'
+};
+
+function getCheckout(score){return CHECKOUTS[score]||null}
+
+function getFavCheckout(score){
+  // Szukaj zakończenia które zawiera ulubiony double usera
+  const favDoubles=S.user.favorite_doubles||[];
+  if(!favDoubles.length) return null;
+  const checkout=CHECKOUTS[score];
+  if(!checkout) return null;
+  for(const fav of favDoubles){
+    const dStr=fav===25?'DB':`D${fav}`;
+    if(checkout.includes(dStr)) return checkout;
   }
+  // Szukaj alternatywnych zakończeń z ulubionym doublem
+  for(const [sc,co] of Object.entries(CHECKOUTS)){
+    if(+sc===score){
+      for(const fav of favDoubles){
+        const dStr=fav===25?'DB':`D${fav}`;
+        if(co.includes(dStr)) return co;
+      }
+    }
+  }
+  return null;
+}
 
-  const colors = ['c1', 'c2', 'c3', 'c4', 'c5'];
-  const payload = {
-    name, description: desc, type: S.newType,
-    targets: JSON.stringify(targets),
-    throws_per_target: S.newType === 'doubles' ? 1 : 3,
-    color: colors[S.exercises.length % 5],
-    enabled: true,
-    scoring: JSON.stringify(scoring),
-    rules,
-    sort_order: S.exercises.length + 1
-  };
+function renderHint(score){
+  const el=document.getElementById('hint-area');
+  if(score>170||score<=0){el.innerHTML='';return}
+  const checkout=getCheckout(score);
+  const favCo=getFavCheckout(score);
+  if(!checkout){
+    el.innerHTML=`<div class="hint-box"><div class="hint-title">💡 Checkout</div><div class="hint-no">❌ Brak możliwości zakończenia z ${score} pkt</div></div>`;
+    return;
+  }
+  el.innerHTML=`<div class="hint-box">
+    <div class="hint-title">
+      💡 Checkout z ${score} pkt
+      <button class="hint-info-btn" onclick="showAllCheckouts(${score})">ℹ️ wszystkie</button>
+    </div>
+    ${favCo&&favCo!==checkout?`<div class="hint-fav">⭐ Twój ulubiony: ${favCo}</div>`:''}
+    <div class="hint-main">${favCo||checkout}</div>
+  </div>`;
+}
 
-  loading(true, 'Zapisywanie ćwiczenia...');
-  try {
-    await dbPost('exercises', payload);
+function showAllCheckouts(score){
+  const modal=document.getElementById('checkout-modal');
+  const content=document.getElementById('checkout-modal-content');
+  // Pokaż wszystkie checkouty w okolicach aktualnego score
+  const nearby=[];
+  for(let s=Math.min(score+5,170);s>=Math.max(score-20,2);s--){
+    const co=CHECKOUTS[s];
+    if(co) nearby.push({score:s,checkout:co});
+  }
+  const favDoubles=S.user.favorite_doubles||[];
+  content.innerHTML=`<table class="checkout-table">
+    <thead><tr><th>Wynik</th><th>Zakończenie</th></tr></thead>
+    <tbody>${nearby.map(({score:s,checkout:co})=>{
+      const isFav=favDoubles.some(f=>{const d=f===25?'DB':`D${f}`;return co.includes(d);});
+      const isCurrent=s===score;
+      return`<tr class="${isFav?'fav-row':''}" style="${isCurrent?'background:rgba(232,255,71,.05)':''}">
+        <td><strong>${s}</strong>${isCurrent?' ←':''}</td>
+        <td>${co}${isFav?' ⭐':''}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table>`;
+  modal.classList.add('show');
+}
+
+function closeCheckoutModal(e){
+  if(e.target===document.getElementById('checkout-modal'))
+    document.getElementById('checkout-modal').classList.remove('show');
+}
+
+// ═══════════════════════════════════════════════
+//  MATCH 501
+// ═══════════════════════════════════════════════
+let matchRounds=[];
+let npBuffer='';
+
+async function initMatch(){
+  // Szukaj aktywnego meczu
+  try{
+    const matches=await dbGet('matches',`user_id=eq.${S.user.id}&status=eq.active&order=created_at.desc&limit=1`);
+    if(matches&&matches.length){
+      S.match=matches[0];
+      const rounds=await dbGet('match_rounds',`match_id=eq.${S.match.id}&order=round_number.asc`);
+      matchRounds=rounds||[];
+    }else{
+      S.match=null;matchRounds=[];
+    }
+  }catch(e){S.match=null;matchRounds=[];}
+  npBuffer='';
+  renderMatch();
+}
+
+async function newMatch(){
+  if(S.match&&!confirm('Zakończyć aktualny mecz i zacząć nowy?'))return;
+  loading(true,'Tworzenie meczu...');
+  try{
+    if(S.match)await dbPatch('matches',`id=eq.${S.match.id}`,{status:'abandoned'});
+    const res=await dbPost('matches',{user_id:S.user.id,start_score:501,current_score:501,status:'active'});
+    S.match=res[0];matchRounds=[];npBuffer='';
+    renderMatch();
+  }catch(e){alert('Błąd: '+e.message);}
+  finally{loading(false);}
+}
+
+function renderMatch(){
+  const score=S.match?S.match.current_score:501;
+  document.getElementById('match-score').textContent=score;
+  document.getElementById('match-sub').textContent=S.match?`Runda ${matchRounds.length+1}`:'Kliknij "Nowy" aby zacząć mecz';
+  document.getElementById('np-display').textContent=npBuffer||'—';
+  renderHint(score);
+  // Rundy
+  const el=document.getElementById('rounds-list');
+  if(!matchRounds.length){el.innerHTML='<div class="empty"><span class="empty-ic">🏹</span><div class="empty-t">Brak rund</div></div>';return}
+  el.innerHTML=[...matchRounds].reverse().map(r=>`
+    <div class="round-item">
+      <span class="ri-rnd">Runda ${r.round_number}</span>
+      <span class="ri-score" style="color:var(--accent2)">-${r.score_thrown}</span>
+      <span class="ri-after">${r.score_after} pkt</span>
+    </div>`).join('');
+}
+
+function npPress(d){
+  if(!S.match){alert('Najpierw utwórz mecz (kliknij "Nowy")');return}
+  if(npBuffer.length>=3)return;
+  npBuffer+=d;
+  document.getElementById('np-display').textContent=npBuffer;
+}
+function npDel(){npBuffer=npBuffer.slice(0,-1);document.getElementById('np-display').textContent=npBuffer||'—';}
+
+async function npConfirm(){
+  if(!S.match){alert('Najpierw utwórz mecz');return}
+  const thrown=parseInt(npBuffer);
+  if(isNaN(thrown)||thrown<0||thrown>180){alert('Nieprawidłowy wynik (0–180)');npBuffer='';document.getElementById('np-display').textContent='—';return}
+  const current=S.match.current_score;
+  const after=current-thrown;
+  if(after<0){alert(`Przekroczenie! Masz ${current} pkt, nie możesz odliczyć ${thrown}`);npBuffer='';document.getElementById('np-display').textContent='—';return}
+  if(after===1){alert('Wynik 1 jest niemożliwy! Spróbuj mniej.');npBuffer='';document.getElementById('np-display').textContent='—';return}
+  loading(true,'Zapisywanie rundy...');
+  try{
+    const roundNum=matchRounds.length+1;
+    const roundRow=await dbPost('match_rounds',{match_id:S.match.id,round_number:roundNum,score_thrown:thrown,score_after:after});
+    matchRounds.push(roundRow[0]);
+    const newStatus=after===0?'finished':'active';
+    await dbPatch('matches',`id=eq.${S.match.id}`,{current_score:after,status:newStatus});
+    S.match.current_score=after;S.match.status=newStatus;
+    npBuffer='';
+    if(after===0){
+      alert(`🏆 Wygrana! Zakończyłeś mecz w ${roundNum} rundach!`);
+      S.match=null;matchRounds=[];
+    }
+    renderMatch();
+  }catch(e){alert('Błąd: '+e.message);}
+  finally{loading(false);}
+}
+
+// ═══════════════════════════════════════════════
+//  ADMIN
+// ═══════════════════════════════════════════════
+function aTab(t){
+  document.querySelectorAll('.atab').forEach((el,i)=>el.classList.toggle('on',['exercises','leaderboard'][i]===t));
+  document.getElementById('tab-exercises').classList.toggle('on',t==='exercises');
+  document.getElementById('tab-leaderboard').classList.toggle('on',t==='leaderboard');
+  if(t==='leaderboard')renderLB();
+}
+function selNewType(t){
+  S.newType=t;
+  document.getElementById('nt-shanghai').classList.toggle('on',t==='shanghai');
+  document.getElementById('nt-doubles').classList.toggle('on',t==='doubles');
+  initNewRules(t);
+}
+async function addExercise(){
+  const name=document.getElementById('new-nm').value.trim();
+  const desc=document.getElementById('new-ds').value.trim();
+  const rules=document.getElementById('new-rl').value.trim();
+  const tgRaw=document.getElementById('new-tg').value.trim();
+  if(!name){alert('Wpisz nazwę');return}
+  if(!tgRaw){alert('Wpisz sektory');return}
+  const targets=tgRaw.split(',').map(t=>{const s=t.trim();return s==='BULL'?'BULL':parseInt(s)}).filter(t=>t==='BULL'||!isNaN(t));
+  if(!targets.length){alert('Nieprawidłowe sektory');return}
+  if(!NEW_RULES.length){alert('Dodaj co najmniej 1 regułę punktacji');return}
+  const colors=['c1','c2','c3','c4','c5'];
+  loading(true,'Zapisywanie...');
+  try{
+    await dbPost('exercises',{
+      name,description:desc,type:S.newType,
+      targets:JSON.stringify(targets),
+      throws_per_target:S.newType==='doubles'?1:3,
+      color:colors[S.exercises.length%5],enabled:true,
+      scoring:JSON.stringify(NEW_RULES),rules,
+      sort_order:S.exercises.length+1
+    });
     await loadExercises();
-    ['new-nm', 'new-ds', 'new-tg', 'new-rl'].forEach(id => document.getElementById(id).value = '');
-    renderAdminEx();
-    showToast('✅ Ćwiczenie dodane!');
-  } catch (e) {
-    alert('Błąd: ' + e.message);
-  } finally {
-    loading(false);
-  }
+    ['new-nm','new-ds','new-tg','new-rl'].forEach(id=>document.getElementById(id).value='');
+    initNewRules(S.newType);renderAdminEx();showToast('✅ Ćwiczenie dodane!');
+  }catch(e){alert('Błąd: '+e.message);}
+  finally{loading(false);}
 }
 
-// ══════════════════════════════════════════════════════
-//  ADMIN – EDIT LIST
-// ══════════════════════════════════════════════════════
-function renderAdminEx() {
-  document.getElementById('admin-ex-list').innerHTML = S.exercises.map((ex, i) => {
-    const sc = ex.scoring || defaultScoring(ex.type);
-    const scoringHTML = ex.type === 'shanghai' ? `
-      <div class="scoring-panel">
-        <div class="sp-title">⚡ Punktacja – Shanghai</div>
-        <div class="sp-row"><span class="sp-lbl">Single</span><div class="sp-val"><input class="inp inp-num" data-id="${ex.id}" data-sc="single" type="number" value="${sc.single}" min="0"/><span>pkt</span></div></div>
-        <div class="sp-row"><span class="sp-lbl">Double</span><div class="sp-val"><input class="inp inp-num" data-id="${ex.id}" data-sc="double" type="number" value="${sc.double}" min="0"/><span>pkt</span></div></div>
-        <div class="sp-row"><span class="sp-lbl">Treble</span><div class="sp-val"><input class="inp inp-num" data-id="${ex.id}" data-sc="triple" type="number" value="${sc.triple}" min="0"/><span>pkt</span></div></div>
-        <div class="sp-row"><span class="sp-lbl">Bonus Shanghai (S+D+T)</span><div class="sp-val"><input class="inp inp-num" data-id="${ex.id}" data-sc="shanghaiBonus" type="number" value="${sc.shanghaiBonus}" min="0"/><span>pkt</span></div></div>
-      </div>` : `
-      <div class="scoring-panel">
-        <div class="sp-title">⚡ Punktacja – Doublesy</div>
-        <div class="sp-row"><span class="sp-lbl">Za trafiony double / BULL</span><div class="sp-val"><input class="inp inp-num" data-id="${ex.id}" data-sc="doubleHit" type="number" value="${sc.doubleHit}" min="0"/><span>pkt</span></div></div>
-        <div class="sp-row"><span class="sp-lbl">Bonus za BULL</span><div class="sp-val"><input class="inp inp-num" data-id="${ex.id}" data-sc="bullBonus" type="number" value="${sc.bullBonus}" min="0"/><span>pkt</span></div></div>
-      </div>`;
-    return `<div class="ecard" id="ecard-${ex.id}">
+function renderAdminEx(){
+  document.getElementById('admin-ex-list').innerHTML=S.exercises.map((ex,i)=>{
+    const rules=getRules(ex);
+    return`<div class="ecard" id="ecard-${ex.id}">
       <div class="ecard-hdr" onclick="toggleCard('${ex.id}')">
-        <div class="ecard-title"><em>${i + 1}.</em> ${ex.name}</div>
+        <div class="ecard-title"><em>${i+1}.</em> ${ex.name}
+          <span id="saving-dot-${ex.id}" class="saving-dot" style="display:none"></span>
+        </div>
         <div class="ecard-right">
           <label class="tog" onclick="event.stopPropagation()">
-            <input type="checkbox" ${ex.enabled !== false ? 'checked' : ''} onchange="toggleEx('${ex.id}',this.checked)">
+            <input type="checkbox" ${ex.enabled!==false?'checked':''} onchange="toggleEx('${ex.id}',this.checked)">
             <span class="tog-sl"></span>
           </label>
           <span class="chevron" id="chev-${ex.id}">▼</span>
         </div>
       </div>
       <div class="ecard-body" id="ebody-${ex.id}">
-        <div class="erow"><label class="lbl">Nazwa</label><input class="inp" data-id="${ex.id}" data-f="name" value="${ex.name}" oninput="localUpdate(this)"/></div>
-        <div class="erow"><label class="lbl">Opis</label><input class="inp" data-id="${ex.id}" data-f="description" value="${ex.description || ''}" oninput="localUpdate(this)"/></div>
-        <div class="erow"><label class="lbl">Typ</label><div style="font-size:13px;color:var(--muted);padding:8px 0">${ex.type === 'shanghai' ? '🎯 Shanghai (3 lotki / liczba)' : '✌️ Doublesy (1 lotka / double)'}</div></div>
-        <div class="erow"><label class="lbl">Sektory</label><div style="font-size:13px;color:var(--muted);padding:8px 0">${ex.targets.join(', ')}</div></div>
-        ${scoringHTML}
-        <div class="erow"><label class="lbl">Własne zasady (puste = auto)</label><textarea class="inp" data-id="${ex.id}" data-f="rules" rows="2" oninput="localUpdate(this)">${ex.rules || ''}</textarea></div>
-        <div class="erow"><label class="lbl" style="color:var(--muted)">Podgląd auto-zasad:</label>
-          <div id="autorules-${ex.id}" style="font-size:12px;color:var(--muted);background:var(--surface2);border-radius:8px;padding:9px 11px;white-space:pre-line;margin-top:4px">${autoRules(ex)}</div>
+        <div class="erow"><label class="lbl">Nazwa</label>
+          <input class="inp" data-id="${ex.id}" data-f="name" value="${ex.name}" oninput="localUpdate(this);scheduleAutoSave('${ex.id}')"/></div>
+        <div class="erow"><label class="lbl">Opis</label>
+          <input class="inp" data-id="${ex.id}" data-f="description" value="${ex.description||''}" oninput="localUpdate(this);scheduleAutoSave('${ex.id}')"/></div>
+        <div class="erow"><label class="lbl">Typ</label>
+          <div style="font-size:13px;color:var(--muted);padding:8px 0">${ex.type==='shanghai'?'🎯 Shanghai (3 lotki / liczba)':'✌️ Doublesy (1 lotka / double)'}</div></div>
+        <div class="erow"><label class="lbl">Sektory</label>
+          <div style="font-size:13px;color:var(--muted);padding:8px 0">${ex.targets.join(', ')}</div></div>
+        <div class="scoring-panel">
+          <div class="sp-title">⚡ Reguły punktacji
+            <button onclick="addExRule('${ex.id}')">+ Dodaj regułę</button>
+          </div>
+          <div id="rules-list-${ex.id}">${rules.map((r,ri)=>ruleRowHTML(r,ri,ex.id)).join('')}</div>
         </div>
+        <div class="erow"><label class="lbl">Własne zasady (puste = auto)</label>
+          <textarea class="inp" data-id="${ex.id}" data-f="rules" rows="2"
+            oninput="localUpdate(this);scheduleAutoSave('${ex.id}')">${ex.rules||''}</textarea></div>
         <div class="g10" style="margin-top:4px">
-          <button class="block-btn bb-primary" onclick="saveExercise('${ex.id}')">💾 Zapisz zmiany</button>
-          ${S.exercises.length > 1 ? `<button class="block-btn bb-danger" onclick="deleteEx('${ex.id}')">🗑 Usuń ćwiczenie</button>` : ''}
+          ${S.exercises.length>1?`<button class="block-btn bb-danger" onclick="deleteEx('${ex.id}')">🗑 Usuń ćwiczenie</button>`:''}
         </div>
       </div>
     </div>`;
   }).join('');
-
-  // Scoring input live update
-  document.querySelectorAll('[data-sc]').forEach(inp => {
-    inp.addEventListener('input', function () {
-      const ex = S.exercises.find(e => e.id === this.dataset.id);
-      if (!ex) return;
-      if (!ex.scoring) ex.scoring = defaultScoring(ex.type);
-      ex.scoring[this.dataset.sc] = +this.value || 0;
-      const preview = document.getElementById('autorules-' + ex.id);
-      if (preview) preview.textContent = autoRules(ex);
-    });
-  });
 }
 
-function toggleCard(id) {
-  const body = document.getElementById('ebody-' + id);
-  const chev = document.getElementById('chev-' + id);
-  const isOpen = body.classList.contains('open');
-  body.classList.toggle('open', !isOpen);
-  chev.classList.toggle('open', !isOpen);
+function toggleCard(id){
+  const body=document.getElementById('ebody-'+id);const chev=document.getElementById('chev-'+id);
+  const isOpen=body.classList.contains('open');
+  body.classList.toggle('open',!isOpen);chev.classList.toggle('open',!isOpen);
 }
-
-function localUpdate(el) {
-  const ex = S.exercises.find(e => e.id === el.dataset.id);
-  if (ex) ex[el.dataset.f] = el.value;
+function localUpdate(el){const ex=S.exercises.find(e=>e.id===el.dataset.id);if(ex)ex[el.dataset.f]=el.value;}
+async function toggleEx(id,enabled){
+  const ex=S.exercises.find(e=>e.id===id);if(!ex)return;
+  ex.enabled=enabled;
+  try{await dbPatch('exercises',`id=eq.${id}`,{enabled});}catch(e){alert('Błąd: '+e.message);}
 }
-
-async function toggleEx(id, enabled) {
-  const ex = S.exercises.find(e => e.id === id);
-  if (!ex) return;
-  ex.enabled = enabled;
-  try {
-    await dbPatch('exercises', `id=eq.${id}`, { enabled });
-  } catch (e) { alert('Błąd: ' + e.message); }
-}
-
-async function saveExercise(id) {
-  const ex = S.exercises.find(e => e.id === id);
-  if (!ex) return;
-  loading(true, 'Zapisywanie...');
-  try {
-    await dbPatch('exercises', `id=eq.${id}`, {
-      name: ex.name,
-      description: ex.description,
-      rules: ex.rules,
-      scoring: JSON.stringify(ex.scoring),
-      enabled: ex.enabled
-    });
-    showToast('✅ Zapisano!');
-    renderAdminEx();
-  } catch (e) {
-    alert('Błąd: ' + e.message);
-  } finally {
-    loading(false);
-  }
-}
-
-async function saveAll() {
-  loading(true, 'Zapisywanie wszystkiego...');
-  try {
-    for (const ex of S.exercises) {
-      await dbPatch('exercises', `id=eq.${ex.id}`, {
-        name: ex.name,
-        description: ex.description,
-        rules: ex.rules,
-        scoring: JSON.stringify(ex.scoring),
-        enabled: ex.enabled
+async function saveAll(){
+  loading(true,'Zapisywanie...');
+  try{
+    for(const ex of S.exercises){
+      await dbPatch('exercises',`id=eq.${ex.id}`,{
+        name:ex.name,description:ex.description,rules:ex.rules,
+        scoring:JSON.stringify(getRules(ex)),enabled:ex.enabled
       });
     }
-    showToast('✅ Zapisano wszystkie zmiany!');
-    renderAdminEx();
-  } catch (e) {
-    alert('Błąd: ' + e.message);
-  } finally {
-    loading(false);
-  }
+    showToast('✅ Zapisano!');renderAdminEx();
+  }catch(e){alert('Błąd: '+e.message);}
+  finally{loading(false);}
+}
+async function deleteEx(id){
+  if(!confirm('Usunąć to ćwiczenie?'))return;
+  loading(true,'Usuwanie...');
+  try{await dbDelete('exercises',`id=eq.${id}`);await loadExercises();renderAdminEx();showToast('🗑 Usunięto');}
+  catch(e){alert('Błąd: '+e.message);}
+  finally{loading(false);}
 }
 
-async function deleteEx(id) {
-  if (!confirm('Usunąć to ćwiczenie? Tej akcji nie można cofnąć.')) return;
-  loading(true, 'Usuwanie...');
-  try {
-    await dbDelete('exercises', `id=eq.${id}`);
-    await loadExercises();
-    renderAdminEx();
-    showToast('🗑 Usunięto');
-  } catch (e) {
-    alert('Błąd: ' + e.message);
-  } finally {
-    loading(false);
-  }
-}
-
-// ══════════════════════════════════════════════════════
-//  LEADERBOARD
-// ══════════════════════════════════════════════════════
-async function renderLB() {
-  const el = document.getElementById('admin-lb');
-  el.innerHTML = '<div class="empty"><div class="spinner" style="margin:20px auto"></div></div>';
-  try {
-    // Pobierz wszystkich userów + ich najlepszy wynik
-    const users = await dbGet('users', 'is_admin=eq.false&select=id,username,streak');
-    if (!users || !users.length) {
-      el.innerHTML = '<div class="empty"><span class="empty-ic">🏆</span><div class="empty-t">Brak zawodników</div></div>';
-      return;
-    }
-    // Pobierz sesje
-    const sessions = await dbGet('sessions', 'select=user_id,total_score');
-    const sessMap = {};
-    (sessions || []).forEach(s => {
-      if (!sessMap[s.user_id]) sessMap[s.user_id] = { best: 0, count: 0 };
-      sessMap[s.user_id].best = Math.max(sessMap[s.user_id].best, s.total_score);
+async function renderLB(){
+  const el=document.getElementById('admin-lb');
+  el.innerHTML='<div class="empty"><div class="spinner" style="margin:20px auto"></div></div>';
+  try{
+    const users=await dbGet('users','is_admin=eq.false&select=id,username,streak,first_name');
+    if(!users||!users.length){el.innerHTML='<div class="empty"><span class="empty-ic">🏆</span><div class="empty-t">Brak zawodników</div></div>';return}
+    const sessions=await dbGet('sessions','select=user_id,total_score');
+    const sessMap={};
+    (sessions||[]).forEach(s=>{
+      if(!sessMap[s.user_id])sessMap[s.user_id]={best:0,count:0};
+      sessMap[s.user_id].best=Math.max(sessMap[s.user_id].best,s.total_score);
       sessMap[s.user_id].count++;
     });
-    const ranked = users.map(u => ({
-      name: u.username,
-      best: sessMap[u.id]?.best || 0,
-      sessions: sessMap[u.id]?.count || 0,
-      streak: u.streak || 0
-    })).sort((a, b) => b.best - a.best);
-
-    el.innerHTML = ranked.map((r, i) => `
+    const ranked=users.map(u=>({
+      name:u.first_name?`${u.first_name} (${u.username})`:u.username,
+      best:sessMap[u.id]?.best||0,sessions:sessMap[u.id]?.count||0,streak:u.streak||0
+    })).sort((a,b)=>b.best-a.best);
+    el.innerHTML=ranked.map((r,i)=>`
       <div class="lbi">
-        <div class="lb-rank" style="color:${i === 0 ? 'var(--accent)' : i === 1 ? '#bbb' : '#cd7f32'}">${i + 1}</div>
+        <div class="lb-rank" style="color:${i===0?'var(--accent)':i===1?'#bbb':'#cd7f32'}">${i+1}</div>
         <div><div class="lb-nm">${r.name}</div><div class="lb-sub">${r.sessions} sesji | 🔥 ${r.streak} dni</div></div>
         <div class="lb-sc">${r.best}</div>
       </div>`).join('');
-  } catch (e) {
-    el.innerHTML = '<div class="empty"><span class="empty-ic">⚠️</span><div class="empty-t">Błąd ładowania</div></div>';
-  }
+  }catch(e){el.innerHTML='<div class="empty"><span class="empty-ic">⚠️</span><div class="empty-t">Błąd</div></div>';}
 }
 
-// ══════════════════════════════════════════════════════
-//  INIT — ładuj ćwiczenia przy starcie
-// ══════════════════════════════════════════════════════
-(async () => {
-  loading(true, 'Łączenie z bazą...');
-  try {
-    await loadExercises();
-  } catch (e) {
-    console.warn('Nie można załadować ćwiczeń:', e.message);
-  } finally {
-    loading(false);
-    showScreen('login');
-  }
+// ═══════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════
+(async()=>{
+  loading(true,'Łączenie z bazą...');
+  try{await loadExercises();}
+  catch(e){console.warn('Błąd ładowania ćwiczeń:',e.message);}
+  finally{loading(false);showScreen('login');initNewRules('shanghai');}
 })();
 </script>
 </body>
