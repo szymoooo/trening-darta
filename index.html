@@ -253,6 +253,9 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 .empty-ic{font-size:36px;display:block;margin-bottom:10px;opacity:.4}
 .empty-t{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:5px;color:var(--text)}
 .empty-s{font-size:12px;line-height:1.5}
+.match-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.match-type-btn{padding:18px 0;border-radius:var(--r);border:1.5px solid var(--border2);background:var(--surface2);font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent);cursor:pointer;transition:all .15s;text-align:center}
+.match-type-btn:active{transform:scale(.93);background:rgba(232,255,71,.1)}
 
 /* BOTTOM NAV */
 .bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(10,10,15,.96);border-top:1px solid var(--border);display:grid;padding:7px 0 max(7px,env(safe-area-inset-bottom));z-index:50;backdrop-filter:blur(8px)}
@@ -505,6 +508,17 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
       <div class="sec" style="margin-top:4px">Ranking zawodników</div>
       <div id="admin-lb"></div>
     </div>
+  </div>
+</div>
+
+<!-- MATCH START MODAL -->
+<div class="modal-overlay" id="match-modal" onclick="closeMatchModal(event)">
+  <div class="modal-box">
+    <div class="modal-title">
+      🏹 Mecz w dół
+      <button class="modal-close" onclick="document.getElementById('match-modal').classList.remove('show')">×</button>
+    </div>
+    <div id="match-modal-content"></div>
   </div>
 </div>
 
@@ -1120,6 +1134,10 @@ function closeCheckoutModal(e){
   if(e.target===document.getElementById('checkout-modal'))
     document.getElementById('checkout-modal').classList.remove('show');
 }
+function closeMatchModal(e){
+  if(e.target===document.getElementById('match-modal'))
+    document.getElementById('match-modal').classList.remove('show');
+}
 
 // ═══════════════════════════════════════════════
 //  MATCH 501
@@ -1128,31 +1146,74 @@ let matchRounds=[];
 let npBuffer='';
 
 async function initMatch(){
-  // Szukaj aktywnego meczu
+  loading(true,'Sprawdzanie meczu...');
   try{
     const matches=await dbGet('matches',`user_id=eq.${S.user.id}&status=eq.active&order=created_at.desc&limit=1`);
     if(matches&&matches.length){
+      // Jest aktywny mecz - pytaj czy kontynuować
       S.match=matches[0];
       const rounds=await dbGet('match_rounds',`match_id=eq.${S.match.id}&order=round_number.asc`);
       matchRounds=rounds||[];
+      npBuffer='';
+      renderMatch();
+      showMatchPopup(true);
     }else{
-      S.match=null;matchRounds=[];
+      S.match=null;matchRounds=[];npBuffer='';
+      renderMatch();
+      showMatchPopup(false);
     }
-  }catch(e){S.match=null;matchRounds=[];}
-  npBuffer='';
+  }catch(e){S.match=null;matchRounds=[];npBuffer='';renderMatch();showMatchPopup(false);}
+  finally{loading(false);}
+}
+
+function showMatchPopup(hasActive){
+  const modal=document.getElementById('match-modal');
+  const content=document.getElementById('match-modal-content');
+  if(hasActive){
+    const sc=S.match.current_score;
+    const st=S.match.start_score;
+    content.innerHTML=`
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Masz niedokończony mecz ${st} — zostało Ci <strong style="color:var(--accent)">${sc} pkt</strong>.</p>
+      <div class="g10">
+        <button class="block-btn bb-primary" onclick="continueMatch()">▶️ Kontynuuj (${sc} pkt)</button>
+        <div style="text-align:center;font-size:12px;color:var(--muted);margin:4px 0">lub zacznij nowy</div>
+        <div class="match-type-grid">
+          <button class="match-type-btn" onclick="startNewMatch(301)">301</button>
+          <button class="match-type-btn" onclick="startNewMatch(501)">501</button>
+          <button class="match-type-btn" onclick="startNewMatch(701)">701</button>
+        </div>
+      </div>`;
+  }else{
+    content.innerHTML=`
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Wybierz wariant gry:</p>
+      <div class="match-type-grid">
+        <button class="match-type-btn" onclick="startNewMatch(301)">301</button>
+        <button class="match-type-btn" onclick="startNewMatch(501)">501</button>
+        <button class="match-type-btn" onclick="startNewMatch(701)">701</button>
+      </div>`;
+  }
+  modal.classList.add('show');
+}
+
+function continueMatch(){
+  document.getElementById('match-modal').classList.remove('show');
   renderMatch();
 }
 
-async function newMatch(){
-  if(S.match&&!confirm('Zakończyć aktualny mecz i zacząć nowy?'))return;
+async function startNewMatch(startScore){
+  document.getElementById('match-modal').classList.remove('show');
   loading(true,'Tworzenie meczu...');
   try{
-    if(S.match)await dbPatch('matches',`id=eq.${S.match.id}`,{status:'abandoned'});
-    const res=await dbPost('matches',{user_id:S.user.id,start_score:501,current_score:501,status:'active'});
+    if(S.match)await dbPatch('matches',`id=eq.${S.match.id}`,{status:'abandoned',finished_at:new Date().toISOString()});
+    const res=await dbPost('matches',{user_id:S.user.id,start_score:startScore,current_score:startScore,status:'active'});
     S.match=res[0];matchRounds=[];npBuffer='';
     renderMatch();
   }catch(e){alert('Błąd: '+e.message);}
   finally{loading(false);}
+}
+
+async function newMatch(){
+  showMatchPopup(!!S.match);
 }
 
 function renderMatch(){
