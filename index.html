@@ -20,7 +20,7 @@ const manifestData = {
   "name": "DartPro – Trening Darta",
   "short_name": "DartPro",
   "description": "Aplikacja do treningu i śledzenia postępów w darcie",
-  "start_url": "./",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#0a0a0f",
   "theme_color": "#0a0a0f",
@@ -1054,25 +1054,37 @@ async function saveProfile(){
 
 async function handleAvatarUpload(input){
   const file=input.files[0];if(!file)return;
-  // Walidacja
-  const allowed=['image/jpeg','image/png','image/webp','image/gif'];
+  const allowed=['image/jpeg','image/png','image/webp'];
   if(!allowed.includes(file.type)){alert('Dozwolone formaty: JPG, PNG, WebP');input.value='';return}
   if(file.size>5*1024*1024){alert('Plik za duży! Maksymalnie 5 MB');input.value='';return}
   loading(true,'Przesyłanie zdjęcia...');
   try{
-    const ext=file.name.split('.').pop().toLowerCase();
-    const fileName=`${S.user.id}_${Date.now()}.${ext}`;
-    // Upload do Supabase Storage
+    // Zawsze jpeg żeby uniknąć problemów z rozszerzeniem
+    const ext=file.type==='image/png'?'png':'jpg';
+    const fileName=`avatar_${S.user.id}.${ext}`;
+    // Upsert — nadpisuje istniejący plik tego samego użytkownika
     const uploadRes=await fetch(`${SB_URL}/storage/v1/object/avatars/${fileName}`,{
       method:'POST',
-      headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':file.type},
+      headers:{
+        'apikey':SB_KEY,
+        'Authorization':'Bearer '+SB_KEY,
+        'Content-Type':file.type,
+        'x-upsert':'true'
+      },
       body:file
     });
-    if(!uploadRes.ok){const e=await uploadRes.json();throw new Error(e.message||'Upload failed');}
-    const avatarUrl=`${SB_URL}/storage/v1/object/public/avatars/${fileName}`;
-    await dbPatch('users',`id=eq.${S.user.id}`,{avatar_url:avatarUrl});
+    if(!uploadRes.ok){
+      const errData=await uploadRes.json().catch(()=>({}));
+      throw new Error(errData.message||errData.error||`HTTP ${uploadRes.status}`);
+    }
+    // Cache-bust żeby przeglądarka nie pokazywała starego zdjęcia
+    const avatarUrl=`${SB_URL}/storage/v1/object/public/avatars/${fileName}?t=${Date.now()}`;
+    await dbPatch('users',`id=eq.${S.user.id}`,{avatar_url:`${SB_URL}/storage/v1/object/public/avatars/${fileName}`});
     S.user.avatar_url=avatarUrl;
+    // Odśwież avatary wszędzie
     renderProfile();
+    const avEl=document.getElementById('home-avatar');
+    if(avEl)avEl.innerHTML=`<img class="avatar-sm" src="${avatarUrl}" alt="avatar"/>`;
     showToast('✅ Zdjęcie zaktualizowane!');
   }catch(e){alert('Błąd przesyłania: '+e.message);}
   finally{loading(false);input.value='';}
@@ -1082,65 +1094,88 @@ async function handleAvatarUpload(input){
 //  CHECKOUT HINTS — tabela zakończeń
 // ═══════════════════════════════════════════════
 const CHECKOUTS={
-  170:'T20, T20, DB',167:'T20, T19, DB',164:'T20, T18, DB',161:'T20, T17, DB',
-  160:'T20, T20, D20',158:'T20, T20, D19',157:'T20, T19, D20',156:'T20, T20, D18',
-  155:'T20, T19, D19',154:'T20, T18, D20',153:'T20, T19, D18',152:'T20, T20, D16',
-  151:'T20, T17, D20',150:'T20, T18, D18',149:'T20, T19, D16',148:'T20, T16, D20',
-  147:'T19, T18, D18',146:'T20, T18, D16',145:'T20, T15, D20',144:'T18, T18, D18',
-  143:'T20, T17, D16',142:'T20, T14, D20',141:'T17, T18, D18',140:'T20, T20, D10',
-  139:'T19, T14, D20',138:'T20, T18, D12',137:'T19, T20, D10',136:'T20, T20, D8',
-  135:'T17, T20, D12',134:'T20, T14, D16',133:'T20, T11, D20',132:'T20, T12, D18',
-  131:'T20, T17, D10',130:'T20, S20, DB',129:'T19, T12, D18',128:'T18, T14, D16',
-  127:'T20, T17, D8',126:'T19, S19, DB',125:'25, T20, D20',124:'T18, S20, DB',
-  123:'T19, T10, D18',122:'T18, T12, D16',121:'T20, T7, D20',120:'T20, S20, D20',
-  119:'T20, S19, D20',118:'T20, S18, D20',117:'T20, S17, D20',116:'T20, S16, D20',
-  115:'T20, S15, D20',114:'T20, S14, D20',113:'T20, S13, D20',112:'T20, S20, D16',
-  111:'T20, S19, D16',110:'T20, S18, D16',109:'T20, S17, D16',108:'T20, S16, D16',
-  107:'T19, DB',106:'T20, S10, D18',105:'T20, S14, D16',104:'T18, DB',
-  103:'T20, S3, D20',102:'T20, S10, D16',101:'T17, DB',100:'T20, D20',
-  99:'T20, S7, D16',98:'T20, D18',97:'T19, D20',96:'T20, D18',95:'T19, D19',
-  94:'T18, D20',93:'T17, D16',92:'T20, D16',91:'T17, D20',90:'T18, D18',
-  89:'T19, D16',88:'T16, D20',87:'T17, D18',86:'T18, D16',85:'T15, D20',
-  84:'T20, D12',83:'T17, D16',82:'T14, D20',81:'T15, D18',80:'T20, D10',
-  79:'T13, D20',78:'T18, D12',77:'T19, D10',76:'T20, D8',75:'T17, D12',
-  74:'T18, D10',73:'T19, D8',72:'T12, D18',71:'T17, D10',70:'T10, D20',
-  69:'T13, D15',68:'T20, D4',67:'T17, D8',66:'T10, D18',65:'25, D20',
-  64:'T16, D8',63:'T13, D12',62:'T10, D16',61:'25, D18',60:'S20, D20'
+  170:'T20, T20, DB',169:null,168:null,
+  167:'T20, T19, DB',166:null,165:null,
+  164:'T20, T18, DB',163:null,162:null,
+  161:'T20, T17, DB',
+  160:'T20, T20, D20',159:null,
+  158:'T20, T20, D19',157:'T20, T19, D20',156:'T20, T20, D18',
+  155:'T20, T19, D19',154:'T20, T18, D20',153:'T20, T19, D18',
+  152:'T20, T20, D16',151:'T20, T17, D20',150:'T20, T18, D18',
+  149:'T20, T19, D16',148:'T20, T20, D14',147:'T20, T17, D18',
+  146:'T20, T18, D16',145:'T20, T15, D20',144:'T20, T20, D12',
+  143:'T20, T17, D16',142:'T20, T14, D20',141:'T20, T19, D12',
+  140:'T20, T20, D10',139:'T20, T13, D20',138:'T20, T18, D12',
+  137:'T20, T19, D10',136:'T20, T20, D8',135:'T20, T17, D12',
+  134:'T20, T14, D16',133:'T20, T19, D8',132:'T20, T16, D12',
+  131:'T20, T13, D16',130:'T20, T20, D5',129:'T19, T16, D12',
+  128:'T18, T14, D16',127:'T20, T17, D8',126:'T19, T19, D6',
+  125:'DB, T15, D20',124:'T20, T16, D8',123:'T19, T16, D9',
+  122:'T18, T18, D7',121:'T20, T11, D14',120:'T20, 20, D20',
+  119:'T19, 12, D20',118:'T20, 18, D20',117:'T20, 17, D20',
+  116:'T20, 16, D20',115:'T20, 15, D20',114:'T20, 14, D20',
+  113:'T20, 13, D20',112:'T20, 12, D20',111:'T20, 11, D20',
+  110:'T20, 10, D20',109:'T20, 9, D20',108:'T20, 8, D20',
+  107:'T19, 10, D20',106:'T20, 6, D20',105:'T20, 5, D20',
+  104:'T18, 10, D20',103:'T19, 6, D20',102:'T20, 2, D20',
+  101:'T17, 10, D20',100:'T20, D20',
+  99:'T19, 10, D16',98:'T20, D19',97:'T19, D20',96:'T20, D18',
+  95:'T19, D19',94:'T18, D20',93:'T19, D18',92:'T20, D16',
+  91:'T17, D20',90:'T18, D18',89:'T19, D16',88:'T20, D14',
+  87:'T17, D18',86:'T18, D16',85:'T15, D20',84:'T20, D12',
+  83:'T17, D16',82:'DB, D16',81:'T19, D12',80:'T20, D10',
+  79:'T19, D11',78:'T18, D12',77:'T19, D10',76:'T20, D8',
+  75:'T17, D12',74:'T14, D16',73:'T19, D8',72:'T16, D12',
+  71:'T13, D16',70:'T18, D8',69:'T19, D6',68:'T20, D4',
+  67:'T17, D8',66:'T10, D18',65:'T19, D4',64:'T16, D8',
+  63:'T13, D12',62:'T10, D16',61:'T15, D8',
+  60:'20, D20',59:'19, D20',58:'18, D20',57:'17, D20',
+  56:'16, D20',55:'15, D20',54:'14, D20',53:'13, D20',
+  52:'12, D20',51:'11, D20',50:'10, D20',49:'9, D20',
+  48:'16, D16',47:'15, D16',46:'14, D16',45:'13, D16',
+  44:'12, D16',43:'11, D16',42:'10, D16',41:'9, D16',
+  40:'D20',38:'D19',36:'D18',34:'D17',32:'D16',
+  30:'D15',28:'D14',26:'D13',24:'D12',22:'D11',
+  20:'D10',18:'D9',16:'D8',14:'D7',12:'D6',
+  10:'D5',8:'D4',6:'D3',4:'D2',2:'D1'
 };
 
-function getCheckout(score){return CHECKOUTS[score]||null}
+function getCheckout(score){
+  if(score in CHECKOUTS) return CHECKOUTS[score]; // null means explicitly no checkout
+  return undefined; // not in table = score too high or odd number not mapped
+}
 
 function getFavCheckout(score){
-  // Szukaj zakończenia które zawiera ulubiony double usera
   const favDoubles=S.user.favorite_doubles||[];
   if(!favDoubles.length) return null;
   const checkout=CHECKOUTS[score];
-  if(!checkout) return null;
+  if(!checkout) return null; // null or undefined
   for(const fav of favDoubles){
     const dStr=fav===25?'DB':`D${fav}`;
     if(checkout.includes(dStr)) return checkout;
-  }
-  // Szukaj alternatywnych zakończeń z ulubionym doublem
-  for(const [sc,co] of Object.entries(CHECKOUTS)){
-    if(+sc===score){
-      for(const fav of favDoubles){
-        const dStr=fav===25?'DB':`D${fav}`;
-        if(co.includes(dStr)) return co;
-      }
-    }
   }
   return null;
 }
 
 function renderHint(score){
   const el=document.getElementById('hint-area');
-  if(score>170||score<=0){el.innerHTML='';return}
+  if(score>170||score<=1){el.innerHTML='';return}
   const checkout=getCheckout(score);
-  const favCo=getFavCheckout(score);
-  if(!checkout){
-    el.innerHTML=`<div class="hint-box"><div class="hint-title">💡 Checkout</div><div class="hint-no">❌ Brak możliwości zakończenia z ${score} pkt</div></div>`;
+  // null = explicitly no checkout, undefined = not in table
+  if(checkout===null){
+    el.innerHTML=`<div class="hint-box"><div class="hint-title">💡 Checkout</div><div class="hint-no">❌ Brak możliwości zakończenia z ${score} pkt w 3 rzutach</div></div>`;
     return;
   }
+  if(checkout===undefined){
+    // Nieparzysta liczba niepokryta tabelą — brak standardowego checkoutu
+    if(score%2!==0&&score<40){
+      el.innerHTML=`<div class="hint-box"><div class="hint-title">💡 Checkout</div><div class="hint-no">⚠️ Nieparzysta liczba — najpierw wbij single aby zejść na parzyste</div></div>`;
+    }else{
+      el.innerHTML='';
+    }
+    return;
+  }
+  const favCo=getFavCheckout(score);
   el.innerHTML=`<div class="hint-box">
     <div class="hint-title">
       💡 Checkout z ${score} pkt
