@@ -286,6 +286,14 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 .match-type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .match-type-btn{padding:18px 0;border-radius:var(--r);border:1.5px solid var(--border2);background:var(--surface2);font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--accent);cursor:pointer;transition:all .15s;text-align:center}
 .match-type-btn:active{transform:scale(.93);background:rgba(232,255,71,.1)}
+.mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:14px}
+.mode-btn{padding:10px;text-align:center;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;font-family:"DM Sans",sans-serif;transition:all .15s}
+.mode-btn.on{background:var(--accent);color:#0a0a0f;font-weight:700}
+.throw-counter{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+.throw-dot{width:10px;height:10px;border-radius:50%;background:var(--border2);transition:all .2s}
+.throw-dot.done{background:var(--accent)}
+.throw-dot.current{background:var(--accent2);transform:scale(1.3)}
+.single-throw-pts{font-family:"Syne",sans-serif;font-size:13px;font-weight:700;color:var(--muted);text-align:center;margin-bottom:6px}
 
 /* BOTTOM NAV */
 .bnav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:rgba(10,10,15,.96);border-top:1px solid var(--border);display:grid;padding:7px 0 max(7px,env(safe-area-inset-bottom));z-index:50;backdrop-filter:blur(8px)}
@@ -438,6 +446,20 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
       <div class="erow" style="margin-bottom:0"><label class="lbl">Waga lotek (g)</label><input class="inp" id="p-dartweight" type="number" placeholder="np. 22" min="12" max="50" step="0.5"/></div>
     </div>
 
+    <div class="sec">Tryb wprowadzania wyników w meczu</div>
+    <div class="card">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Wybierz jak chcesz wpisywać wyniki podczas gry 501/301/701.</p>
+      <div class="mode-toggle" id="p-mode-toggle">
+        <button class="mode-btn on" id="p-mode-series" onclick="selectInputMode('series')">
+          📊 Co seria<br><span style="font-size:11px;opacity:.7">suma 3 rzutów</span>
+        </button>
+        <button class="mode-btn" id="p-mode-single" onclick="selectInputMode('single')">
+          🎯 Co rzut<br><span style="font-size:11px;opacity:.7">każda lotka osobno</span>
+        </button>
+      </div>
+      <p id="p-mode-desc" style="font-size:12px;color:var(--muted);margin-top:8px">Wpisujesz łączny wynik po 3 rzutach.</p>
+    </div>
+
     <div class="sec">Ulubione zakończenia (double)</div>
     <div class="card">
       <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Wybierz swoje ulubione double — będą podpowiadane podczas meczu gdy masz szansę na checkout.</p>
@@ -469,6 +491,16 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 
     <div id="hint-area"></div>
 
+    <div id="throw-counter-wrap" style="display:none">
+      <div class="single-throw-pts" id="single-throw-pts">Rzut 1 z 3</div>
+      <div class="throw-counter">
+        <div class="throw-dot current" id="tdot-0"></div>
+        <div class="throw-dot" id="tdot-1"></div>
+        <div class="throw-dot" id="tdot-2"></div>
+      </div>
+      <div id="single-throws-preview" style="display:flex;gap:8px;justify-content:center;margin-bottom:8px;font-size:13px;color:var(--muted)"></div>
+    </div>
+
     <div class="np-input-display" id="np-display">—</div>
     <div class="numpad">
       <button class="np-btn" onclick="npPress('1')">1</button>
@@ -482,7 +514,7 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
       <button class="np-btn" onclick="npPress('9')">9</button>
       <button class="np-btn del" onclick="npDel()">⌫</button>
       <button class="np-btn" onclick="npPress('0')">0</button>
-      <button class="np-btn ok" onclick="npConfirm()">✓</button>
+      <button class="np-btn ok" id="np-ok-btn" onclick="npConfirm()">✓</button>
     </div>
 
     <div class="sec">Historia rund</div>
@@ -548,6 +580,20 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
       <button class="modal-close" onclick="document.getElementById('match-modal').classList.remove('show')">×</button>
     </div>
     <div id="match-modal-content"></div>
+  </div>
+</div>
+
+<!-- MATCH TOOLTIP -->
+<div class="match-tooltip" id="match-tooltip" style="display:none">
+  <div class="tooltip-title">
+    💡 Jak wpisywać wyniki?
+    <button class="tooltip-close" onclick="dismissTooltip()">×</button>
+  </div>
+  <div class="tooltip-body">
+    <strong>Seria = suma 3 rzutów.</strong><br>
+    Przykład: wbijasz 20, T20, 5 → wpisujesz <strong>85</strong> i potwierdzasz.<br><br>
+    Aplikacja odlicza od Twojego wyniku i pokazuje checkout gdy możesz kończyć.
+    <span class="tooltip-link" onclick="dismissTooltip();goTab('profile')">⚙️ Chcesz wpisywać każdy rzut osobno? Zmień w Profilu →</span>
   </div>
 </div>
 
@@ -792,6 +838,11 @@ function showScreen(name){
 
 async function goTab(tab){
   const screen=tab==='home'?'home':tab==='history'?'history':tab==='profile'?'profile':tab==='match'?'match':'home';
+  // Ukryj tooltip gdy wychodzi z meczu
+  if(tab!=='match'){
+    const tt=document.getElementById('match-tooltip');
+    if(tt) tt.style.display='none';
+  }
   showScreen(screen);
   resetInactivityTimer();
   if(tab==='home')await renderHome();
@@ -1006,6 +1057,9 @@ async function renderProfile(){
   document.getElementById('p-favplayer').value=u.favorite_player||'';
   document.getElementById('p-dartbrand').value=u.dart_brand||'';
   document.getElementById('p-dartweight').value=u.dart_weight||'';
+  // Input mode
+  const mode=u.input_mode||'series';
+  selectInputMode(mode,false);
   // Doubles picker
   const favDoubles=u.favorite_doubles||[];
   const dp=document.getElementById('doubles-picker');
@@ -1034,6 +1088,18 @@ function toggleDouble(val,btn){
   S.user.favorite_doubles=favDoubles;
 }
 
+function selectInputMode(mode, updateUser=true){
+  S.user.input_mode=mode;
+  document.getElementById('p-mode-series')?.classList.toggle('on',mode==='series');
+  document.getElementById('p-mode-single')?.classList.toggle('on',mode==='single');
+  const desc=document.getElementById('p-mode-desc');
+  if(desc){
+    desc.textContent=mode==='series'
+      ?'Wpisujesz łączny wynik po 3 rzutach (np. 60, 100, 45...).'
+      :'Wpisujesz wynik każdej lotki osobno — aplikacja sumuje po 3 rzutach.';
+  }
+}
+
 async function saveProfile(){
   loading(true,'Zapisywanie profilu...');
   try{
@@ -1043,7 +1109,8 @@ async function saveProfile(){
       favorite_player:document.getElementById('p-favplayer').value.trim()||null,
       dart_brand:document.getElementById('p-dartbrand').value.trim()||null,
       dart_weight:+document.getElementById('p-dartweight').value||null,
-      favorite_doubles:S.user.favorite_doubles||[]
+      favorite_doubles:S.user.favorite_doubles||[],
+      input_mode:S.user.input_mode||'series'
     };
     await dbPatch('users',`id=eq.${S.user.id}`,payload);
     Object.assign(S.user,payload);
@@ -1224,6 +1291,24 @@ function closeMatchModal(e){
 // ═══════════════════════════════════════════════
 let matchRounds=[];
 let npBuffer='';
+let singleThrows=[]; // dla trybu "co rzut" — przechowuje max 3 rzuty
+
+const TOOLTIP_KEY='dartpro_tooltip_shown';
+
+function showMatchTooltip(){
+  if(localStorage.getItem(TOOLTIP_KEY)) return; // już widzieli
+  const el=document.getElementById('match-tooltip');
+  if(el) el.style.display='block';
+}
+
+function dismissTooltip(){
+  localStorage.setItem(TOOLTIP_KEY,'1');
+  const el=document.getElementById('match-tooltip');
+  if(el){
+    el.style.animation='slideUp .2s ease reverse';
+    setTimeout(()=>el.style.display='none',200);
+  }
+}
 
 async function initMatch(){
   loading(true,'Sprawdzanie meczu...');
@@ -1277,7 +1362,9 @@ function showMatchPopup(hasActive){
 
 function continueMatch(){
   document.getElementById('match-modal').classList.remove('show');
+  singleThrows=[];npBuffer='';
   renderMatch();
+  setTimeout(showMatchTooltip, 400);
 }
 
 async function startNewMatch(startScore){
@@ -1286,8 +1373,9 @@ async function startNewMatch(startScore){
   try{
     if(S.match)await dbPatch('matches',`id=eq.${S.match.id}`,{status:'abandoned',finished_at:new Date().toISOString()});
     const res=await dbPost('matches',{user_id:S.user.id,start_score:startScore,current_score:startScore,status:'active'});
-    S.match=res[0];matchRounds=[];npBuffer='';
+    S.match=res[0];matchRounds=[];npBuffer='';singleThrows=[];
     renderMatch();
+    setTimeout(showMatchTooltip, 400);
   }catch(e){alert('Błąd: '+e.message);}
   finally{loading(false);}
 }
@@ -1298,9 +1386,26 @@ async function newMatch(){
 
 function renderMatch(){
   const score=S.match?S.match.current_score:501;
+  const mode=S.user?.input_mode||'series';
   document.getElementById('match-score').textContent=score;
-  document.getElementById('match-sub').textContent=S.match?`Runda ${matchRounds.length+1}`:'Kliknij "Nowy" aby zacząć mecz';
+  document.getElementById('match-sub').textContent=S.match
+    ?(mode==='single'?`Runda ${matchRounds.length+1} – rzut ${singleThrows.length+1}/3`:`Runda ${matchRounds.length+1}`)
+    :'Kliknij "Nowy" aby zacząć mecz';
   document.getElementById('np-display').textContent=npBuffer||'—';
+  // Pokaż counter rzutów w trybie single
+  const tcWrap=document.getElementById('throw-counter-wrap');
+  if(tcWrap) tcWrap.style.display=(mode==='single'&&S.match)?'block':'none';
+  if(mode==='single'&&S.match){
+    const pts=document.getElementById('single-throw-pts');
+    if(pts) pts.textContent=`Rzut ${singleThrows.length+1} z 3`;
+    [0,1,2].forEach(i=>{
+      const dot=document.getElementById('tdot-'+i);
+      if(!dot)return;
+      dot.className='throw-dot'+(i<singleThrows.length?' done':i===singleThrows.length?' current':'');
+    });
+    const prev=document.getElementById('single-throws-preview');
+    if(prev) prev.innerHTML=singleThrows.map((v,i)=>`<span style="color:var(--accent);font-weight:700">${v}</span>`).join('<span style="color:var(--muted)"> + </span>');
+  }
   renderHint(score);
   // Rundy
   const el=document.getElementById('rounds-list');
@@ -1310,40 +1415,98 @@ function renderMatch(){
       <span class="ri-rnd">Runda ${r.round_number}</span>
       <span class="ri-score" style="color:var(--accent2)">-${r.score_thrown}</span>
       <span class="ri-after">${r.score_after} pkt</span>
+      ${r.throws?`<span style="font-size:11px;color:var(--muted)">${r.throws.join(' + ')}</span>`:''}
     </div>`).join('');
 }
 
 function npPress(d){
   if(!S.match){alert('Najpierw utwórz mecz (kliknij "Nowy")');return}
-  if(npBuffer.length>=3)return;
+  const mode=S.user?.input_mode||'series';
+  const maxLen=mode==='single'?2:3; // single: max 60 (2 cyfry), series: max 180 (3 cyfry)
+  if(npBuffer.length>=maxLen)return;
   npBuffer+=d;
   document.getElementById('np-display').textContent=npBuffer;
 }
-function npDel(){npBuffer=npBuffer.slice(0,-1);document.getElementById('np-display').textContent=npBuffer||'—';}
+
+function npDel(){
+  npBuffer=npBuffer.slice(0,-1);
+  document.getElementById('np-display').textContent=npBuffer||'—';
+}
 
 async function npConfirm(){
   if(!S.match){alert('Najpierw utwórz mecz');return}
-  const thrown=parseInt(npBuffer);
-  if(isNaN(thrown)||thrown<0||thrown>180){alert('Nieprawidłowy wynik (0–180)');npBuffer='';document.getElementById('np-display').textContent='—';return}
+  const mode=S.user?.input_mode||'series';
+  const val=parseInt(npBuffer);
+
+  if(isNaN(val)||val<0){
+    alert('Wpisz wynik rzutu');npBuffer='';
+    document.getElementById('np-display').textContent='—';return;
+  }
+
+  if(mode==='single'){
+    // Tryb co rzut — max 60 za jeden rzut (T20)
+    if(val>60){alert('Maksymalny wynik 1 rzutu to 60 (T20)');npBuffer='';document.getElementById('np-display').textContent='—';return}
+    singleThrows.push(val);
+    npBuffer='';
+    document.getElementById('np-display').textContent='—';
+
+    if(singleThrows.length<3){
+      // Sprawdź czy po tym rzucie można jeszcze grać
+      const partialSum=singleThrows.reduce((a,b)=>a+b,0);
+      const current=S.match.current_score;
+      if(current-partialSum<0){
+        alert(`Przekroczenie po ${singleThrows.length} rzutach! Seria przepada.`);
+        singleThrows=[];renderMatch();return;
+      }
+      renderMatch();return; // czekaj na kolejny rzut
+    }
+
+    // 3 rzuty — zapisz serię
+    const thrown=singleThrows.reduce((a,b)=>a+b,0);
+    const throwsSnapshot=[...singleThrows];
+    singleThrows=[];
+    await saveRound(thrown, throwsSnapshot);
+
+  }else{
+    // Tryb co seria
+    if(val>180){alert('Maksymalny wynik serii to 180');npBuffer='';document.getElementById('np-display').textContent='—';return}
+    npBuffer='';
+    await saveRound(val, null);
+  }
+}
+
+async function saveRound(thrown, throwsArr){
   const current=S.match.current_score;
   const after=current-thrown;
-  if(after<0){alert(`Przekroczenie! Masz ${current} pkt, nie możesz odliczyć ${thrown}`);npBuffer='';document.getElementById('np-display').textContent='—';return}
-  if(after===1){alert('Wynik 1 jest niemożliwy! Spróbuj mniej.');npBuffer='';document.getElementById('np-display').textContent='—';return}
+  if(after<0){
+    alert(`Przekroczenie! Masz ${current} pkt, wynik serii ${thrown} za duży.`);
+    singleThrows=[];renderMatch();return;
+  }
+  if(after===1){
+    alert('Wynik 1 jest niemożliwy do zakończenia! Seria przepada — wpisz mniej.');
+    singleThrows=[];renderMatch();return;
+  }
   loading(true,'Zapisywanie rundy...');
   try{
     const roundNum=matchRounds.length+1;
-    const roundRow=await dbPost('match_rounds',{match_id:S.match.id,round_number:roundNum,score_thrown:thrown,score_after:after});
-    matchRounds.push(roundRow[0]);
+    const roundData={match_id:S.match.id,round_number:roundNum,score_thrown:thrown,score_after:after};
+    const roundRow=await dbPost('match_rounds',roundData);
+    const savedRound={...roundRow[0]};
+    if(throwsArr) savedRound.throws=throwsArr; // lokalnie dla wyświetlania
+    matchRounds.push(savedRound);
     const newStatus=after===0?'finished':'active';
-    await dbPatch('matches',`id=eq.${S.match.id}`,{current_score:after,status:newStatus});
+    await dbPatch('matches',`id=eq.${S.match.id}`,{current_score:after,status:newStatus,finished_at:after===0?new Date().toISOString():null});
     S.match.current_score=after;S.match.status=newStatus;
-    npBuffer='';
     if(after===0){
-      alert(`🏆 Wygrana! Zakończyłeś mecz w ${roundNum} rundach!`);
-      S.match=null;matchRounds=[];
+      renderMatch();
+      setTimeout(()=>{
+        alert(`🏆 Wygrana! Zakończyłeś mecz w ${roundNum} rundach!`);
+        S.match=null;matchRounds=[];singleThrows=[];renderMatch();
+      },300);
+      return;
     }
     renderMatch();
-  }catch(e){alert('Błąd: '+e.message);}
+  }catch(e){alert('Błąd: '+e.message);singleThrows=[];}
   finally{loading(false);}
 }
 
