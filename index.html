@@ -20,7 +20,7 @@ const manifestData = {
   "name": "DartPro – Trening Darta",
   "short_name": "DartPro",
   "description": "Aplikacja do treningu i śledzenia postępów w darcie",
-  "start_url": ".",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0a0a0f",
   "theme_color": "#0a0a0f",
@@ -34,7 +34,6 @@ const manifestBlob = new Blob([JSON.stringify(manifestData)], {type:'application
 const manifestURL = URL.createObjectURL(manifestBlob);
 document.getElementById('pwa-manifest').setAttribute('href', manifestURL);
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -2034,6 +2033,270 @@ async function renderLB(){
 //  INIT
 // ═══════════════════════════════════════════════
 // ═══════════════════════════════════════════════
+//  MULTIPLAYER
+// ═══════════════════════════════════════════════
+let MP={room:null,isHost:false,myThrows:[],npBuffer:'',_pollInterval:null};
+let mpSelectedScore=501;
+
+function initMpLobby(){
+  document.getElementById('create-room-card').style.display='block';
+  document.getElementById('waiting-card').style.display='none';
+  document.getElementById('guest-waiting-card').style.display='none';
+  document.getElementById('join-code-input').value='';
+  MP.npBuffer='';MP.myThrows=[];
+  if(MP.room&&MP.room.status==='active'){showScreen('mp-game');renderMpGame();}
+  else if(MP.room&&MP.room.status==='waiting'&&MP.isHost){showWaitingCard();}
+}
+
+function selectMpScore(score){
+  mpSelectedScore=score;
+  [301,501,701].forEach(s=>{
+    const btn=document.getElementById('mp-'+s);
+    if(btn){btn.style.borderColor=s===score?'var(--accent)':'';btn.style.background=s===score?'rgba(232,255,71,.08)':'';}
+  });
+}
+
+async function createRoom(){
+  loading(true,'Tworzenie pokoju...');
+  try{
+    // Generate unique code
+    let code='';
+    const chars='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    for(let i=0;i<4;i++) code+=chars[Math.floor(Math.random()*chars.length)];
+    // Check uniqueness
+    const existing=await dbGet('rooms',`code=eq.${code}&status=in.(waiting,active)`);
+    if(existing&&existing.length) code+=chars[Math.floor(Math.random()*chars.length)];
+    const rows=await dbPost('rooms',{
+      code,host_id:S.user.id,
+      host_name:S.user.first_name||S.user.username,
+      start_score:mpSelectedScore,host_score:mpSelectedScore,
+      guest_score:mpSelectedScore,status:'waiting'
+    });
+    MP.room=rows[0];MP.isHost=true;
+    showWaitingCard();
+    startPolling(MP.room.id);
+  }catch(e){await caAlert(e.message,'❌','Błąd tworzenia pokoju');}
+  finally{loading(false);}
+}
+
+function showWaitingCard(){
+  document.getElementById('create-room-card').style.display='none';
+  document.getElementById('waiting-card').style.display='block';
+  document.getElementById('guest-waiting-card').style.display='none';
+  document.getElementById('room-code-display').textContent=MP.room.code;
+}
+
+async function copyRoomCode(){
+  try{await navigator.clipboard.writeText(MP.room.code);showToast('📋 Kod '+MP.room.code+' skopiowany!');}
+  catch{showToast('Kod: '+MP.room.code);}
+}
+
+async function cancelRoom(){
+  if(!MP.room)return;
+  loading(true,'Anulowanie...');
+  try{await dbPatch('rooms',`id=eq.${MP.room.id}`,{status:'abandoned'});stopPolling();MP.room=null;MP.isHost=false;initMpLobby();}
+  catch(e){await caAlert(e.message,'❌','Błąd');}
+  finally{loading(false);}
+}
+
+async function joinRoom(){
+  const code=document.getElementById('join-code-input').value.trim().toUpperCase();
+  if(code.length!==4){await caAlert('Wpisz 4-literowy kod pokoju.','❓','Brak kodu');return}
+  loading(true,'Szukam pokoju...');
+  try{
+    const rooms=await dbGet('rooms',`code=eq.${code}&status=eq.waiting`);
+    if(!rooms||!rooms.length){await caAlert('Pokój '+code+' nie istnieje lub gra już się rozpoczęła.','🔍','Nie znaleziono');return}
+    const room=rooms[0];
+    if(room.host_id===S.user.id){await caAlert('Nie możesz dołączyć do własnego pokoju.','😅','Błąd');return}
+    const updated=await dbPatch('rooms',`id=eq.${room.id}`,{
+      guest_id:S.user.id,guest_name:S.user.first_name||S.user.username,
+      status:'active',current_turn:room.host_id
+    });
+    MP.room=updated[0];MP.isHost=false;
+    document.getElementById('create-room-card').style.display='none';
+    document.getElementById('guest-waiting-card').style.display='block';
+    document.getElementById('guest-waiting-msg').textContent='Połączono z '+MP.room.host_name+'!';
+    startPolling(MP.room.id);
+    setTimeout(()=>{showScreen('mp-game');renderMpGame();},800);
+  }catch(e){await caAlert(e.message,'❌','Błąd');}
+  finally{loading(false);}
+}
+
+function leaveLobby(){
+  if(MP.room&&MP.room.status==='waiting'&&MP.isHost){cancelRoom();return;}
+  stopPolling();MP.room=null;goTab('home');
+}
+
+// ── POLLING ──
+function startPolling(roomId){
+  stopPolling();
+  MP._pollInterval=setInterval(async()=>{
+    try{
+      const rows=await dbGet('rooms',`id=eq.${roomId}`);
+      if(rows&&rows[0]) onRoomChange(rows[0]);
+    }catch{}
+  },1500);
+}
+function stopPolling(){
+  if(MP._pollInterval){clearInterval(MP._pollInterval);MP._pollInterval=null;}
+}
+
+function onRoomChange(room){
+  if(!room)return;
+  const prev=MP.room;
+  MP.room=room;
+  if(room.status==='finished'){onMpGameFinished(room);return;}
+  const lobbyActive=document.getElementById('screen-mp-lobby').classList.contains('active');
+  if(room.status==='active'&&lobbyActive&&MP.isHost){
+    stopPolling();startPolling(room.id);
+    showScreen('mp-game');renderMpGame();return;
+  }
+  if(document.getElementById('screen-mp-game').classList.contains('active')) renderMpGame();
+}
+
+// ── GAME ──
+function renderMpGame(){
+  if(!MP.room)return;
+  const room=MP.room,myId=S.user.id,isHost=room.host_id===myId;
+  const myScore=isHost?room.host_score:room.guest_score;
+  const theirScore=isHost?room.guest_score:room.host_score;
+  const myName=(isHost?room.host_name:room.guest_name)||'Ja';
+  const theirName=(isHost?room.guest_name:room.host_name)||'Przeciwnik';
+  const isMyTurn=room.current_turn===myId;
+  document.getElementById('mp-game-title').textContent=room.start_score+' Online';
+  document.getElementById('mp-room-code-hdr').textContent='#'+room.code;
+  document.getElementById('mp-my-name').textContent=myName+' (Ty)';
+  document.getElementById('mp-their-name').textContent=theirName;
+  const mySc=document.getElementById('mp-my-score');
+  const thSc=document.getElementById('mp-their-score');
+  mySc.textContent=myScore;thSc.textContent=theirScore;
+  mySc.className='vs-player-score me'+(myScore<=170?' danger':'');
+  thSc.className='vs-player-score them'+(theirScore<=170?' danger':'');
+  const turnEl=document.getElementById('mp-turn-info');
+  const overlay=document.getElementById('mp-numpad-overlay');
+  if(isMyTurn){
+    turnEl.className='vs-turn my-turn';turnEl.textContent='🟢 Twoja tura!';
+    overlay.style.display='none';renderMpHint(myScore);
+  }else{
+    turnEl.className='vs-turn their-turn';turnEl.textContent='⏳ Tura '+theirName+'...';
+    overlay.style.display='flex';
+    document.getElementById('mp-overlay-msg').textContent='Tura '+theirName+'...';
+    document.getElementById('mp-hint-area').innerHTML='';
+  }
+  const mode=S.user?.input_mode||'series';
+  const tcWrap=document.getElementById('mp-throw-counter-wrap');
+  if(tcWrap) tcWrap.style.display=(mode==='single'&&isMyTurn)?'block':'none';
+  if(mode==='single'&&isMyTurn){
+    document.getElementById('mp-throw-label').textContent='Rzut '+(MP.myThrows.length+1)+' z 3';
+    [0,1,2].forEach(i=>{
+      const dot=document.getElementById('mp-tdot-'+i);
+      if(dot) dot.className='throw-dot'+(i<MP.myThrows.length?' done':i===MP.myThrows.length?' current':'');
+    });
+  }
+  document.getElementById('mp-np-display').textContent=MP.npBuffer||'—';
+  renderMpRounds(myId);
+}
+
+async function renderMpRounds(myId){
+  const el=document.getElementById('mp-rounds-list');
+  if(!MP.room){el.innerHTML='';return}
+  try{
+    const rounds=await dbGet('room_rounds',`room_id=eq.${MP.room.id}&order=created_at.desc&limit=10`);
+    if(!rounds||!rounds.length){el.innerHTML='<div class="empty"><span class="empty-ic">🏹</span><div class="empty-t">Brak rund</div></div>';return}
+    el.innerHTML=rounds.map(r=>{
+      const isMe=r.player_id===myId;
+      return`<div class="room-round-item"><div><div class="rri-name">${r.player_name||'?'} · Runda ${r.round_number}</div></div><div style="text-align:right"><div class="rri-score ${isMe?'me':'them'}">-${r.score_thrown}</div><div style="font-size:11px;color:var(--muted)">${r.score_after} pkt</div></div></div>`;
+    }).join('');
+  }catch{}
+}
+
+function renderMpHint(score){
+  const el=document.getElementById('mp-hint-area');
+  if(!el||score>170||score<=1){if(el)el.innerHTML='';return}
+  const checkout=getCheckout(score);
+  if(checkout===null){el.innerHTML=`<div class="hint-box"><div class="hint-title">💡 Checkout</div><div class="hint-no">❌ Brak możliwości z ${score} pkt</div></div>`;return}
+  if(!checkout){el.innerHTML='';return}
+  const favCo=getFavCheckout(score);
+  el.innerHTML=`<div class="hint-box"><div class="hint-title">💡 Checkout z ${score} pkt <button class="hint-info-btn" onclick="showAllCheckouts(${score})">ℹ️</button></div>${favCo&&favCo!==checkout?`<div class="hint-fav">⭐ ${favCo}</div>`:''}<div class="hint-main">${favCo||checkout}</div></div>`;
+}
+
+// ── MULTIPLAYER NUMPAD ──
+function mpNpPress(d){
+  const mode=S.user?.input_mode||'series';
+  const maxLen=mode==='single'?2:3;
+  if(MP.npBuffer.length>=maxLen)return;
+  const candidate=MP.npBuffer+d,val=parseInt(candidate);
+  if(mode==='single'&&val>60){const disp=document.getElementById('mp-np-display');disp.style.color='var(--danger)';setTimeout(()=>disp.style.color='',600);showToast('⚠️ Max 60 pkt na rzut');return;}
+  if(mode!=='single'&&val>180){const disp=document.getElementById('mp-np-display');disp.style.color='var(--danger)';setTimeout(()=>disp.style.color='',600);showToast('⚠️ Max 180 pkt na serię');return;}
+  MP.npBuffer=candidate;
+  document.getElementById('mp-np-display').textContent=MP.npBuffer;
+}
+function mpNpDel(){MP.npBuffer=MP.npBuffer.slice(0,-1);document.getElementById('mp-np-display').textContent=MP.npBuffer||'—';}
+async function mpNpConfirm(){
+  if(!MP.room)return;
+  const mode=S.user?.input_mode||'series';
+  const val=parseInt(MP.npBuffer);
+  if(isNaN(val)||val<0){await caAlert('Wpisz wynik.','🎯','Brak wyniku');return}
+  MP.npBuffer='';document.getElementById('mp-np-display').textContent='—';
+  if(mode==='single'){
+    if(val>60){await caAlert('Max 60 pkt na rzut (T20).','⚠️','Za dużo');return}
+    MP.myThrows.push(val);
+    if(MP.myThrows.length<3){renderMpGame();return;}
+    const total=MP.myThrows.reduce((a,b)=>a+b,0);MP.myThrows=[];
+    await mpSaveRound(total);
+  }else{
+    if(val>180){await caAlert('Max 180 pkt na serię.','⚠️','Za dużo');return}
+    await mpSaveRound(val);
+  }
+}
+
+async function mpSaveRound(thrown){
+  if(!MP.room)return;
+  const room=MP.room,myId=S.user.id,isHost=room.host_id===myId;
+  const myCurrentScore=isHost?room.host_score:room.guest_score;
+  const after=myCurrentScore-thrown;
+  if(after<0){await caOver(`Masz ${myCurrentScore} pkt, a wpisałeś ${thrown}. Przekroczenie!`);MP.myThrows=[];renderMpGame();return;}
+  if(after===1){await caOver('Wynik 1 pkt jest niemożliwy. Wpisz mniej.');MP.myThrows=[];renderMpGame();return;}
+  loading(true,'Zapisywanie tury...');
+  try{
+    const existing=await dbGet('room_rounds',`room_id=eq.${room.id}&player_id=eq.${myId}&select=id`)||[];
+    const roundNum=existing.length+1;
+    await dbPost('room_rounds',{room_id:room.id,player_id:myId,player_name:S.user.first_name||S.user.username,round_number:roundNum,score_thrown:thrown,score_after:after});
+    const opponentId=isHost?room.guest_id:room.host_id;
+    const patch=isHost?{host_score:after}:{guest_score:after};
+    patch.current_turn=opponentId;
+    if(after===0){patch.status='finished';patch.winner_id=myId;patch.winner_name=S.user.first_name||S.user.username;patch.finished_at=new Date().toISOString();}
+    const updated=await dbPatch('rooms',`id=eq.${room.id}`,patch);
+    MP.room=updated[0];
+    if(after===0) onMpGameFinished(MP.room);
+    else renderMpGame();
+  }catch(e){await caAlert(e.message,'❌','Błąd zapisu');}
+  finally{loading(false);}
+}
+
+async function onMpGameFinished(room){
+  stopPolling();
+  const myId=S.user.id,iWon=room.winner_id===myId;
+  const rounds=await dbGet('room_rounds',`room_id=eq.${room.id}&player_id=eq.${myId}&select=score_thrown`)||[];
+  const totalThrown=rounds.reduce((a,r)=>a+r.score_thrown,0);
+  const avg=rounds.length?Math.round(totalThrown/rounds.length):0;
+  const opName=room.host_id===myId?room.guest_name:room.host_name;
+  if(iWon) await caWin(`Pokonałeś ${opName}!\n${rounds.length} rund | śr. ${avg} pkt/serię`);
+  else await caShow('🎯','Dobry mecz!',`${room.winner_name} wygrał!\nTwój śr. wynik: ${avg} pkt/serię`,[{label:'OK',cls:'outline'}]);
+  MP.room=null;goTab('home');
+}
+
+async function confirmLeaveGame(){
+  const c=await caConfirm('Na pewno chcesz opuścić grę? Przeciwnik wygra automatycznie.','⚠️','Opuścić grę?');
+  if(c!==1)return;
+  if(MP.room){
+    const opponentId=MP.room.host_id===S.user.id?MP.room.guest_id:MP.room.host_id;
+    await dbPatch('rooms',`id=eq.${MP.room.id}`,{status:'finished',winner_id:opponentId,finished_at:new Date().toISOString()}).catch(()=>{});
+  }
+  stopPolling();MP.room=null;goTab('home');
+}
+
+// ═══════════════════════════════════════════════
 //  SESSION PERSISTENCE
 // ═══════════════════════════════════════════════
 const SESSION_KEY='dartpro_session';
@@ -2180,7 +2443,6 @@ window.addEventListener('popstate',(e)=>{
 // ═══════════════════════════════════════════════
 (async()=>{
   loading(true,'Łączenie z bazą...');
-  initRealtimeClient();
   try{
     await loadExercises();
     // Próbuj auto-login z zapisanej sesji
