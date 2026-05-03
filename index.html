@@ -905,7 +905,7 @@ function startFirst(){const a=S.exercises.filter(e=>e.enabled!==false);if(a.leng
 // ═══════════════════════════════════════════════
 //  TRAINING
 // ═══════════════════════════════════════════════
-function startTraining(exId){
+async function startTraining(exId){
   const ex=S.exercises.find(e=>e.id===exId);
   if(!ex||ex.enabled===false){await caAlert('To ćwiczenie jest aktualnie wyłączone przez admina.','🔒','Wyłączone');return}
   S.training={exId,ti:0,curThrows:[],sessScore:0,bonuses:[],rounds:[]};
@@ -983,7 +983,7 @@ function recThrow(zone,pts,cc){
   }
 }
 function nextTarget(){S.training.ti++;renderTarget();}
-function confirmExit(){if(S.training.sessScore>0){const c=await caConfirm('Masz niezapisany wynik. Na pewno chcesz wyjść?','⚠️','Trening w toku');if(c!==1)return;}goTab('home');}
+async function confirmExit(){if(S.training.sessScore>0){const c=await caConfirm('Masz niezapisany wynik. Na pewno chcesz wyjść?','⚠️','Trening w toku');if(c!==1)return;}goTab('home');}
 async function finishTraining(){
   const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
   const bonTotal=t.bonuses.reduce((a,b)=>a+b,0);
@@ -1470,7 +1470,7 @@ function renderMatch(){
 }
 
 function npPress(d){
-  if(!S.match){await caAlert('Kliknij przycisk Nowy aby rozpocząć mecz.','🏹','Brak meczu');return}
+  if(!S.match){showToast('🏹 Najpierw utwórz mecz');return}
   const mode=S.user?.input_mode||'series';
   const maxLen=mode==='single'?2:3; // single: max 60 (2 cyfry), series: max 180 (3 cyfry)
   if(npBuffer.length>=maxLen)return;
@@ -1549,7 +1549,7 @@ async function saveRound(thrown, throwsArr){
     S.match.current_score=after;S.match.status=newStatus;
     if(after===0){
       renderMatch();
-      setTimeout(()=>{
+      setTimeout(async()=>{
         await caWin(`Zakończyłeś mecz w ${roundNum} rundach!`);
         S.match=null;matchRounds=[];singleThrows=[];renderMatch();
       },300);
@@ -1776,7 +1776,7 @@ function resetInactivityTimer(){
   },INACTIVITY_LIMIT);
 }
 
-function onVisibilityChange(){
+async function onVisibilityChange(){
   if(document.hidden)return; // wchodzi w tło — nic nie rób
   if(!S.user)return;
   // Wróciło z tła — sprawdź czy sesja nie wygasła
@@ -1824,12 +1824,16 @@ window.addEventListener('popstate',(e)=>{
   // Specjalna obsługa — jeśli był na training/summary wróć do home
   if(screen==='training'||screen==='summary'){
     if(S.training&&S.training.sessScore>0&&document.getElementById('screen-training').classList.contains('active')){
-      const _cc=await caConfirm('Masz niezapisany wynik. Na pewno chcesz wyjść?','⚠️','Trening w toku');if(_cc!==1){
-        history.pushState({screen:'training'},'',window.location.pathname+'#training');
-        return;
-      }
+      caConfirm('Masz niezapisany wynik. Na pewno chcesz wyjść?','⚠️','Trening w toku').then(r=>{
+        if(r!==1){
+          history.pushState({screen:'training'},'',window.location.pathname+'#training');
+          return;
+        }
+        goTab('home');
+      });
+    }else{
+      goTab('home');
     }
-    goTab('home');
     return;
   }
   if(S.user){
