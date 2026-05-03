@@ -583,6 +583,16 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
   </div>
 </div>
 
+<!-- CUSTOM ALERT/CONFIRM MODAL -->
+<div class="ca-overlay" id="ca-overlay">
+  <div class="ca-box">
+    <div class="ca-icon" id="ca-icon"></div>
+    <div class="ca-title" id="ca-title"></div>
+    <div class="ca-msg" id="ca-msg"></div>
+    <div class="ca-btns" id="ca-btns"></div>
+  </div>
+</div>
+
 <!-- MATCH TOOLTIP -->
 <div class="match-tooltip" id="match-tooltip" style="display:none">
   <div class="tooltip-title">
@@ -897,7 +907,7 @@ function startFirst(){const a=S.exercises.filter(e=>e.enabled!==false);if(a.leng
 // ═══════════════════════════════════════════════
 function startTraining(exId){
   const ex=S.exercises.find(e=>e.id===exId);
-  if(!ex||ex.enabled===false){alert('To ćwiczenie jest wyłączone.');return}
+  if(!ex||ex.enabled===false){await caAlert('To ćwiczenie jest aktualnie wyłączone przez admina.','🔒','Wyłączone');return}
   S.training={exId,ti:0,curThrows:[],sessScore:0,bonuses:[],rounds:[]};
   document.getElementById('tr-title').textContent=ex.name;
   showScreen('training');renderTarget();
@@ -973,7 +983,7 @@ function recThrow(zone,pts,cc){
   }
 }
 function nextTarget(){S.training.ti++;renderTarget();}
-function confirmExit(){if(S.training.sessScore>0&&!confirm('Trening w toku! Wyjść bez zapisywania?'))return;goTab('home');}
+function confirmExit(){if(S.training.sessScore>0){const c=await caConfirm('Masz niezapisany wynik. Na pewno chcesz wyjść?','⚠️','Trening w toku');if(c!==1)return;}goTab('home');}
 async function finishTraining(){
   const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
   const bonTotal=t.bonuses.reduce((a,b)=>a+b,0);
@@ -991,7 +1001,7 @@ async function finishTraining(){
     }
     const allSess=await dbGet('sessions',`user_id=eq.${S.user.id}&exercise_id=eq.${ex.id}&order=created_at.asc`);
     renderSummary(session,allSess||[]);showScreen('summary');
-  }catch(e){alert('Błąd zapisu: '+e.message);}
+  }catch(e){await caAlert(e.message,'❌','Błąd zapisu');}
   finally{loading(false);}
 }
 function renderSummary(session,allSess){
@@ -1115,15 +1125,15 @@ async function saveProfile(){
     await dbPatch('users',`id=eq.${S.user.id}`,payload);
     Object.assign(S.user,payload);
     showToast('✅ Profil zapisany!');
-  }catch(e){alert('Błąd: '+e.message);}
+  }catch(e){await caAlert(e.message,'❌','Błąd');}
   finally{loading(false);}
 }
 
 async function handleAvatarUpload(input){
   const file=input.files[0];if(!file)return;
   const allowed=['image/jpeg','image/png','image/webp'];
-  if(!allowed.includes(file.type)){alert('Dozwolone formaty: JPG, PNG, WebP');input.value='';return}
-  if(file.size>5*1024*1024){alert('Plik za duży! Maksymalnie 5 MB');input.value='';return}
+  if(!allowed.includes(file.type)){await caAlert('Dozwolone formaty to JPG, PNG i WebP.','📁','Zły format');input.value='';return}
+  if(file.size>5*1024*1024){await caAlert('Plik jest za duży. Maksymalny rozmiar to 5 MB.','📦','Za duży plik');input.value='';return}
   loading(true,'Przesyłanie zdjęcia...');
   try{
     // Zawsze jpeg żeby uniknąć problemów z rozszerzeniem
@@ -1153,7 +1163,7 @@ async function handleAvatarUpload(input){
     const avEl=document.getElementById('home-avatar');
     if(avEl)avEl.innerHTML=`<img class="avatar-sm" src="${avatarUrl}" alt="avatar"/>`;
     showToast('✅ Zdjęcie zaktualizowane!');
-  }catch(e){alert('Błąd przesyłania: '+e.message);}
+  }catch(e){await caAlert(e.message,'❌','Błąd przesyłania');}
   finally{loading(false);input.value='';}
 }
 
@@ -1293,6 +1303,46 @@ let matchRounds=[];
 let npBuffer='';
 let singleThrows=[]; // dla trybu "co rzut" — przechowuje max 3 rzuty
 
+// ═══════════════════════════════════════════════
+//  CUSTOM ALERT & CONFIRM — bez brzydkich nagłówków przeglądarki
+// ═══════════════════════════════════════════════
+let caResolve=null;
+
+function caShow(icon,title,msg,buttons){
+  document.getElementById('ca-icon').textContent=icon;
+  document.getElementById('ca-title').textContent=title;
+  document.getElementById('ca-msg').textContent=msg;
+  const btns=document.getElementById('ca-btns');
+  btns.className='ca-btns'+(buttons.length>1?' two':'');
+  btns.innerHTML=buttons.map((b,i)=>
+    `<button class="ca-btn ${b.cls}" onclick="caClick(${i})">${b.label}</button>`
+  ).join('');
+  document.getElementById('ca-overlay').classList.add('show');
+  return new Promise(r=>caResolve=r);
+}
+
+function caClick(idx){
+  document.getElementById('ca-overlay').classList.remove('show');
+  if(caResolve){caResolve(idx);caResolve=null;}
+}
+
+// Zamienniki dla alert() i confirm()
+function caAlert(msg,icon='ℹ️',title='Informacja'){
+  return caShow(icon,title,msg,[{label:'OK',cls:'primary'}]);
+}
+function caConfirm(msg,icon='❓',title='Potwierdzenie'){
+  return caShow(icon,title,msg,[{label:'Anuluj',cls:'outline'},{label:'Tak',cls:'primary'}]);
+}
+function caDanger(msg,icon='🗑️',title='Usuń'){
+  return caShow(icon,title,msg,[{label:'Anuluj',cls:'outline'},{label:'Usuń',cls:'danger'}]);
+}
+function caWin(msg){
+  return caShow('🏆','Gratulacje!',msg,[{label:'Super!',cls:'primary'}]);
+}
+function caOver(msg){
+  return caShow('⚠️','Przekroczenie',msg,[{label:'OK',cls:'outline'}]);
+}
+
 const TOOLTIP_KEY='dartpro_tooltip_shown';
 
 function showMatchTooltip(){
@@ -1376,7 +1426,7 @@ async function startNewMatch(startScore){
     S.match=res[0];matchRounds=[];npBuffer='';singleThrows=[];
     renderMatch();
     setTimeout(showMatchTooltip, 400);
-  }catch(e){alert('Błąd: '+e.message);}
+  }catch(e){await caAlert(e.message,'❌','Błąd');}
   finally{loading(false);}
 }
 
@@ -1420,7 +1470,7 @@ function renderMatch(){
 }
 
 function npPress(d){
-  if(!S.match){alert('Najpierw utwórz mecz (kliknij "Nowy")');return}
+  if(!S.match){await caAlert('Kliknij przycisk Nowy aby rozpocząć mecz.','🏹','Brak meczu');return}
   const mode=S.user?.input_mode||'series';
   const maxLen=mode==='single'?2:3; // single: max 60 (2 cyfry), series: max 180 (3 cyfry)
   if(npBuffer.length>=maxLen)return;
@@ -1434,18 +1484,18 @@ function npDel(){
 }
 
 async function npConfirm(){
-  if(!S.match){alert('Najpierw utwórz mecz');return}
+  if(!S.match){await caAlert('Kliknij przycisk Nowy aby rozpocząć mecz.','🏹','Brak meczu');return}
   const mode=S.user?.input_mode||'series';
   const val=parseInt(npBuffer);
 
   if(isNaN(val)||val<0){
-    alert('Wpisz wynik rzutu');npBuffer='';
+    await caAlert('Wpisz wynik rzutu na klawiaturze.','🎯','Brak wyniku');npBuffer='';
     document.getElementById('np-display').textContent='—';return;
   }
 
   if(mode==='single'){
     // Tryb co rzut — max 60 za jeden rzut (T20)
-    if(val>60){alert('Maksymalny wynik 1 rzutu to 60 (T20)');npBuffer='';document.getElementById('np-display').textContent='—';return}
+    if(val>60){await caAlert('Maksymalny wynik jednego rzutu to 60 punktów (T20).','⚠️','Za dużo');npBuffer='';document.getElementById('np-display').textContent='—';return}
     singleThrows.push(val);
     npBuffer='';
     document.getElementById('np-display').textContent='—';
@@ -1455,7 +1505,7 @@ async function npConfirm(){
       const partialSum=singleThrows.reduce((a,b)=>a+b,0);
       const current=S.match.current_score;
       if(current-partialSum<0){
-        alert(`Przekroczenie po ${singleThrows.length} rzutach! Seria przepada.`);
+        await caOver(`Po ${singleThrows.length} rzutach przekroczyłeś dostępne punkty. Seria przepada.`);
         singleThrows=[];renderMatch();return;
       }
       renderMatch();return; // czekaj na kolejny rzut
@@ -1469,7 +1519,7 @@ async function npConfirm(){
 
   }else{
     // Tryb co seria
-    if(val>180){alert('Maksymalny wynik serii to 180');npBuffer='';document.getElementById('np-display').textContent='—';return}
+    if(val>180){await caAlert('Maksymalny wynik serii 3 rzutów to 180 punktów.','⚠️','Za dużo');npBuffer='';document.getElementById('np-display').textContent='—';return}
     npBuffer='';
     await saveRound(val, null);
   }
@@ -1479,11 +1529,11 @@ async function saveRound(thrown, throwsArr){
   const current=S.match.current_score;
   const after=current-thrown;
   if(after<0){
-    alert(`Przekroczenie! Masz ${current} pkt, wynik serii ${thrown} za duży.`);
+    await caOver(`Masz ${current} pkt, a wpisałeś ${thrown}. Wynik serii jest za duży — spróbuj ponownie.`);
     singleThrows=[];renderMatch();return;
   }
   if(after===1){
-    alert('Wynik 1 jest niemożliwy do zakończenia! Seria przepada — wpisz mniej.');
+    await caOver('Wynik 1 pkt jest niemożliwy do zakończenia. Seria przepada — wpisz mniej.');
     singleThrows=[];renderMatch();return;
   }
   loading(true,'Zapisywanie rundy...');
@@ -1500,13 +1550,13 @@ async function saveRound(thrown, throwsArr){
     if(after===0){
       renderMatch();
       setTimeout(()=>{
-        alert(`🏆 Wygrana! Zakończyłeś mecz w ${roundNum} rundach!`);
+        await caWin(`Zakończyłeś mecz w ${roundNum} rundach!`);
         S.match=null;matchRounds=[];singleThrows=[];renderMatch();
       },300);
       return;
     }
     renderMatch();
-  }catch(e){alert('Błąd: '+e.message);singleThrows=[];}
+  }catch(e){await caAlert(e.message,'❌','Błąd');singleThrows=[];}
   finally{loading(false);}
 }
 
@@ -1530,11 +1580,11 @@ async function addExercise(){
   const desc=document.getElementById('new-ds').value.trim();
   const rules=document.getElementById('new-rl').value.trim();
   const tgRaw=document.getElementById('new-tg').value.trim();
-  if(!name){alert('Wpisz nazwę');return}
-  if(!tgRaw){alert('Wpisz sektory');return}
+  if(!name){await caAlert('Wpisz nazwę ćwiczenia.','✏️','Brak nazwy');return}
+  if(!tgRaw){await caAlert('Wpisz sektory oddzielone przecinkami, np. 10,11,12.','🎯','Brak sektorów');return}
   const targets=tgRaw.split(',').map(t=>{const s=t.trim();return s==='BULL'?'BULL':parseInt(s)}).filter(t=>t==='BULL'||!isNaN(t));
-  if(!targets.length){alert('Nieprawidłowe sektory');return}
-  if(!NEW_RULES.length){alert('Dodaj co najmniej 1 regułę punktacji');return}
+  if(!targets.length){await caAlert('Sektory muszą być liczbami lub słowem BULL, oddzielonymi przecinkami.','⚠️','Błąd sektorów');return}
+  if(!NEW_RULES.length){await caAlert('Musisz dodać co najmniej jedną regułę punktacji.','⚡','Brak reguł');return}
   const colors=['c1','c2','c3','c4','c5'];
   loading(true,'Zapisywanie...');
   try{
@@ -1549,7 +1599,7 @@ async function addExercise(){
     await loadExercises();
     ['new-nm','new-ds','new-tg','new-rl'].forEach(id=>document.getElementById(id).value='');
     initNewRules(S.newType);renderAdminEx();showToast('✅ Ćwiczenie dodane!');
-  }catch(e){alert('Błąd: '+e.message);}
+  }catch(e){await caAlert(e.message,'❌','Błąd');}
   finally{loading(false);}
 }
 
@@ -1604,7 +1654,7 @@ function localUpdate(el){const ex=S.exercises.find(e=>e.id===el.dataset.id);if(e
 async function toggleEx(id,enabled){
   const ex=S.exercises.find(e=>e.id===id);if(!ex)return;
   ex.enabled=enabled;
-  try{await dbPatch('exercises',`id=eq.${id}`,{enabled});}catch(e){alert('Błąd: '+e.message);}
+  try{await dbPatch('exercises',`id=eq.${id}`,{enabled});}catch(e){await caAlert(e.message,'❌','Błąd');}
 }
 async function saveAll(){
   loading(true,'Zapisywanie...');
@@ -1616,14 +1666,14 @@ async function saveAll(){
       });
     }
     showToast('✅ Zapisano!');renderAdminEx();
-  }catch(e){alert('Błąd: '+e.message);}
+  }catch(e){await caAlert(e.message,'❌','Błąd');}
   finally{loading(false);}
 }
 async function deleteEx(id){
-  if(!confirm('Usunąć to ćwiczenie?'))return;
+  const _dc=await caDanger('Ćwiczenie zostanie trwale usunięte. Tej operacji nie można cofnąć.');if(_dc!==1)return;
   loading(true,'Usuwanie...');
   try{await dbDelete('exercises',`id=eq.${id}`);await loadExercises();renderAdminEx();showToast('🗑 Usunięto');}
-  catch(e){alert('Błąd: '+e.message);}
+  catch(e){await caAlert(e.message,'❌','Błąd');}
   finally{loading(false);}
 }
 
@@ -1774,7 +1824,7 @@ window.addEventListener('popstate',(e)=>{
   // Specjalna obsługa — jeśli był na training/summary wróć do home
   if(screen==='training'||screen==='summary'){
     if(S.training&&S.training.sessScore>0&&document.getElementById('screen-training').classList.contains('active')){
-      if(!confirm('Trening w toku! Wyjść bez zapisywania?')){
+      const _cc=await caConfirm('Masz niezapisany wynik. Na pewno chcesz wyjść?','⚠️','Trening w toku');if(_cc!==1){
         history.pushState({screen:'training'},'',window.location.pathname+'#training');
         return;
       }
