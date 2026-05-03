@@ -45,7 +45,7 @@ document.getElementById('pwa-manifest').setAttribute('href', manifestURL);
   --text:#f0f0f0;--muted:#7a7a8a;
   --success:#4ade80;--danger:#f87171;--info:#60a5fa;--warn:#fbbf24;--r:12px;
 }
-html,body{height:100%;overflow:hidden}
+html,body{height:100%;overflow:hidden;overscroll-behavior:none}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);max-width:430px;margin:0 auto;height:100%;overflow:hidden}
 .screen{display:none;height:100%;flex-direction:column;overflow:hidden}
 .screen.active{display:flex}
@@ -407,14 +407,12 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
     <div id="mini-hist"></div>
   </div>
   <div class="bnav c5">
-    <button class="ni on" onclick="goTab('home')"><span class="ni-ic">🏠</span><span class="ni-lb">Start</span></button>
-    <button class="ni" onclick="goTab('history')"><span class="ni-ic">📊</span><span class="ni-lb">Historia</span></button>
-    <button class="ni" onclick="startFirst()"><span class="ni-ic">🎯</span><span class="ni-lb">Trenuj</span></button>
-    <button class="ni" onclick="goTab('match')"><span class="ni-ic">🏹</span><span class="ni-lb">Solo</span></button>
-    <button class="ni" onclick="goTab('profile')"><span class="ni-ic">👤</span><span class="ni-lb">Profil</span></button>
+    <button class="ni on" id="nav-home" onclick="goTab('home')"><span class="ni-ic">🏠</span><span class="ni-lb">Start</span></button>
+    <button class="ni" id="nav-history" onclick="goTab('history')"><span class="ni-ic">📊</span><span class="ni-lb">Historia</span></button>
+    <button class="ni" id="nav-train" onclick="startFirst()"><span class="ni-ic">🎯</span><span class="ni-lb">Trenuj</span></button>
+    <button class="ni" id="nav-game" onclick="showGameModal()"><span class="ni-ic">🏹</span><span class="ni-lb">501 / Online</span></button>
+    <button class="ni" id="nav-profile" onclick="goTab('profile')"><span class="ni-ic">👤</span><span class="ni-lb">Profil</span></button>
   </div>
-  <!-- Multiplayer FAB -->
-  <button onclick="goTab('multiplayer')" style="position:fixed;bottom:80px;right:16px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 20px rgba(232,255,71,.4);z-index:49;transition:all .15s" title="Gra Online">⚔️</button>
 </div>
 
 <!-- TRAINING -->
@@ -776,6 +774,26 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
     <div class="ca-title" id="ca-title"></div>
     <div class="ca-msg" id="ca-msg"></div>
     <div class="ca-btns" id="ca-btns"></div>
+  </div>
+</div>
+
+<!-- GAME MODE MODAL -->
+<div class="modal-overlay" id="game-modal" onclick="closeGameModal(event)">
+  <div class="modal-box">
+    <div class="modal-title">
+      🏹 Wybierz tryb gry
+      <button class="modal-close" onclick="document.getElementById('game-modal').classList.remove('show')">×</button>
+    </div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.6">Zagraj solo lub wyzwij znajomego przez internet — każdy na swoim telefonie, widzicie wyniki w czasie rzeczywistym.</p>
+    <div class="g10">
+      <button class="block-btn bb-primary" onclick="closeGameModalAndGo('match')">
+        🎯 Solo — 501 / 301 / 701
+      </button>
+      <button class="block-btn" style="background:rgba(255,107,53,.1);color:var(--accent2);border:1.5px solid rgba(255,107,53,.3)" onclick="closeGameModalAndGo('multiplayer')">
+        ⚔️ Gra Online — vs Znajomy
+      </button>
+    </div>
+    <p style="font-size:11px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.5">Gra online: stwórz pokój → udostępnij 4-literowy kod → znajomy dołącza ze swojego telefonu</p>
   </div>
 </div>
 
@@ -1596,6 +1614,17 @@ function closeMatchModal(e){
   if(e.target===document.getElementById('match-modal'))
     document.getElementById('match-modal').classList.remove('show');
 }
+function showGameModal(){
+  document.getElementById('game-modal').classList.add('show');
+}
+function closeGameModal(e){
+  if(e.target===document.getElementById('game-modal'))
+    document.getElementById('game-modal').classList.remove('show');
+}
+function closeGameModalAndGo(tab){
+  document.getElementById('game-modal').classList.remove('show');
+  goTab(tab);
+}
 
 // ═══════════════════════════════════════════════
 //  MATCH 501
@@ -1820,28 +1849,42 @@ async function npConfirm(){
   }
 
   if(mode==='single'){
-    // Tryb co rzut — max 60 za jeden rzut (T20)
     if(val>60){await caAlert('Maksymalny wynik jednego rzutu to 60 punktów (T20).','⚠️','Za dużo');npBuffer='';document.getElementById('np-display').textContent='—';return}
     singleThrows.push(val);
     npBuffer='';
     document.getElementById('np-display').textContent='—';
 
-    if(singleThrows.length<3){
-      // Sprawdź czy po tym rzucie można jeszcze grać
-      const partialSum=singleThrows.reduce((a,b)=>a+b,0);
-      const current=S.match.current_score;
-      if(current-partialSum<0){
-        await caOver(`Po ${singleThrows.length} rzutach przekroczyłeś dostępne punkty. Seria przepada.`);
-        singleThrows=[];renderMatch();return;
-      }
-      renderMatch();return; // czekaj na kolejny rzut
+    const partialSum=singleThrows.reduce((a,b)=>a+b,0);
+    const current=S.match.current_score;
+    const scoreAfter=current-partialSum;
+
+    // Przekroczenie — seria przepada
+    if(scoreAfter<0){
+      await caOver(`Przekroczenie po ${singleThrows.length} rzucie! Seria przepada.`);
+      singleThrows=[];renderMatch();return;
     }
 
-    // 3 rzuty — zapisz serię
-    const thrown=singleThrows.reduce((a,b)=>a+b,0);
+    // WYGRANA — kończymy natychmiast bez czekania na pozostałe rzuty
+    if(scoreAfter===0){
+      const throwsSnapshot=[...singleThrows];
+      singleThrows=[];
+      await saveRound(partialSum, throwsSnapshot);
+      return;
+    }
+
+    // Wynik 1 niemożliwy — seria przepada
+    if(scoreAfter===1){
+      await caOver('Wynik 1 pkt jest niemożliwy do zakończenia. Seria przepada.');
+      singleThrows=[];renderMatch();return;
+    }
+
+    // Czekaj na kolejny rzut (max 3)
+    if(singleThrows.length<3){renderMatch();return;}
+
+    // 3 rzuty zużyte — zapisz serię
     const throwsSnapshot=[...singleThrows];
     singleThrows=[];
-    await saveRound(thrown, throwsSnapshot);
+    await saveRound(partialSum, throwsSnapshot);
 
   }else{
     // Tryb co seria
@@ -2587,6 +2630,29 @@ window.addEventListener('popstate',(e)=>{
 // ═══════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════
+// Block pull-to-refresh during active sessions
+document.addEventListener('touchmove', function(e){
+  // Block pull-to-refresh only when training or match is active
+  const training = document.getElementById('screen-training');
+  const match = document.getElementById('screen-match');
+  const mpGame = document.getElementById('screen-mp-game');
+  if((training && training.classList.contains('active')) ||
+     (match && match.classList.contains('active')) ||
+     (mpGame && mpGame.classList.contains('active'))){
+    // Allow scroll inside scrollable containers
+    let el = e.target;
+    let scrollable = false;
+    while(el && el !== document.body){
+      if(el.scrollHeight > el.clientHeight && 
+         getComputedStyle(el).overflowY !== 'hidden'){
+        scrollable = true; break;
+      }
+      el = el.parentElement;
+    }
+    if(!scrollable) e.preventDefault();
+  }
+}, {passive: false});
+
 (async()=>{
   loading(true,'Łączenie z bazą...');
   try{
