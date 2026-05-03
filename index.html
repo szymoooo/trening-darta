@@ -180,6 +180,17 @@ textarea.inp{resize:none;line-height:1.5}
 .hi-d{font-size:10px;color:var(--muted);margin-bottom:2px}
 .hi-sc{font-family:'Syne',sans-serif;font-size:21px;font-weight:700;color:var(--accent)}
 .hi-dt{font-size:11px;color:var(--muted);margin-top:2px}
+.hi-match{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 15px;margin-bottom:8px}
+.hi-match-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.hi-match-title{font-family:"Syne",sans-serif;font-weight:700;font-size:14px}
+.hi-match-status{font-size:11px;padding:3px 8px;border-radius:10px;font-weight:600}
+.hi-match-status.won{background:rgba(74,222,128,.15);color:var(--success)}
+.hi-match-status.lost{background:rgba(248,113,113,.1);color:var(--danger)}
+.hi-match-status.abandoned{background:rgba(255,255,255,.05);color:var(--muted)}
+.hi-match-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:8px}
+.hi-match-stat{text-align:center;background:var(--surface2);border-radius:8px;padding:7px 4px}
+.hi-match-stat-val{font-family:"Syne",sans-serif;font-size:16px;font-weight:700;color:var(--accent)}
+.hi-match-stat-lbl{font-size:10px;color:var(--muted);margin-top:2px}
 
 /* PROFILE */
 .profile-scroll{padding:0 15px;flex:1;overflow-y:auto;padding-bottom:100px}
@@ -414,8 +425,12 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 <div id="screen-history" class="screen">
   <div class="hdr">
     <button class="btn" onclick="goTab('home')">← Wróć</button>
-    <div style="font-family:Syne;font-weight:700">Historia sesji</div>
+    <div style="font-family:Syne;font-weight:700">Historia</div>
     <div style="width:56px"></div>
+  </div>
+  <div class="atabs" style="flex-shrink:0">
+    <button class="atab on" id="htab-training" onclick="switchHistoryTab('training')">🎯 Treningi</button>
+    <button class="atab" id="htab-matches" onclick="switchHistoryTab('matches')">🏹 Mecze</button>
   </div>
   <div class="hist-scroll" id="hist-list"></div>
 </div>
@@ -1031,25 +1046,108 @@ function renderSummary(session,allSess){
 // ═══════════════════════════════════════════════
 //  HISTORY
 // ═══════════════════════════════════════════════
+let historyTab = 'training';
+
+function switchHistoryTab(tab){
+  historyTab = tab;
+  document.getElementById('htab-training').classList.toggle('on', tab==='training');
+  document.getElementById('htab-matches').classList.toggle('on', tab==='matches');
+  renderHistory();
+}
+
 async function renderHistory(){
   const el=document.getElementById('hist-list');
   el.innerHTML='<div class="empty"><div class="spinner" style="margin:30px auto"></div></div>';
   try{
-    const sessions=await dbGet('sessions',`user_id=eq.${S.user.id}&order=created_at.desc`);
-    const all=sessions||[];
-    if(!all.length){el.innerHTML='<div class="empty"><span class="empty-ic">📊</span><div class="empty-t">Brak historii</div></div>';return}
-    const grp={};all.forEach(s=>{const d=s.created_at.slice(0,10);(grp[d]=grp[d]||[]).push(s)});
-    el.innerHTML=Object.entries(grp).map(([day,ss])=>{
-      const lbl=new Date(day).toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long'});
-      return`<div style="margin-bottom:18px"><div class="sec" style="margin-top:0">${lbl}</div>
-        ${ss.map(s=>`<div class="hi">
-          <div><div class="hi-d">${new Date(s.created_at).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})}</div>
+    if(historyTab==='training'){
+      await renderTrainingHistory(el);
+    }else{
+      await renderMatchHistory(el);
+    }
+  }catch(e){
+    el.innerHTML='<div class="empty"><span class="empty-ic">⚠️</span><div class="empty-t">Błąd ładowania</div></div>';
+    console.error(e);
+  }
+}
+
+async function renderTrainingHistory(el){
+  const sessions=await dbGet('sessions',`user_id=eq.${S.user.id}&order=created_at.desc`);
+  const all=sessions||[];
+  if(!all.length){
+    el.innerHTML='<div class="empty"><span class="empty-ic">🎯</span><div class="empty-t">Brak treningów</div><p class="empty-s">Zrób pierwsze ćwiczenie!</p></div>';
+    return;
+  }
+  const grp={};
+  all.forEach(s=>{const d=s.created_at.slice(0,10);(grp[d]=grp[d]||[]).push(s)});
+  el.innerHTML=Object.entries(grp).map(([day,ss])=>{
+    const lbl=new Date(day).toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long'});
+    return`<div style="margin-bottom:18px"><div class="sec" style="margin-top:0">${lbl}</div>
+      ${ss.map(s=>`<div class="hi">
+        <div>
+          <div class="hi-d">${new Date(s.created_at).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})}</div>
           <div style="font-size:12px">${s.exercise_name||'—'}</div>
-          <div class="hi-dt">Baza: ${s.base_score} pkt | Bonusy: +${s.bonus_score} pkt</div></div>
-          <div class="hi-sc">${s.total_score}</div>
-        </div>`).join('')}</div>`;
-    }).join('');
-  }catch(e){el.innerHTML='<div class="empty"><span class="empty-ic">⚠️</span><div class="empty-t">Błąd ładowania</div></div>';}
+          <div class="hi-dt">Baza: ${s.base_score} pkt | Bonusy: +${s.bonus_score} pkt</div>
+        </div>
+        <div class="hi-sc">${s.total_score}</div>
+      </div>`).join('')}</div>`;
+  }).join('');
+}
+
+async function renderMatchHistory(el){
+  const matches=await dbGet('matches',`user_id=eq.${S.user.id}&order=created_at.desc`);
+  const all=matches||[];
+  if(!all.length){
+    el.innerHTML='<div class="empty"><span class="empty-ic">🏹</span><div class="empty-t">Brak rozegranych meczów</div><p class="empty-s">Zagraj swój pierwszy mecz!</p></div>';
+    return;
+  }
+  // Pobierz rundy dla każdego meczu
+  const matchIds=all.map(m=>m.id);
+  const rounds=await dbGet('match_rounds',`match_id=in.(${matchIds.join(',')})&select=match_id,score_thrown`);
+  const roundsMap={};
+  (rounds||[]).forEach(r=>{
+    if(!roundsMap[r.match_id]) roundsMap[r.match_id]=[];
+    roundsMap[r.match_id].push(r.score_thrown);
+  });
+
+  const grp={};
+  all.forEach(m=>{const d=m.created_at.slice(0,10);(grp[d]=grp[d]||[]).push(m)});
+
+  el.innerHTML=Object.entries(grp).map(([day,ms])=>{
+    const lbl=new Date(day).toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long'});
+    return`<div style="margin-bottom:18px"><div class="sec" style="margin-top:0">${lbl}</div>
+      ${ms.map(m=>{
+        const rds=roundsMap[m.id]||[];
+        const totalThrown=rds.reduce((a,b)=>a+b,0);
+        const avg=rds.length?Math.round(totalThrown/rds.length):0;
+        const statusLabel=m.status==='finished'?'Wygrana':m.status==='abandoned'?'Przerwany':'W toku';
+        const statusCls=m.status==='finished'?'won':m.status==='abandoned'?'abandoned':'lost';
+        const startedAt=new Date(m.created_at).toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'});
+        const remaining=m.current_score;
+        return`<div class="hi-match">
+          <div class="hi-match-hdr">
+            <div>
+              <div class="hi-match-title">🏹 Mecz ${m.start_score}</div>
+              <div class="hi-d">${startedAt}</div>
+            </div>
+            <span class="hi-match-status ${statusCls}">${statusLabel}</span>
+          </div>
+          <div class="hi-match-stats">
+            <div class="hi-match-stat">
+              <div class="hi-match-stat-val">${rds.length}</div>
+              <div class="hi-match-stat-lbl">Rund</div>
+            </div>
+            <div class="hi-match-stat">
+              <div class="hi-match-stat-val">${avg}</div>
+              <div class="hi-match-stat-lbl">Śr. seria</div>
+            </div>
+            <div class="hi-match-stat">
+              <div class="hi-match-stat-val" style="color:${m.status==='finished'?'var(--success)':(remaining<100?'var(--warn)':'var(--text)')}}">${m.status==='finished'?'0':remaining}</div>
+              <div class="hi-match-stat-lbl">${m.status==='finished'?'Checkout':'Zostało'}</div>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}</div>`;
+  }).join('');
 }
 
 // ═══════════════════════════════════════════════
@@ -1472,9 +1570,34 @@ function renderMatch(){
 function npPress(d){
   if(!S.match){showToast('🏹 Najpierw utwórz mecz');return}
   const mode=S.user?.input_mode||'series';
-  const maxLen=mode==='single'?2:3; // single: max 60 (2 cyfry), series: max 180 (3 cyfry)
+  const maxLen=mode==='single'?2:3;
   if(npBuffer.length>=maxLen)return;
-  npBuffer+=d;
+
+  const candidate=npBuffer+d;
+  const candidateVal=parseInt(candidate);
+
+  if(mode==='single'){
+    // Blokuj wartości >60 już podczas wpisywania
+    if(candidateVal>60){
+      // Pokoloruj display na czerwono jako feedback
+      const disp=document.getElementById('np-display');
+      disp.style.color='var(--danger)';
+      setTimeout(()=>disp.style.color='',600);
+      showToast('⚠️ Max 60 pkt na rzut (T20)');
+      return;
+    }
+  }else{
+    // Seria: blokuj >180
+    if(candidateVal>180){
+      const disp=document.getElementById('np-display');
+      disp.style.color='var(--danger)';
+      setTimeout(()=>disp.style.color='',600);
+      showToast('⚠️ Max 180 pkt na serię');
+      return;
+    }
+  }
+
+  npBuffer=candidate;
   document.getElementById('np-display').textContent=npBuffer;
 }
 
