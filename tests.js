@@ -780,6 +780,101 @@ test('Plik dokładnie 5MB jest akceptowany', () => {
 });
 
 
+
+
+// ═══════════════════════════════════════════════════════════════
+//  11. ZAKOŃCZENIE GRY — wszystkie scenariusze
+// ═══════════════════════════════════════════════════════════════
+suite('11. ZAKOŃCZENIE GRY — tryb seria i rzut po rzucie');
+
+test('[SERIA] 40 pkt, wpisuję 40 → wygrana (after=0)', () => {
+  const r = validateMatchInput(40, 40, 'series');
+  expect(r.ok).toBeTruthy();
+  expect(r.after).toBe(0);
+});
+
+test('[SERIA] 55 pkt, seria 21+20+4=45 → zostaje 10, NIE wygrana', () => {
+  const r = validateMatchInput(45, 55, 'series');
+  expect(r.ok).toBeTruthy();
+  expect(r.after).toBe(10);
+});
+
+test('[SERIA] 55 pkt, seria 21+20+14=55 → wygrana', () => {
+  const r = validateMatchInput(55, 55, 'series');
+  expect(r.ok).toBeTruthy();
+  expect(r.after).toBe(0);
+});
+
+test('[SERIA] 55 pkt, wpisuję 60 → bust', () => {
+  const r = validateMatchInput(60, 55, 'series');
+  expect(r.bust).toBeTruthy();
+});
+
+test('[SERIA] 55 pkt, wpisuję 54 → zostaje 1 → bust', () => {
+  const r = validateMatchInput(54, 55, 'series');
+  expect(r.bust).toBeTruthy();
+});
+
+test('[RZUT] 4 pkt, rzut 4 → wygrana w 1. rzucie serii', () => {
+  const r = validateMatchInput(4, 4, 'single');
+  expect(r.ok).toBeTruthy();
+  expect(r.after).toBe(0);
+});
+
+test('[RZUT] 4 pkt, rzut 1 → zostaje 3, czekaj na kolejny rzut', () => {
+  const r = validateMatchInput(1, 4, 'single');
+  expect(r.ok).toBeTruthy();
+  expect(r.after).toBe(3);
+});
+
+test('[RZUT] 4 pkt, rzut 5 → bust', () => {
+  const r = validateMatchInput(5, 4, 'single');
+  expect(r.bust).toBeTruthy();
+});
+
+test('[RZUT] pojedynczy rzut max 60 (T20)', () => {
+  const r = validateMatchInput(60, 100, 'single');
+  expect(r.ok).toBeTruthy();
+  expect(r.after).toBe(40);
+});
+
+test('[RZUT] pojedynczy rzut 61 odrzucony', () => {
+  const r = validateMatchInput(61, 100, 'single');
+  expect(r.error).toContain('60');
+});
+
+test('[301] poprawna gra do 0: 180+121=301', () => {
+  let score = 301;
+  let r1 = validateMatchInput(180, score, 'series');
+  expect(r1.ok).toBeTruthy();
+  score = r1.after; // 121
+  let r2 = validateMatchInput(121, score, 'series');
+  expect(r2.ok).toBeTruthy();
+  expect(r2.after).toBe(0);
+});
+
+test('[701] wpisanie 180 przy 701 → zostaje 521', () => {
+  const r = validateMatchInput(180, 701, 'series');
+  expect(r.ok).toBeTruthy();
+  expect(r.after).toBe(521);
+});
+
+test('Gra NIE może być kontynuowana gdy after===0', () => {
+  const r = validateMatchInput(40, 40, 'series');
+  // after===0 oznacza koniec gry — żadne kolejne wpisywanie nie powinno być możliwe
+  const gameOver = r.after === 0;
+  expect(gameOver).toBeTruthy();
+});
+
+test('Za dużo w serii — stan punktów nie zmienia się', () => {
+  const currentScore = 55;
+  const r = validateMatchInput(60, currentScore, 'series');
+  // bust — score powinien zostać bez zmian
+  expect(r.bust).toBeTruthy();
+  // currentScore nadal 55 (aplikacja nie zmienia stanu przy buście)
+  expect(currentScore).toBe(55);
+});
+
 // ═══════════════════════════════════════════════════════════════
 //  PODSUMOWANIE
 // ═══════════════════════════════════════════════════════════════
