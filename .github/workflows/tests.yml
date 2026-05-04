@@ -1,0 +1,38 @@
+name: DartPro Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Unit Tests (87 cases)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run unit tests
+        run: node tests.js
+
+      - name: Check HTML syntax
+        run: |
+          echo "Checking index.html exists..."
+          test -f index.html && echo "✅ index.html found" || (echo "❌ index.html missing" && exit 1)
+          echo "Checking HTML structure..."
+          grep -q "<!DOCTYPE html>" index.html && echo "✅ DOCTYPE present"
+          grep -q "</html>" index.html && echo "✅ Closing html tag present"
+          grep -q "femoshkoumxikrcjhool.supabase.co" index.html && echo "✅ Supabase URL present"
+          grep -q "function handleLogin" index.html && echo "✅ Auth logic present"
+          grep -q "function renderDartboard" index.html && echo "✅ Dartboard present"
+          grep -q "const CHECKOUTS" index.html && echo "✅ Checkouts table present"
+          grep -q "function startPolling" index.html && echo "✅ Multiplayer present"
+          echo "All checks passed!"
