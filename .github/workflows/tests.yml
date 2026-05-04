@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: Unit Tests (87 cases)
+    name: Unit Tests (101 cases)
 
     steps:
       - name: Checkout code
