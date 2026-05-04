@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: Unit Tests (101 cases)
+    name: Unit Tests
 
     steps:
       - name: Checkout code
@@ -23,16 +23,30 @@ jobs:
       - name: Run unit tests
         run: node tests.js
 
-      - name: Check HTML syntax
+      - name: Check HTML integrity
         run: |
-          echo "Checking index.html exists..."
-          test -f index.html && echo "✅ index.html found" || (echo "❌ index.html missing" && exit 1)
-          echo "Checking HTML structure..."
+          echo "Checking index.html structure..."
+          test -f index.html || (echo "❌ index.html missing" && exit 1)
           grep -q "<!DOCTYPE html>" index.html && echo "✅ DOCTYPE present"
-          grep -q "</html>" index.html && echo "✅ Closing html tag present"
-          grep -q "femoshkoumxikrcjhool.supabase.co" index.html && echo "✅ Supabase URL present"
-          grep -q "function handleLogin" index.html && echo "✅ Auth logic present"
-          grep -q "function renderDartboard" index.html && echo "✅ Dartboard present"
-          grep -q "const CHECKOUTS" index.html && echo "✅ Checkouts table present"
-          grep -q "function startPolling" index.html && echo "✅ Multiplayer present"
+          grep -q "</html>" index.html && echo "✅ Closing html tag"
+          grep -q "femoshkoumxikrcjhool.supabase.co" index.html && echo "✅ Supabase URL"
+          grep -q "function handleLogin" index.html && echo "✅ Auth logic"
+          grep -q "function renderDartboard" index.html && echo "✅ Dartboard SVG"
+          grep -q "const CHECKOUTS" index.html && echo "✅ Checkouts table"
+          grep -q "function startPolling" index.html && echo "✅ Multiplayer"
+          grep -q "function saveRound" index.html && echo "✅ Match logic"
+          grep -q "caWin\|showWinPopup" index.html && echo "✅ Win detection"
           echo "All checks passed!"
+
+      - name: Generate test report
+        if: always()
+        run: |
+          node tests.js > test_output.txt 2>&1 || true
+          echo "Test run completed"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_output.txt
