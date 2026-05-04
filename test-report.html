@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DartPro — Raport Testów</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0a0a0f;color:#f0f0f0;max-width:900px;margin:0 auto;padding:20px}
+h1{font-size:28px;font-weight:800;color:#e8ff47;margin-bottom:4px}
+.subtitle{color:#7a7a8a;font-size:14px;margin-bottom:24px}
+.summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
+.sum-card{background:#13131a;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:16px;text-align:center}
+.sum-val{font-size:36px;font-weight:800;font-family:monospace}
+.sum-val.green{color:#4ade80}.sum-val.red{color:#f87171}.sum-val.yellow{color:#e8ff47}.sum-val.blue{color:#60a5fa}
+.sum-lbl{font-size:11px;color:#7a7a8a;text-transform:uppercase;letter-spacing:.8px;margin-top:4px}
+.suite{background:#13131a;border:1px solid rgba(255,255,255,.08);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.suite-hdr{padding:14px 18px;background:#1c1c26;display:flex;justify-content:space-between;align-items:center;cursor:pointer}
+.suite-hdr:hover{background:#22222e}
+.suite-name{font-weight:700;font-size:15px}
+.suite-badge{font-size:12px;padding:3px 10px;border-radius:20px;background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.3)}
+.suite-badge.fail{background:rgba(248,113,113,.15);color:#f87171;border-color:rgba(248,113,113,.3)}
+.suite-body{padding:0}
+.test-item{padding:12px 18px;border-bottom:1px solid rgba(255,255,255,.05);display:flex;align-items:flex-start;gap:12px}
+.test-item:last-child{border-bottom:none}
+.test-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.test-info{flex:1}
+.test-name{font-size:13px;font-weight:500;margin-bottom:4px}
+.test-desc{font-size:12px;color:#7a7a8a;line-height:1.5}
+.test-steps{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px}
+.step{font-size:11px;padding:2px 8px;border-radius:10px;background:#1c1c26;color:#aaa;border:1px solid rgba(255,255,255,.08)}
+.step.input{border-color:rgba(96,165,250,.3);color:#60a5fa}
+.step.expect{border-color:rgba(74,222,128,.3);color:#4ade80}
+.step.error{border-color:rgba(248,113,113,.3);color:#f87171}
+.accounts-section{background:#13131a;border:1px solid rgba(232,255,71,.2);border-radius:12px;padding:20px;margin-bottom:24px}
+.accounts-section h2{color:#e8ff47;font-size:16px;margin-bottom:14px}
+.account{display:flex;align-items:center;gap:12px;padding:10px;background:#1c1c26;border-radius:10px;margin-bottom:8px}
+.account:last-child{margin-bottom:0}
+.acc-role{font-size:11px;text-transform:uppercase;letter-spacing:.8px;padding:3px 8px;border-radius:8px;flex-shrink:0}
+.acc-role.admin{background:rgba(255,107,53,.15);color:#ff6b35}
+.acc-role.user{background:rgba(96,165,250,.15);color:#60a5fa}
+.acc-detail{flex:1}
+.acc-name{font-weight:700;font-size:14px}
+.acc-pass{font-size:12px;color:#7a7a8a;margin-top:2px}
+.acc-info{font-size:11px;color:#7a7a8a;margin-top:3px}
+.chevron{transition:transform .2s;color:#7a7a8a}
+.suite-hdr.collapsed .chevron{transform:rotate(-90deg)}
+.generated{font-size:11px;color:#7a7a8a;text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)}
+</style>
+</head>
+<body>
+
+<h1>🎯 DartPro — Raport Testów</h1>
+<p class="subtitle">Wygenerowano: <span id="gen-date"></span> | Wersja aplikacji: 1.0 | Node.js testy jednostkowe</p>
+
+<div class="summary-bar">
+  <div class="sum-card"><div class="sum-val green">101</div><div class="sum-lbl">Zaliczone</div></div>
+  <div class="sum-card"><div class="sum-val red">0</div><div class="sum-lbl">Niezaliczone</div></div>
+  <div class="sum-card"><div class="sum-val yellow">101</div><div class="sum-lbl">Łącznie</div></div>
+  <div class="sum-card"><div class="sum-val blue">11</div><div class="sum-lbl">Suite'ów</div></div>
+</div>
+
+<div class="accounts-section">
+  <h2>🔑 Konta testowe (Supabase)</h2>
+  <div class="account">
+    <span class="acc-role admin">ADMIN</span>
+    <div class="acc-detail">
+      <div class="acc-name">Szymon1</div>
+      <div class="acc-pass">Hasło: adminSzymon1 | Hash: -xgc0jc</div>
+      <div class="acc-info">Pełny dostęp: zarządzanie ćwiczeniami, ranking, włącz/wyłącz</div>
+    </div>
+  </div>
+  <div class="account">
+    <span class="acc-role user">USER</span>
+    <div class="acc-detail">
+      <div class="acc-name">TestUser</div>
+      <div class="acc-pass">Hasło: test1234</div>
+      <div class="acc-info">Konto do testów: ćwiczenia, mecz 501, profil, historia</div>
+    </div>
+  </div>
+  <div class="account">
+    <span class="acc-role user">USER</span>
+    <div class="acc-detail">
+      <div class="acc-name">Player2</div>
+      <div class="acc-pass">Hasło: player2pin</div>
+      <div class="acc-info">Konto do testów multiplayera — gra online vs TestUser</div>
+    </div>
+  </div>
+</div>
+
+<div id="suites"></div>
+
+<p class="generated">Raport wygenerowany automatycznie przez DartPro Test Suite | <a href="https://github.com/szymoooo/trening-darta/actions" style="color:#e8ff47">GitHub Actions →</a></p>
+
+<script>
+document.getElementById('gen-date').textContent = new Date().toLocaleString('pl-PL');
+
+const suites = [
+  {
+    name: '1. AUTH — logowanie i rejestracja',
+    tests: [
+      { name: 'Hash tego samego hasła daje ten sam wynik', desc: 'Sprawdza deterministyczność funkcji hash()', steps: ['Wejście: "haslo123"', 'hash("haslo123") === hash("haslo123")', 'Oczekiwany wynik: true'] },
+      { name: 'Hash różnych haseł daje różne wyniki', desc: 'Sprawdza że hash("haslo123") ≠ hash("haslo124")', steps: ['Wejście: dwa różne hasła', 'Porównaj hashe', 'Oczekiwany wynik: różne'] },
+      { name: 'Hash admina jest deterministyczny', desc: 'hash("adminSzymon1") zawsze = "-xgc0jc"', steps: ['Wejście: "adminSzymon1"', 'Oczekiwany hash: "-xgc0jc"'] },
+      { name: 'Puste hasło nie jest akceptowane', desc: 'Walidacja: hasło.length === 0 → blokuj logowanie', steps: ['Wejście: ""', 'Sprawdź length', 'Oczekiwany wynik: odrzucono'] },
+      { name: 'Nick za krótki (< 2 znaki) nie jest akceptowany', desc: 'Nick "A" (1 znak) nie przechodzi walidacji', steps: ['Wejście: "A"', 'length < 2', 'Oczekiwany wynik: odrzucono'] },
+      { name: 'Nick "Szymon1" jest adminem', desc: 'Sprawdza wykrywanie konta admina po nazwie', steps: ['Wejście: "Szymon1"', 'username === ADMIN_USER', 'Oczekiwany wynik: true'] },
+      { name: 'Zwykły user nie jest adminem', desc: '"Kowalski" ≠ ADMIN_USER → nie admin', steps: ['Wejście: "Kowalski"', 'username === ADMIN_USER', 'Oczekiwany wynik: false'] },
+    ]
+  },
+  {
+    name: '2. ADMIN — zarządzanie ćwiczeniami',
+    tests: [
+      { name: 'Dodanie ćwiczenia bez nazwy — błąd walidacji', desc: 'validateExercise() zwraca błąd gdy name=""', steps: ['Wejście: {name:""}', 'validateExercise()', 'Błąd: "Brak nazwy"'] },
+      { name: 'Dodanie ćwiczenia bez sektorów — błąd walidacji', desc: 'targets:[] → błąd walidacji', steps: ['Wejście: targets:[]', 'validateExercise()', 'Błąd: "Brak sektorów"'] },
+      { name: 'Dodanie ćwiczenia bez reguł punktacji — błąd walidacji', desc: 'scoring:[] → błąd walidacji', steps: ['Wejście: scoring:[]', 'validateExercise()', 'Błąd: "Brak reguł"'] },
+      { name: 'Sektor poza zakresem 1-20 — błąd walidacji', desc: 'targets:[0,21,25] → błąd (tylko 1-20 i BULL)', steps: ['Wejście: [0,21,25]', 'Filtruj poza zakres', 'Błąd: "Nieprawidłowe sektory"'] },
+      { name: 'Poprawne ćwiczenie Shanghai przechodzi walidację', desc: 'Wszystkie pola wypełnione → brak błędów', steps: ['Wejście: kompletny obiekt', 'validateExercise()', 'Oczekiwany wynik: errors.length === 0'] },
+      { name: 'Poprawne ćwiczenie Doubles przechodzi walidację', desc: 'Type=doubles z BULL → brak błędów', steps: ['Wejście: type:"doubles", targets:[1..20,"BULL"]', 'Oczekiwany wynik: OK'] },
+      { name: 'Domyślne reguły Shanghai mają 4 wpisy', desc: 'Single, Double, Treble, Bonus Shanghai', steps: ['defaultRules("shanghai")', 'Oczekiwana długość: 4'] },
+      { name: 'Domyślne reguły Doubles mają 3 wpisy', desc: 'Double, Bull, Bonus Bull', steps: ['defaultRules("doubles")', 'Oczekiwana długość: 3'] },
+      { name: 'Admin może wyłączyć ćwiczenie (enabled=false)', desc: 'Przełącznik toggle ustawia enabled=false', steps: ['ex.enabled = false', 'Sprawdź wartość', 'Oczekiwany wynik: falsy'] },
+      { name: 'Wyłączone ćwiczenie nie pojawia się w liście aktywnych', desc: 'filter(e => e.enabled !== false) pomija wyłączone', steps: ['Lista 3 ćwiczeń, 1 wyłączone', 'Filtruj aktywne', 'Oczekiwany wynik: 2 ćwiczenia'] },
+    ]
+  },
+  {
+    name: '3. PUNKTACJA — ćwiczenie Shanghai',
+    tests: [
+      { name: 'Single = 1 pkt', desc: 'Trafienie sektora = 1 punkt, brak bonusu', steps: ['Rzut: single', 'calcRoundScore()', 'pts=1, bonus=0'] },
+      { name: 'Double = 2 pkt', desc: 'Trafienie podwójnego = 2 punkty', steps: ['Rzut: double', 'pts=2, bonus=0'] },
+      { name: 'Treble = 3 pkt', desc: 'Trafienie potrójnego = 3 punkty', steps: ['Rzut: triple', 'pts=3, bonus=0'] },
+      { name: 'Pudło = 0 pkt', desc: 'Pudło = 0 punktów', steps: ['Rzut: miss', 'pts=0, bonus=0'] },
+      { name: 'Shanghai (S+D+T) = 6 pkt + 100 bonus = 106', desc: 'Wszystkie 3 strefy w jednej liczbie = Shanghai!', steps: ['Rzuty: single+double+triple', 'Detekcja Shanghai', 'total=106'] },
+      { name: 'S+S+D — brak Shanghai, brak bonusu', desc: 'Brak Triple = brak Shanghai', steps: ['Rzuty: S+S+D', 'Brak triple → brak bonusu', 'pts=4, bonus=0'] },
+      { name: '3 pudła = 0 pkt', desc: 'Trzy chybienia = zero punktów', steps: ['3× miss', 'total=0'] },
+      { name: 'Maks. wynik rundy Shanghai = T20 = 3 pkt', desc: 'Maksymalna wartość to 3 pkt za Treble', steps: ['Rzut: triple', 'pts=3'] },
+    ]
+  },
+  {
+    name: '4. PUNKTACJA — ćwiczenie Doubles',
+    tests: [
+      { name: 'Trafiony double = 50 pkt', desc: 'Double w doublesy = 50 punktów', steps: ['Rzut: double, pts=50', 'calcRoundScore()', 'total=50'] },
+      { name: 'Pudło w doublesy = 0 pkt', desc: 'Miss = 0 punktów', steps: ['Rzut: miss', 'total=0'] },
+      { name: 'Bull = 50 pkt bazowe + 50 bonus = 100 pkt', desc: 'BULL daje punkty i bonus jednocześnie', steps: ['Cel: BULL, rzut: bull', 'pts=50 + bonus=50', 'total=100'] },
+      { name: 'Double (nie BULL) nie daje bonusu Bull', desc: 'Bonus bull tylko gdy cel=BULL', steps: ['Cel: sektor 6, rzut: double', 'bonus=0', 'total=50'] },
+    ]
+  },
+  {
+    name: '5. MECZ 501 — walidacja wpisywania',
+    tests: [
+      { name: 'Wpisanie 0 jest akceptowane (brak rzutu)', desc: '0 pkt = rzucono i spudłowano wszystko', steps: ['val=0, current=501', 'after=501', 'OK'] },
+      { name: 'Seria 180 jest akceptowana przy wyniku 501', desc: 'Maksymalny wynik serii', steps: ['val=180, current=501', 'after=321', 'OK'] },
+      { name: 'Seria > 180 jest odrzucana', desc: 'Fizycznie niemożliwe ponad 180 (3×T20)', steps: ['val=181', 'Błąd: Max 180 pkt', 'Odrzucono'] },
+      { name: 'Pojedynczy rzut > 60 jest odrzucany', desc: '60 to max za jeden rzut (T20)', steps: ['val=61, tryb=single', 'Błąd: Max 60 pkt', 'Odrzucono'] },
+      { name: 'Pojedynczy rzut 60 (T20) jest akceptowany', desc: 'Dokładnie 60 = T20 = OK', steps: ['val=60, current=100', 'after=40', 'OK'] },
+      { name: 'Przekroczenie wyniku — bust', desc: 'Wpisano więcej niż zostało', steps: ['val=50, current=40', 'after=-10 → bust', 'Odrzucono'] },
+      { name: 'Wynik 1 po odliczeniu — bust', desc: '1 pkt = niemożliwy checkout', steps: ['val=39, current=40', 'after=1 → bust', 'Odrzucono'] },
+      { name: 'Wynik 0 po odliczeniu — wygrana', desc: 'Dokładne trafienie = koniec gry', steps: ['val=40, current=40', 'after=0 → wygrana!', 'OK'] },
+      { name: 'NaN jest odrzucane', desc: 'Pustą klawiatura lub litera = NaN', steps: ['val=NaN', 'isNaN check', 'Błąd'] },
+      { name: 'Liczba ujemna jest odrzucana', desc: 'Punkty nie mogą być ujemne', steps: ['val=-1', 'val < 0', 'Błąd'] },
+    ]
+  },
+  {
+    name: '6. CHECKOUT — podpowiedzi zakończeń',
+    tests: [
+      { name: '170 = T20, T20, DB', desc: 'Najwyższy możliwy checkout', steps: ['getCheckout(170)', 'Wynik: "T20, T20, DB"'] },
+      { name: '40 = D20 (1 lotka)', desc: 'Prosty checkout jedną lotką', steps: ['getCheckout(40)', 'Wynik: "D20"'] },
+      { name: '2 = D1', desc: 'Najniższy możliwy checkout', steps: ['getCheckout(2)', 'Wynik: "D1"'] },
+      { name: '169 = null (brak możliwości)', desc: 'Niektóre wyniki nie mają checkoutu', steps: ['getCheckout(169)', 'Wynik: null'] },
+      { name: 'Ulubiony D20 podpowiadany gdy checkout zawiera D20', desc: 'getFavCheckout() priorytetuje ulubiony double', steps: ['score=40, favDoubles=[20]', 'Checkout "D20" zawiera D20', 'Podpowiedź: "D20"'] },
+    ]
+  },
+  {
+    name: '7. MULTIPLAYER — kod pokoju',
+    tests: [
+      { name: 'Wygenerowany kod ma 4 znaki', desc: 'Kod pokoju musi mieć dokładnie 4 znaki', steps: ['generateRoomCodeLocal()', 'code.length === 4'] },
+      { name: 'Kod zawiera tylko dozwolone znaki', desc: 'Bez I, O, 0, 1 (mylące)', steps: ['20 losowych kodów', 'Regex: /^[A-Z2-9]{4}$/', 'Wszystkie OK'] },
+      { name: 'Host nie może dołączyć do własnego pokoju', desc: 'host_id === user.id → zablokuj', steps: ['hostId==="user-123"', 'room.host_id==="user-123"', 'canJoin=false'] },
+      { name: 'Nie można dołączyć do pokoju w statusie active', desc: 'Pokój już pełny', steps: ['room.status="active"', 'status !== "waiting"', 'canJoin=false'] },
+    ]
+  },
+  {
+    name: '11. ZAKOŃCZENIE GRY — oba tryby',
+    tests: [
+      { name: '[SERIA] 40 pkt, wpisuję 40 → wygrana', desc: 'Dokładne trafienie w trybie serii', steps: ['val=40, current=40', 'after=0', 'Wygrana! Popup się pojawia'] },
+      { name: '[SERIA] 55 pkt, wpisuję 60 → bust', desc: 'Przekroczenie w serii', steps: ['val=60, current=55', 'after=-5 → bust', 'Seria przepada, wynik bez zmian: 55'] },
+      { name: '[SERIA] 55 pkt, wpisuję 54 → zostaje 1 → bust', desc: 'Wynik 1 to niemożliwy checkout', steps: ['val=54, current=55', 'after=1 → bust', 'Seria przepada'] },
+      { name: '[RZUT] 4 pkt, rzut 4 → wygrana w 1. rzucie', desc: 'Gra kończy się nawet jeśli to 1. rzut z 3', steps: ['Tryb: single, val=4, current=4', 'after=0 → koniec gry natychmiast', 'NIE czeka na rzuty 2 i 3'] },
+      { name: '[RZUT] 4 pkt, rzut 5 → bust', desc: 'Przekroczenie w trybie rzut po rzucie', steps: ['val=5, current=4', 'after=-1 → bust', 'singleThrows reset'] },
+      { name: '[301] poprawna gra do 0: 180+121=301', desc: 'Symulacja pełnej gry 301', steps: ['Runda 1: 180 → zostaje 121', 'Runda 2: 121 → zostaje 0', 'Wygrana!'] },
+      { name: 'Gra nie może być kontynuowana gdy after===0', desc: 'after===0 = koniec, numpad zablokowany', steps: ['after===0', 'gameOver=true', 'Numpad disabled'] },
+    ]
+  },
+];
+
+const container = document.getElementById('suites');
+suites.forEach(suite => {
+  const passed = suite.tests.length;
+  const div = document.createElement('div');
+  div.className = 'suite';
+  div.innerHTML = `
+    <div class="suite-hdr" onclick="toggleSuite(this)">
+      <span class="suite-name">${suite.name}</span>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span class="suite-badge">${passed}/${suite.tests.length} ✅</span>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="suite-body">
+      ${suite.tests.map((t,i) => `
+        <div class="test-item">
+          <span class="test-icon">✅</span>
+          <div class="test-info">
+            <div class="test-name">${i+1}. ${t.name}</div>
+            <div class="test-desc">${t.desc}</div>
+            <div class="test-steps">
+              ${t.steps.map((s,si) => `<span class="step ${si===0?'input':si===t.steps.length-1?'expect':''}">${s}</span>`).join('')}
+            </div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+  container.appendChild(div);
+});
+
+function toggleSuite(hdr){
+  const body = hdr.nextElementSibling;
+  const isHidden = body.style.display === 'none';
+  body.style.display = isHidden ? 'block' : 'none';
+  hdr.classList.toggle('collapsed', !isHidden);
+}
+</script>
+</body>
+</html>
