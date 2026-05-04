@@ -1,0 +1,11 @@
+{
+  "name": "dartpro",
+  "version": "1.0.0",
+  "description": "DartPro - Aplikacja do treningu darta",
+  "scripts": {
+    "test": "node tests.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
