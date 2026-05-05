@@ -153,7 +153,7 @@ textarea.inp{resize:none;line-height:1.5}
 .sbar{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--border);margin-top:2px;margin-bottom:4px}
 .sbar-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
 .sbar-v{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;color:var(--accent)}
-.btoast{position:fixed;top:65px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0a0a0f;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;padding:10px 20px;border-radius:30px;z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap}
+.btoast{position:fixed;top:65px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0a0a0f;font-family:'Syne',sans-serif;font-weight:800;font-size:14px;padding:10px 20px;border-radius:30px;z-index:9999;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap}
 .btoast.show{opacity:1}
 
 /* SUMMARY */
@@ -443,7 +443,6 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
       <div id="dartboard-container"></div>
     </div>
   </div>
-  <div class="btoast" id="btoast"></div>
 </div>
 
 <!-- SUMMARY -->
@@ -768,14 +767,7 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 </div>
 
 <!-- CUSTOM ALERT/CONFIRM MODAL -->
-<div class="ca-overlay" id="ca-overlay">
-  <div class="ca-box">
-    <div class="ca-icon" id="ca-icon"></div>
-    <div class="ca-title" id="ca-title"></div>
-    <div class="ca-msg" id="ca-msg"></div>
-    <div class="ca-btns" id="ca-btns"></div>
-  </div>
-</div>
+
 
 <!-- GAME MODE MODAL -->
 <div class="modal-overlay" id="game-modal" onclick="closeGameModal(event)">
@@ -1970,10 +1962,11 @@ async function saveRound(thrown, throwsArr){
   // PRZEKROCZENIE (bust)
   if(after < 0){
     console.log('[MATCH] BUST! after='+after+' < 0 → seria przepada, wynik zostaje: '+current);
-    showToast('💥 BUST! Wpisałeś za dużo ('+thrown+' > '+current+'). Seria przepada.');
+    showToast('💥 BUST! Wpisałeś '+thrown+' pkt ale masz tylko '+current+' pkt. Seria przepada!');
     singleThrows = [];
     npBuffer = '';
     document.getElementById('np-display').textContent = '—';
+    document.getElementById('match-sub').textContent = 'Runda '+(matchRounds.length+1)+' — wpisz nową serię';
     renderMatch();
     return;
   }
@@ -2833,5 +2826,14 @@ document.addEventListener('touchmove', function(e){
   finally{loading(false);initNewRules('shanghai');}
 })();
 </script>
+<div class="ca-overlay" id="ca-overlay">
+  <div class="ca-box">
+    <div class="ca-icon" id="ca-icon"></div>
+    <div class="ca-title" id="ca-title"></div>
+    <div class="ca-msg" id="ca-msg"></div>
+    <div class="ca-btns" id="ca-btns"></div>
+  </div>
+</div>
+<div class="btoast" id="btoast"></div>
 </body>
 </html>
