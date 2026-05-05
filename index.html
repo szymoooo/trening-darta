@@ -1106,21 +1106,26 @@ async function renderHome(){
     :`<div class="empty"><span class="empty-ic">📊</span><div class="empty-t">Brak historii</div></div>`;
 }
 async function startFirst(){
-  const active=S.exercises.filter(e=>e.enabled!==false);
-  if(!active.length){await caAlert('Brak aktywnych ćwiczeń — admin musi je włączyć.','😴','Brak ćwiczeń');return}
-  // Pobierz dzisiejsze sesje
-  const todayStr=new Date().toISOString().slice(0,10);
-  let todaySess=[];
+  const active = S.exercises.filter(e => e.enabled !== false);
+  if(!active.length){
+    showToast('😴 Brak aktywnych ćwiczeń — admin musi je włączyć.');
+    return;
+  }
+  const todayStr = new Date().toISOString().slice(0, 10);
+  let doneTodayIds = [];
   try{
-    const sess=await dbGet('sessions',`user_id=eq.${S.user.id}&order=created_at.desc`);
-    todaySess=(sess||[]).filter(s=>s.created_at.slice(0,10)===todayStr);
-  }catch{}
-  // Znajdź pierwsze niezrobione ćwiczenie
-  const nextEx=active.find(ex=>!todaySess.some(s=>s.exercise_id===ex.id));
-  if(nextEx){
-    startTraining(nextEx.id);
+    const sess = await dbGet('sessions',
+      'user_id=eq.'+S.user.id+'&select=exercise_id,created_at&order=created_at.desc');
+    doneTodayIds = (sess||[])
+      .filter(s => s.created_at.slice(0,10) === todayStr)
+      .map(s => s.exercise_id);
+  }catch(e){ console.warn('startFirst sessions error:', e); }
+
+  // Pierwsze ćwiczenie które NIE było robione dziś
+  const nextUndone = active.find(ex => !doneTodayIds.includes(ex.id));
+  if(nextUndone){
+    startTraining(nextUndone.id);
   } else {
-    // Wszystkie zrobione — pokaż wybór
     await showAllDoneModal(active);
   }
 }
@@ -1276,28 +1281,26 @@ function renderSummary(session,allSess){
     <div class="srow"><span class="sl">Rekord osobisty</span><span class="sv">${best} pkt</span></div>
     <div class="srow"><span class="sl">Liczba sesji</span><span class="sv">${scores.length}</span></div>`;
   // Show "Next exercise" if there is one
-  const active=S.exercises.filter(e=>e.enabled!==false);
-  const currentIdx=active.findIndex(e=>e.id===session.exerciseId);
-  // Znajdź kolejne NIE zrobione dzisiaj ćwiczenie
-  const todayStr=new Date().toISOString().slice(0,10);
-  const todayDoneIds=allSess
-    .filter(s=>s.created_at&&s.created_at.slice(0,10)===todayStr)
-    .map(s=>s.exercise_id);
-  const nextUndone=active.find((e,i)=>i>currentIdx&&!todayDoneIds.includes(e.id));
-  const nextBtn=document.getElementById('sum-next-btn');
+  const active = S.exercises.filter(e => e.enabled !== false);
+  const currentIdx = active.findIndex(e => e.id === session.exerciseId);
+  const todayStr = new Date().toISOString().slice(0,10);
+  // allSess zawiera wszystkie sesje tego ćwiczenia — pobierz wszystkie sesje usera dziś
+  const todayDoneIds = (allSess||[])
+    .filter(s => s.created_at && s.created_at.slice(0,10) === todayStr)
+    .map(s => s.exercise_id);
+  // Dodaj właśnie ukończone
+  if(!todayDoneIds.includes(session.exerciseId)) todayDoneIds.push(session.exerciseId);
+
+  // Znajdź kolejne NIEZROBIONE (pomijaj zrobione dziś)
+  const nextUndone = active.find((e,i) => i > currentIdx && !todayDoneIds.includes(e.id));
+  const nextBtn = document.getElementById('sum-next-btn');
   if(nextBtn){
     if(nextUndone){
-      nextBtn.style.display='block';
-      nextBtn.textContent=`▶️ Następne: ${nextUndone.name}`;
-      nextBtn.onclick=()=>startTraining(nextUndone.id);
-    } else if(currentIdx<active.length-1){
-      // Następne ćwiczenie istnieje ale było już zrobione dziś
-      const nextAny=active[currentIdx+1];
-      nextBtn.style.display='block';
-      nextBtn.textContent=`🔁 Powtórz: ${nextAny.name}`;
-      nextBtn.onclick=()=>startTraining(nextAny.id);
+      nextBtn.style.display = 'block';
+      nextBtn.textContent = '▶️ Następne: ' + nextUndone.name;
+      nextBtn.onclick = () => startTraining(nextUndone.id);
     } else {
-      nextBtn.style.display='none';
+      nextBtn.style.display = 'none';
     }
   }
   const recent=allSess.slice(-5);
@@ -1812,33 +1815,7 @@ async function newMatch(){
   showMatchPopup(!!S.match);
 }
 
-async function showWinPopup(rounds, lastThrown){
-  // Pokaż modal z wynikiem i opcjami
-  return new Promise(async(resolve)=>{
-    const startScore = S.match?.start_score || 501;
-    const idx = await caShow(
-      '🏆', 'Wygrana!',
-      `Ukończyłeś mecz ${startScore} w ${rounds} rundach!
-Ostatni rzut: ${lastThrown} pkt`,
-      [
-        {label:'🔁 Zagraj ponownie (Solo)', cls:'primary'},
-        {label:'⚔️ Gra Online', cls:'outline'},
-        {label:'← Menu', cls:'outline'}
-      ]
-    );
-    if(idx===0){
-      // Nowy mecz solo — ten sam wariant
-      S.match=null;matchRounds=[];singleThrows=[];
-      await startNewMatch(startScore);
-    } else if(idx===1){
-      // Przejdź do multiplayer
-      goTab('multiplayer');
-    } else {
-      goTab('home');
-    }
-    resolve();
-  });
-}
+
 
 function renderMatch(){
   const score=S.match?S.match.current_score:501;
@@ -1965,87 +1942,111 @@ async function npConfirm(){
   }else{
     // Tryb co seria
     if(val>180){await caAlert('Maksymalny wynik serii 3 rzutów to 180 punktów.','⚠️','Za dużo');npBuffer='';document.getElementById('np-display').textContent='—';return}
-    const curScore=Number(S.match.current_score);
-    const wouldBe=curScore-val;
-    if(wouldBe<0){
-      await caOver(`Masz ${curScore} pkt, a wpisałeś ${val}. Przekroczenie — seria przepada, zaczyna się od ${curScore} pkt.`);
-      npBuffer='';document.getElementById('np-display').textContent='—';return;
-    }
-    if(wouldBe===1){
-      await caOver(`Seria przepada — wynik 1 pkt jest niemożliwy do zakończenia. Zostało ${curScore} pkt.`);
-      npBuffer='';document.getElementById('np-display').textContent='—';return;
-    }
     npBuffer='';
+    document.getElementById('np-display').textContent='—';
     await saveRound(val, null);
   }
 }
 
 async function saveRound(thrown, throwsArr){
-  const current=Number(S.match.current_score); // ensure number not string
-  const after=current-thrown;
+  const current = Number(S.match.current_score);
+  const after = current - thrown;
 
   // PRZEKROCZENIE
-  if(after<0){
-    await caOver(`Masz ${current} pkt, a wpisałeś ${thrown}. Wynik jest za duży — spróbuj ponownie.`);
-    singleThrows=[];renderMatch();return;
+  if(after < 0){
+    showToast('⚠️ Za dużo! Masz '+current+' pkt, wpisałeś '+thrown+'. Seria przepada.');
+    singleThrows=[];
+    renderMatch();
+    return;
   }
 
-  // BUST — wynik 1 jest niemożliwy do zakończenia
-  if(after===1){
-    await caOver(`Seria przepada — wynik 1 pkt jest niemożliwy do zakończenia. Zostało ${current} pkt.`);
-    singleThrows=[];renderMatch();return;
+  // BUST — wynik 1 niemożliwy
+  if(after === 1){
+    showToast('⚠️ Wynik 1 pkt niemożliwy! Seria przepada. Zostało '+current+' pkt.');
+    singleThrows=[];
+    renderMatch();
+    return;
   }
 
-  loading(true,'Zapisywanie rundy...');
+  loading(true, 'Zapisywanie rundy...');
   try{
-    const roundNum=matchRounds.length+1;
-    const roundRow=await dbPost('match_rounds',{
-      match_id:S.match.id,round_number:roundNum,
-      score_thrown:thrown,score_after:after
+    const roundNum = matchRounds.length + 1;
+    const roundRow = await dbPost('match_rounds',{
+      match_id: S.match.id,
+      round_number: roundNum,
+      score_thrown: thrown,
+      score_after: after
     });
-    const savedRound={...roundRow[0]};
-    if(throwsArr) savedRound.throws=throwsArr;
+    const savedRound = {...roundRow[0]};
+    if(throwsArr) savedRound.throws = throwsArr;
     matchRounds.push(savedRound);
 
-    // Aktualizuj mecz w DB
-    const isWin=(after===0);
-    await dbPatch('matches',`id=eq.${S.match.id}`,{
-      current_score:after,
-      status:isWin?'finished':'active',
-      finished_at:isWin?new Date().toISOString():null
+    const isWin = (after === 0);
+    await dbPatch('matches', 'id=eq.'+S.match.id, {
+      current_score: after,
+      status: isWin ? 'finished' : 'active',
+      finished_at: isWin ? new Date().toISOString() : null
     });
 
-    // Aktualizuj stan lokalny
-    S.match.current_score=after;
-    S.match.status=isWin?'finished':'active';
+    S.match.current_score = after;
+    S.match.status = isWin ? 'finished' : 'active';
+
+    loading(false);
 
     if(isWin){
-      // WYGRANA — zablokuj klawiaturę natychmiast
-      npBuffer='';singleThrows=[];
-      document.getElementById('np-display').textContent='—';
-      document.getElementById('match-score').textContent='0';
-      document.getElementById('match-sub').textContent='🏆 Wygrana!';
-      document.getElementById('hint-area').innerHTML='';
-      // Zablokuj numpad
-      const numpadEl=document.getElementById('np-ok-btn');
-      if(numpadEl) numpadEl.disabled=true;
-      loading(false);
-      // Pokaż popup z opcjami
-      await showWinPopup(roundNum, thrown);
-      S.match=null;matchRounds=[];singleThrows=[];
-      // Odblokuj numpad
-      if(numpadEl) numpadEl.disabled=false;
-      renderMatch();
+      // Zaktualizuj UI natychmiast
+      npBuffer=''; singleThrows=[];
+      document.getElementById('np-display').textContent = '—';
+      document.getElementById('match-score').textContent = '0';
+      document.getElementById('match-sub').textContent = '🏆 WYGRANA!';
+      document.getElementById('hint-area').innerHTML = '';
+      document.getElementById('rounds-list').innerHTML = '';
+
+      // Zablokuj klawiaturę
+      document.querySelectorAll('.np-btn').forEach(b => b.disabled = true);
+
+      const startScore = S.match.start_score || 501;
+
+      // Pokaż popup po krótkim opóźnieniu żeby UI się odświeżył
+      setTimeout(async function(){
+        const choice = await caShow(
+          '🏆', 'Wygrana!',
+          'Ukończyłeś mecz '+startScore+' w '+roundNum+' rundach! Ostatni rzut: '+thrown+' pkt',
+          [
+            {label:'🔁 Zagraj ponownie', cls:'primary'},
+            {label:'⚔️ Gra Online', cls:'outline'},
+            {label:'← Menu', cls:'outline'}
+          ]
+        );
+
+        // Odblokuj klawiaturę
+        document.querySelectorAll('.np-btn').forEach(b => b.disabled = false);
+
+        S.match = null;
+        matchRounds = [];
+        singleThrows = [];
+        npBuffer = '';
+
+        if(choice === 0){
+          await startNewMatch(startScore);
+        } else if(choice === 1){
+          goTab('multiplayer');
+        } else {
+          goTab('home');
+        }
+      }, 300);
+
       return;
     }
 
     // Kontynuuj grę
     renderMatch();
+
   }catch(e){
-    await caAlert(e.message,'❌','Błąd zapisu');
-    singleThrows=[];
+    loading(false);
+    showToast('❌ Błąd zapisu: ' + e.message);
+    singleThrows = [];
   }
-  finally{loading(false);}
 }
 
 // ═══════════════════════════════════════════════
