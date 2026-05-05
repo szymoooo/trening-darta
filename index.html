@@ -831,6 +831,7 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const HDR = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
 
 async function sb(method,table,params='',body=null){
+  console.log('[DB] '+method+' /'+table+(params?'?'+params.slice(0,60):''));
   const opts={method,headers:{...HDR}};
   if(body) opts.body=JSON.stringify(body);
   const res=await fetch(`${SB_URL}/rest/v1/${table}${params?'?'+params:''}`,opts);
@@ -998,8 +999,10 @@ async function handleLogin(){
       S.user=users[0];
     }
     S.isAdmin=S.user.is_admin;
+    console.log('[AUTH] Zalogowano:', {username:S.user.username, isAdmin:S.user.is_admin, id:S.user.id});
     await updateStreak();
     await loadExercises();
+    console.log('[AUTH] Załadowano ćwiczeń:', S.exercises.length);
     saveSession(S.user.id);
     startInactivityTimer();
     if(S.isAdmin){showScreen('admin');renderAdminEx();renderLB();}
@@ -1203,6 +1206,7 @@ function renderDartBtns(ex,target){
 function recThrow(zone,pts,cc){
   const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
   if(t.curThrows.length>=ex.throws_per_target)return;
+  console.log('[TRAINING] Rzut: zone='+zone+', pts='+pts+', rzut '+(t.curThrows.length+1)+'/'+ex.throws_per_target+', cel='+ex.targets[t.ti]);
   t.curThrows.push({zone,pts,cc});
   const i=t.curThrows.length-1;
   const chip=document.getElementById('chip-'+i);
@@ -1236,6 +1240,7 @@ async function confirmExit(){if(S.training.sessScore>0){const c=await caConfirm(
 async function finishTraining(){
   const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
   const bonTotal=t.bonuses.reduce((a,b)=>a+b,0);
+  console.log('[TRAINING] Zakończono sesję:', {exercise:ex.name, score:t.sessScore, bonus:bonTotal, rounds:t.rounds.length});
   loading(true,'Zapisywanie wyniku...');
   try{
     const sessionRows=await dbPost('sessions',{
@@ -1857,6 +1862,7 @@ function npPress(d){
   const mode=S.user?.input_mode||'series';
   const maxLen=mode==='single'?2:3;
   if(npBuffer.length>=maxLen)return;
+  console.log('[NUMPAD] press: d='+d+', buffer='+npBuffer+', mode='+mode+', current='+S.match.current_score);
 
   const candidate=npBuffer+d;
   const candidateVal=parseInt(candidate);
@@ -1895,6 +1901,7 @@ async function npConfirm(){
   if(!S.match){await caAlert('Kliknij przycisk Nowy aby rozpocząć mecz.','🏹','Brak meczu');return}
   const mode=S.user?.input_mode||'series';
   const val=parseInt(npBuffer);
+  console.log('[NUMPAD] confirm: val='+val+', mode='+mode+', current='+S.match.current_score+', singleThrows='+JSON.stringify(singleThrows));
 
   if(isNaN(val)||val<0){
     await caAlert('Wpisz wynik rzutu na klawiaturze.','🎯','Brak wyniku');npBuffer='';
@@ -1910,15 +1917,18 @@ async function npConfirm(){
     const partialSum=singleThrows.reduce((a,b)=>a+b,0);
     const current=S.match.current_score;
     const scoreAfter=current-partialSum;
+    console.log('[MATCH-SINGLE] Rzut '+singleThrows.length+'/3: val='+val+', partialSum='+partialSum+', current='+current+', scoreAfter='+scoreAfter);
 
     // Przekroczenie — seria przepada
     if(scoreAfter<0){
-      await caOver(`Przekroczenie po ${singleThrows.length} rzucie! Seria przepada.`);
+      console.log('[MATCH-SINGLE] BUST! scoreAfter='+scoreAfter);
+      showToast('💥 BUST po '+singleThrows.length+'. rzucie! Seria przepada.');
       singleThrows=[];renderMatch();return;
     }
 
     // WYGRANA — kończymy natychmiast bez czekania na pozostałe rzuty
     if(scoreAfter===0){
+      console.log('[MATCH] Wygrana w trybie rzut! rzut='+val+', partialSum='+partialSum+', rzutów w serii='+singleThrows.length);
       const throwsSnapshot=[...singleThrows];
       singleThrows=[];
       await saveRound(partialSum, throwsSnapshot);
@@ -1927,7 +1937,8 @@ async function npConfirm(){
 
     // Wynik 1 niemożliwy — seria przepada
     if(scoreAfter===1){
-      await caOver('Wynik 1 pkt jest niemożliwy do zakończenia. Seria przepada.');
+      console.log('[MATCH-SINGLE] BUST! scoreAfter=1 niemożliwy checkout');
+      showToast('💥 BUST! Wynik 1 pkt niemożliwy. Seria przepada. Zostało: '+current+' pkt.');
       singleThrows=[];renderMatch();return;
     }
 
@@ -1942,6 +1953,8 @@ async function npConfirm(){
   }else{
     // Tryb co seria
     if(val>180){await caAlert('Maksymalny wynik serii 3 rzutów to 180 punktów.','⚠️','Za dużo');npBuffer='';document.getElementById('np-display').textContent='—';return}
+    const curForLog = Number(S.match.current_score);
+    console.log('[MATCH] Seria zatwierdzona. val='+val+', current='+curForLog+', after='+(curForLog-val));
     npBuffer='';
     document.getElementById('np-display').textContent='—';
     await saveRound(val, null);
@@ -1952,23 +1965,33 @@ async function saveRound(thrown, throwsArr){
   const current = Number(S.match.current_score);
   const after = current - thrown;
 
-  // PRZEKROCZENIE
+  console.log('[MATCH] saveRound called:', {thrown, current, after, throwsArr});
+
+  // PRZEKROCZENIE (bust)
   if(after < 0){
-    showToast('⚠️ Za dużo! Masz '+current+' pkt, wpisałeś '+thrown+'. Seria przepada.');
-    singleThrows=[];
+    console.log('[MATCH] BUST! after='+after+' < 0 → seria przepada, wynik zostaje: '+current);
+    showToast('💥 BUST! Wpisałeś za dużo ('+thrown+' > '+current+'). Seria przepada.');
+    singleThrows = [];
+    npBuffer = '';
+    document.getElementById('np-display').textContent = '—';
     renderMatch();
     return;
   }
 
   // BUST — wynik 1 niemożliwy
   if(after === 1){
-    showToast('⚠️ Wynik 1 pkt niemożliwy! Seria przepada. Zostało '+current+' pkt.');
-    singleThrows=[];
+    console.log('[MATCH] BUST! after=1 → niemożliwy checkout, seria przepada');
+    showToast('💥 BUST! Wynik 1 pkt niemożliwy do zakończenia. Seria przepada.');
+    singleThrows = [];
+    npBuffer = '';
+    document.getElementById('np-display').textContent = '—';
     renderMatch();
     return;
   }
 
+  console.log('[MATCH] Saving round to DB... roundNum='+(matchRounds.length+1));
   loading(true, 'Zapisywanie rundy...');
+
   try{
     const roundNum = matchRounds.length + 1;
     const roundRow = await dbPost('match_rounds',{
@@ -1977,26 +2000,34 @@ async function saveRound(thrown, throwsArr){
       score_thrown: thrown,
       score_after: after
     });
+    console.log('[MATCH] Round saved to DB:', roundRow[0]);
+
     const savedRound = {...roundRow[0]};
     if(throwsArr) savedRound.throws = throwsArr;
     matchRounds.push(savedRound);
 
     const isWin = (after === 0);
+    console.log('[MATCH] isWin='+isWin+', after='+after);
+
     await dbPatch('matches', 'id=eq.'+S.match.id, {
       current_score: after,
       status: isWin ? 'finished' : 'active',
       finished_at: isWin ? new Date().toISOString() : null
     });
+    console.log('[MATCH] Match updated in DB: current_score='+after+', status='+(isWin?'finished':'active'));
 
     S.match.current_score = after;
     S.match.status = isWin ? 'finished' : 'active';
-
     loading(false);
 
     if(isWin){
-      // Zaktualizuj UI natychmiast
-      npBuffer=''; singleThrows=[];
+      console.log('[MATCH] 🏆 WYGRANA! Wyświetlam UI wygranej...');
+
+      // Reset bufferów
+      npBuffer = ''; singleThrows = [];
       document.getElementById('np-display').textContent = '—';
+
+      // Aktualizuj licznik na 0
       document.getElementById('match-score').textContent = '0';
       document.getElementById('match-sub').textContent = '🏆 WYGRANA!';
       document.getElementById('hint-area').innerHTML = '';
@@ -2004,48 +2035,54 @@ async function saveRound(thrown, throwsArr){
 
       // Zablokuj klawiaturę
       document.querySelectorAll('.np-btn').forEach(b => b.disabled = true);
+      console.log('[MATCH] Klawiatura zablokowana, czekam 400ms na popup...');
 
       const startScore = S.match.start_score || 501;
 
-      // Pokaż popup po krótkim opóźnieniu żeby UI się odświeżył
+      // Popup po opóźnieniu
       setTimeout(async function(){
+        console.log('[MATCH] Pokazuję popup wygranej...');
         const choice = await caShow(
           '🏆', 'Wygrana!',
-          'Ukończyłeś mecz '+startScore+' w '+roundNum+' rundach! Ostatni rzut: '+thrown+' pkt',
+          'Mecz '+startScore+' ukończony w '+roundNum+' rundach! Ostatni rzut: '+thrown+' pkt',
           [
             {label:'🔁 Zagraj ponownie', cls:'primary'},
             {label:'⚔️ Gra Online', cls:'outline'},
             {label:'← Menu', cls:'outline'}
           ]
         );
+        console.log('[MATCH] Wybór w popupie:', choice);
 
         // Odblokuj klawiaturę
         document.querySelectorAll('.np-btn').forEach(b => b.disabled = false);
-
-        S.match = null;
-        matchRounds = [];
-        singleThrows = [];
-        npBuffer = '';
+        S.match = null; matchRounds = []; singleThrows = []; npBuffer = '';
 
         if(choice === 0){
+          console.log('[MATCH] Nowy mecz solo:', startScore);
           await startNewMatch(startScore);
         } else if(choice === 1){
+          console.log('[MATCH] Przejście do multiplayer');
           goTab('multiplayer');
         } else {
+          console.log('[MATCH] Powrót do menu');
           goTab('home');
         }
-      }, 300);
+      }, 400);
 
       return;
     }
 
     // Kontynuuj grę
+    console.log('[MATCH] Kontynuacja gry. Zostało: '+after+' pkt. Runda '+(roundNum+1));
     renderMatch();
 
   }catch(e){
     loading(false);
+    console.error('[MATCH] Błąd zapisu:', e);
     showToast('❌ Błąd zapisu: ' + e.message);
     singleThrows = [];
+    npBuffer = '';
+    renderMatch();
   }
 }
 
@@ -2418,6 +2455,7 @@ async function mpSaveRound(thrown){
   const room=MP.room,myId=S.user.id,isHost=room.host_id===myId;
   const myCurrentScore=isHost?room.host_score:room.guest_score;
   const after=myCurrentScore-thrown;
+  console.log('[MP] mpSaveRound: thrown='+thrown+', myCurrentScore='+myCurrentScore+', after='+after+', isHost='+isHost);
   if(after<0){await caOver(`Masz ${myCurrentScore} pkt, a wpisałeś ${thrown}. Przekroczenie!`);MP.myThrows=[];renderMpGame();return;}
   if(after===1){await caOver('Wynik 1 pkt jest niemożliwy. Wpisz mniej.');MP.myThrows=[];renderMpGame();return;}
   loading(true,'Zapisywanie tury...');
