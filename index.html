@@ -1856,7 +1856,7 @@ function renderMatch(){
   // Rundy
   const el=document.getElementById('rounds-list');
   if(!matchRounds.length){el.innerHTML='<div class="empty"><span class="empty-ic">🏹</span><div class="empty-t">Brak rund</div></div>';return}
-    el.innerHTML=[...matchRounds].reverse().map(r=>{
+    el.innerHTML=(matchRounds||[]).slice().reverse().map(r=>{
     const isBust=(r.bust===true)||(r.score_thrown===0&&r.score_after>0);
     const scoreColor=isBust?'var(--danger)':'var(--accent2)';
     const scoreText=isBust?'BUST':('-'+r.score_thrown);
