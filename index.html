@@ -366,7 +366,7 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 .ca-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:8px}
 .ca-msg{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:20px;white-space:pre-line}
 .ca-btns{display:flex;flex-direction:column;gap:8px}
-.ca-btns.two{flex-direction:row}
+.ca-btns.two{display:flex;flex-direction:column;gap:8px}
 .ca-btn{flex:1;padding:13px;border-radius:40px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;border:none}
 .ca-btn:active{transform:scale(.97)}
 .ca-btn.primary{background:var(--accent);color:#0a0a0f}
@@ -1856,13 +1856,18 @@ function renderMatch(){
   // Rundy
   const el=document.getElementById('rounds-list');
   if(!matchRounds.length){el.innerHTML='<div class="empty"><span class="empty-ic">🏹</span><div class="empty-t">Brak rund</div></div>';return}
-  el.innerHTML=[...matchRounds].reverse().map(r=>`
-    <div class="round-item">
-      <span class="ri-rnd">Runda ${r.round_number}</span>
-      <span class="ri-score" style="color:var(--accent2)">-${r.score_thrown}</span>
-      <span class="ri-after">${r.score_after} pkt</span>
-      ${r.throws?`<span style="font-size:11px;color:var(--muted)">${r.throws.join(' + ')}</span>`:''}
-    </div>`).join('');
+    el.innerHTML=[...matchRounds].reverse().map(r=>{
+    const isBust=(r.bust===true)||(r.score_thrown===0&&r.score_after>0);
+    const scoreColor=isBust?'var(--danger)':'var(--accent2)';
+    const scoreText=isBust?'BUST':('-'+r.score_thrown);
+    const throwsHtml=r.throws?('<span style="font-size:11px;color:var(--muted)">'+r.throws.join(' + ')+'</span>'):'';
+    return'<div class="round-item" style="'+(isBust?'opacity:0.55':'')+'">'
+      +'<span class="ri-rnd">Runda '+r.round_number+'</span>'
+      +'<span class="ri-score" style="color:'+scoreColor+'">'+scoreText+'</span>'
+      +'<span class="ri-after">'+r.score_after+' pkt</span>'
+      +throwsHtml
+      +'</div>';
+  }).join('');
 }
 
 function npPress(d){
@@ -1975,29 +1980,38 @@ async function saveRound(thrown, throwsArr){
 
   console.log('[MATCH] saveRound called:', {thrown, current, after, throwsArr});
 
-  // PRZEKROCZENIE (bust)
-  if(after < 0){
-    console.log('[MATCH] BUST! after='+after+' < 0 → seria przepada, wynik zostaje: '+current);
-    showToast('💥 BUST! Wpisałeś '+thrown+' pkt ale masz tylko '+current+' pkt. Seria przepada!');
+    // BUST — za dużo lub wynik 1 (niemożliwy checkout)
+  if(after < 0 || after === 1){
+    const bustMsg = after < 0
+      ? '💥 BUST! '+thrown+' > '+current+' pkt. Seria przepada!'
+      : '💥 BUST! Wynik 1 pkt niemożliwy. Seria przepada!';
+    console.log('[MATCH] BUST! after='+after+', thrown='+thrown+', current='+current);
+    showToast(bustMsg);
+
+    // Zapisz bust jako rundę z 0 pkt żeby licznik rund rósł
+    const bustRoundNum = matchRounds.length + 1;
+    try{
+      const bustRow = await dbPost('match_rounds',{
+        match_id: S.match.id,
+        round_number: bustRoundNum,
+        score_thrown: 0,
+        score_after: current
+      });
+      const bustSaved = {...bustRow[0], bust: true};
+      matchRounds.push(bustSaved);
+      console.log('[MATCH] Bust saved as round '+bustRoundNum+', score stays: '+current);
+    }catch(e){
+      console.warn('[MATCH] Bust save failed:', e.message);
+    }
+
     singleThrows = [];
     npBuffer = '';
     document.getElementById('np-display').textContent = '—';
-    document.getElementById('match-sub').textContent = 'Runda '+(matchRounds.length+1)+' — wpisz nową serię';
     renderMatch();
     return;
   }
 
-  // BUST — wynik 1 niemożliwy
-  if(after === 1){
-    console.log('[MATCH] BUST! after=1 → niemożliwy checkout, seria przepada');
-    showToast('💥 BUST! Wynik 1 pkt niemożliwy do zakończenia. Seria przepada.');
-    singleThrows = [];
-    npBuffer = '';
-    document.getElementById('np-display').textContent = '—';
-    renderMatch();
-    return;
-  }
-
+  
   console.log('[MATCH] Saving round to DB... roundNum='+(matchRounds.length+1));
   loading(true, 'Zapisywanie rundy...');
 
