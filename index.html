@@ -1932,11 +1932,29 @@ async function npConfirm(){
     const scoreAfter=current-partialSum;
     console.log('[MATCH-SINGLE] Rzut '+singleThrows.length+'/3: val='+val+', partialSum='+partialSum+', current='+current+', scoreAfter='+scoreAfter);
 
-    // Przekroczenie — seria przepada
+    // Przekroczenie — seria przepada, zapisz rundę z 0 pkt
     if(scoreAfter<0){
-      console.log('[MATCH-SINGLE] BUST! scoreAfter='+scoreAfter);
-      showToast('💥 BUST po '+singleThrows.length+'. rzucie! Seria przepada.');
-      singleThrows=[];renderMatch();return;
+      console.log('[MATCH-SINGLE] BUST! scoreAfter='+scoreAfter+', saving bust round...');
+      showToast('💥 BUST po '+singleThrows.length+'. rzucie! Seria przepada. Zostało: '+current+' pkt.');
+      const bustNum = matchRounds.length + 1;
+      try{
+        const bustRow = await dbPost('match_rounds',{
+          match_id: S.match.id,
+          round_number: bustNum,
+          score_thrown: 0,
+          score_after: current
+        });
+        const bustSaved = {...bustRow[0], bust: true};
+        matchRounds.push(bustSaved);
+        console.log('[MATCH-SINGLE] Bust round '+bustNum+' saved, score stays: '+current);
+      }catch(e){
+        console.warn('[MATCH-SINGLE] Bust save failed:', e.message);
+      }
+      singleThrows=[];
+      npBuffer='';
+      document.getElementById('np-display').textContent='—';
+      renderMatch();
+      return;
     }
 
     // WYGRANA — kończymy natychmiast bez czekania na pozostałe rzuty
@@ -1948,11 +1966,19 @@ async function npConfirm(){
       return;
     }
 
-    // Wynik 1 niemożliwy — seria przepada
+    // Wynik 1 niemożliwy — seria przepada, zapisz rundę z 0 pkt
     if(scoreAfter===1){
-      console.log('[MATCH-SINGLE] BUST! scoreAfter=1 niemożliwy checkout');
+      console.log('[MATCH-SINGLE] BUST scoreAfter=1, saving bust round...');
       showToast('💥 BUST! Wynik 1 pkt niemożliwy. Seria przepada. Zostało: '+current+' pkt.');
-      singleThrows=[];renderMatch();return;
+      const bn1=matchRounds.length+1;
+      try{
+        const br1=await dbPost('match_rounds',{match_id:S.match.id,round_number:bn1,score_thrown:0,score_after:current});
+        matchRounds.push({...br1[0],bust:true});
+        console.log('[MATCH-SINGLE] Bust-1 round '+bn1+' saved, score stays: '+current);
+      }catch(e){console.warn('[MATCH-SINGLE] Bust-1 save failed:',e.message);}
+      singleThrows=[];npBuffer='';
+      document.getElementById('np-display').textContent='—';
+      renderMatch();return;
     }
 
     // Czekaj na kolejny rzut (max 3)
