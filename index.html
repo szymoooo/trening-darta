@@ -846,7 +846,7 @@ async function sb(method, table, params = '', body = null) {
   console.log('[DB] ' + method + ' /' + table + (params ? '?' + params.slice(0, 60) : ''));
   const opts = { method, headers: { ...HDR } };
   if (body) opts.body = JSON.stringify(body);
-  if (method === 'PATCH') opts.headers['Prefer'] = 'return=representation';
+  if (method === 'POST' || method === 'PATCH') opts.headers['Prefer'] = 'return=representation';
   const url = `${SB_URL}/rest/v1/${table}${params ? '?' + params : ''}`;
   const res = await fetch(url, opts);
   
