@@ -20,7 +20,7 @@ const manifestData = {
   "name": "DartPro – Trening Darta",
   "short_name": "DartPro",
   "description": "Aplikacja do treningu i śledzenia postępów w darcie",
-  "start_url": "./",
+  "start_url": "./index.html"
   "display": "standalone",
   "background_color": "#0a0a0f",
   "theme_color": "#0a0a0f",
@@ -390,12 +390,12 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
       <h1>Dart<em>Pro</em></h1>
       <p>Trenuj systematycznie. Śledź postępy. Stawaj się lepszy każdego dnia.</p>
     </div>
-    <div class="form-col">
-      <div id="login-err" class="err-msg"></div>
-      <div><label class="lbl">Pseudonim</label><input class="inp" id="l-name" type="text" placeholder="np. Kowalski" autocomplete="off"/></div>
-      <div><label class="lbl">Hasło / PIN</label><input class="inp" id="l-pass" type="password" placeholder="Twoje hasło lub 4-cyfrowy PIN"/></div>
-      <button class="block-btn bb-primary" id="login-btn" onclick="handleLogin()">Wejdź do aplikacji</button>
-    </div>
+    <form class="form-col" onsubmit="event.preventDefault(); handleLogin();">
+  <div id="login-err" class="err-msg"></div>
+  <div><label class="lbl">Pseudonim</label><input class="inp" id="l-name" type="text" placeholder="np. Kowalski" autocomplete="username" required/></div>
+  <div><label class="lbl">Hasło / PIN</label><input class="inp" id="l-pass" type="password" placeholder="Twoje hasło lub 4-cyfrowy PIN" autocomplete="current-password" required/></div>
+  <button type="submit" class="block-btn bb-primary" id="login-btn">Wejdź do aplikacji</button>
+</form>
     <div class="divrow">info</div>
     <p class="note">Pierwsze logowanie = automatyczna rejestracja.<br>Wpisz pseudonim i hasło — konto zostanie utworzone automatycznie.</p>
   </div>
@@ -836,27 +836,24 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 // ═══════════════════════════════════════════════
 const SB_URL = 'https://femoshkoumxikrcjhool.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlbW9zaGtvdW14aWtyY2pob29sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODQ3NjIsImV4cCI6MjA5MzE2MDc2Mn0.JEbU2gvcsq6WQxheyktkYDhf1gaoHYyYCzVmzer9hKY';
-// NOWY KOD — bez zmian, ale sprawdź czy PATCH używa tych nagłówków:
-async function sb(method,table,params='',body=null){
-  const opts={method,headers:{...HDR}};
-  if(body) opts.body=JSON.stringify(body);
-  // Dla PATCH dodaj nagłówek żeby baza zwróciła wynik
-  if(method==='PATCH') opts.headers['Prefer']='return=representation';
+const HDR = {apikey: SB_KEY, Authorization: 'Bearer '+SB_KEY, 'Content-Type': 'application/json'};
 
-async function sb(method,table,params='',body=null){
-  console.log('[DB] '+method+' /'+table+(params?'?'+params.slice(0,60):''));
-  const opts={method,headers:{...HDR}};
-  if(body) opts.body=JSON.stringify(body);
-  const res=await fetch(`${SB_URL}/rest/v1/${table}${params?'?'+params:''}`,opts);
-  if(res.status===204) return null;
-  const data=await res.json();
-  if(!res.ok) throw new Error(data.message||data.error||'DB error');
+async function sb(method, table, params = '', body = null) {
+  console.log('[DB] ' + method + ' /' + table + (params ? '?' + params.slice(0, 60) : ''));
+  const opts = { method, headers: { ...HDR } };
+  if (body) opts.body = JSON.stringify(body);
+  // Dla PATCH dodaj nagłówek żeby baza zwróciła wynik
+  if (method === 'PATCH') opts.headers['Prefer'] = 'return=representation';
+  const res = await fetch(`${SB_URL}/rest/v1/${table}${params ? '?' + params : ''}`, opts);
+  if (res.status === 204) return null;
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || data.error || 'DB error');
   return data;
 }
-const dbGet=(t,p)=>sb('GET',t,p);
-const dbPost=(t,b)=>sb('POST',t,'',b);
-const dbPatch=(t,p,b)=>sb('PATCH',t,p,b);
-const dbDelete=(t,p)=>sb('DELETE',t,p);
+const dbGet = (t, p) => sb('GET', t, p);
+const dbPost = (t, b) => sb('POST', t, '', b);
+const dbPatch = (t, p, b) => sb('PATCH', t, p, b);
+const dbDelete = (t, p) => sb('DELETE', t, p);
 
 // ═══════════════════════════════════════════════
 //  STATE
