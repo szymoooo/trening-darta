@@ -836,20 +836,25 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 // ═══════════════════════════════════════════════
 const SB_URL = 'https://femoshkoumxikrcjhool.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlbW9zaGtvdW14aWtyY2pob29sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODQ3NjIsImV4cCI6MjA5MzE2MDc2Mn0.JEbU2gvcsq6WQxheyktkYDhf1gaoHYyYCzVmzer9hKY';
-const HDR = {apikey: SB_KEY, Authorization: 'Bearer '+SB_KEY, 'Content-Type': 'application/json'};
+const HDR = {
+  apikey: SB_KEY,
+  Authorization: 'Bearer ' + SB_KEY,
+  'Content-Type': 'application/json'
+};
 
 async function sb(method, table, params = '', body = null) {
   console.log('[DB] ' + method + ' /' + table + (params ? '?' + params.slice(0, 60) : ''));
   const opts = { method, headers: { ...HDR } };
   if (body) opts.body = JSON.stringify(body);
-  // Dla PATCH dodaj nagłówek żeby baza zwróciła wynik
   if (method === 'PATCH') opts.headers['Prefer'] = 'return=representation';
-  const res = await fetch(`${SB_URL}/rest/v1/${table}${params ? '?' + params : ''}`, opts);
+  const url = `${SB_URL}/rest/v1/${table}${params ? '?' + params : ''}`;
+  const res = await fetch(url, opts);
   if (res.status === 204) return null;
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || data.error || 'DB error');
   return data;
 }
+
 const dbGet = (t, p) => sb('GET', t, p);
 const dbPost = (t, b) => sb('POST', t, '', b);
 const dbPatch = (t, p, b) => sb('PATCH', t, p, b);
