@@ -836,7 +836,12 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 // ═══════════════════════════════════════════════
 const SB_URL = 'https://femoshkoumxikrcjhool.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlbW9zaGtvdW14aWtyY2pob29sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1ODQ3NjIsImV4cCI6MjA5MzE2MDc2Mn0.JEbU2gvcsq6WQxheyktkYDhf1gaoHYyYCzVmzer9hKY';
-const HDR = {'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':'application/json','Prefer':'return=representation'};
+// NOWY KOD — bez zmian, ale sprawdź czy PATCH używa tych nagłówków:
+async function sb(method,table,params='',body=null){
+  const opts={method,headers:{...HDR}};
+  if(body) opts.body=JSON.stringify(body);
+  // Dla PATCH dodaj nagłówek żeby baza zwróciła wynik
+  if(method==='PATCH') opts.headers['Prefer']='return=representation';
 
 async function sb(method,table,params='',body=null){
   console.log('[DB] '+method+' /'+table+(params?'?'+params.slice(0,60):''));
@@ -972,12 +977,14 @@ function scheduleAutoSave(exId){
   clearTimeout(autoSaveTimers[exId]);
   const dot=document.getElementById('saving-dot-'+exId);
   if(dot)dot.style.display='inline-block';
-  autoSaveTimers[exId]=setTimeout(async()=>{
+ // NOWY KOD — zastąp tym:
+autoSaveTimers[exId]=setTimeout(async()=>{
     const ex=S.exercises.find(e=>e.id===exId);if(!ex)return;
     try{
+      const scoringData=getRules(ex);
       await dbPatch('exercises',`id=eq.${exId}`,{
-        name:ex.name,description:ex.description,rules:ex.rules,
-        scoring:JSON.stringify(getRules(ex)),enabled:ex.enabled
+        name:ex.name,description:ex.description,rules:ex.rules||null,
+        scoring:scoringData,enabled:ex.enabled
       });
       if(dot)dot.style.display='none';
       showToast('✅ Zapisano automatycznie');
@@ -2235,9 +2242,11 @@ async function saveAll(){
   loading(true,'Zapisywanie...');
   try{
     for(const ex of S.exercises){
+      // NOWY KOD:
+const scoringData=getRules(ex);
       await dbPatch('exercises',`id=eq.${ex.id}`,{
-        name:ex.name,description:ex.description,rules:ex.rules,
-        scoring:JSON.stringify(getRules(ex)),enabled:ex.enabled
+        name:ex.name,description:ex.description,rules:ex.rules||null,
+        scoring:scoringData,enabled:ex.enabled
       });
     }
     showToast('✅ Zapisano!');renderAdminEx();
