@@ -849,7 +849,10 @@ async function sb(method, table, params = '', body = null) {
   if (method === 'PATCH') opts.headers['Prefer'] = 'return=representation';
   const url = `${SB_URL}/rest/v1/${table}${params ? '?' + params : ''}`;
   const res = await fetch(url, opts);
+  
+  // Jeśli status 204 (No Content), zwróć null zamiast próbować parsować JSON
   if (res.status === 204) return null;
+  
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || data.error || 'DB error');
   return data;
@@ -1948,14 +1951,15 @@ async function npConfirm(){
       const bustNum = matchRounds.length + 1;
       try{
         const bustRow = await dbPost('match_rounds',{
-          match_id: S.match.id,
-          round_number: bustNum,
-          score_thrown: 0,
-          score_after: current
-        });
-        const bustSaved = {...bustRow[0], bust: true};
-        matchRounds.push(bustSaved);
-        console.log('[MATCH-SINGLE] Bust round '+bustNum+' saved, score stays: '+current);
+  match_id: S.match.id,
+  round_number: bustNum,
+  score_thrown: 0,
+  score_after: current
+});
+// ZMIANA: obsługa null gdy odpowiedź 204
+const bustSaved = bustRow ? { ...bustRow[0], bust: true } : { round_number: bustNum, score_thrown: 0, score_after: current, bust: true };
+matchRounds.push(bustSaved);
+console.log('[MATCH-SINGLE] Bust round '+bustNum+' saved, score stays: '+current);
       }catch(e){
         console.warn('[MATCH-SINGLE] Bust save failed:', e.message);
       }
@@ -2027,14 +2031,15 @@ async function saveRound(thrown, throwsArr){
     const bustRoundNum = matchRounds.length + 1;
     try{
       const bustRow = await dbPost('match_rounds',{
-        match_id: S.match.id,
-        round_number: bustRoundNum,
-        score_thrown: 0,
-        score_after: current
-      });
-      const bustSaved = {...bustRow[0], bust: true};
-      matchRounds.push(bustSaved);
-      console.log('[MATCH] Bust saved as round '+bustRoundNum+', score stays: '+current);
+  match_id: S.match.id,
+  round_number: bustRoundNum,
+  score_thrown: 0,
+  score_after: current
+});
+// ZMIANA: obsługa null gdy odpowiedź 204
+const bustSaved = bustRow ? { ...bustRow[0], bust: true } : { round_number: bustRoundNum, score_thrown: 0, score_after: current, bust: true };
+matchRounds.push(bustSaved);
+console.log('[MATCH] Bust saved as round '+bustRoundNum+', score stays: '+current);
     }catch(e){
       console.warn('[MATCH] Bust save failed:', e.message);
     }
@@ -2052,17 +2057,16 @@ async function saveRound(thrown, throwsArr){
 
   try{
     const roundNum = matchRounds.length + 1;
-    const roundRow = await dbPost('match_rounds',{
-      match_id: S.match.id,
-      round_number: roundNum,
-      score_thrown: thrown,
-      score_after: after
-    });
-    console.log('[MATCH] Round saved to DB:', roundRow[0]);
-
-    const savedRound = {...roundRow[0]};
-    if(throwsArr) savedRound.throws = throwsArr;
-    matchRounds.push(savedRound);
+   const roundRow = await dbPost('match_rounds',{
+  match_id: S.match.id,
+  round_number: roundNum,
+  score_thrown: thrown,
+  score_after: after
+});
+// ZMIANA: obsługa null
+const savedRound = roundRow ? { ...roundRow[0] } : { round_number: roundNum, score_thrown: thrown, score_after: after };
+if(throwsArr) savedRound.throws = throwsArr;
+matchRounds.push(savedRound);
 
     const isWin = (after === 0);
     console.log('[MATCH] isWin='+isWin+', after='+after);
