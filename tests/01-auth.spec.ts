@@ -35,12 +35,16 @@ test.describe('Authentication', () => {
   });
 
   test('login with Polish characters in username (ąęśź)', async ({ page }) => {
-    await page.fill('#login-username', 'użytkownik');
+    // Use a unique Polish username to avoid conflicts with existing accounts
+    const uniqueName = 'użyt_' + Date.now();
+    await page.fill('#login-username', uniqueName);
     await page.fill('#login-password', 'hasło123');
     await page.click('#login-submit');
-    // Should either login or show error - not crash
-    const homeOrError = page.locator('#screen-home.active, #login-error');
-    await expect(homeOrError.first()).toBeVisible({ timeout: 10000 });
+    // Expected: new user is created (Supabase handles UTF-8), login succeeds to home
+    await page.waitForSelector('#screen-home.active, #screen-admin.active, #login-error.show', { timeout: 15000 });
+    // If error shown, app crashed on Polish chars which is a bug; we expect login to succeed
+    const errorShown = await page.locator('#login-error.show').isVisible().catch(() => false);
+    expect(errorShown).toBe(false);
   });
 
   test('wrong password shows error', async ({ page }) => {

@@ -74,16 +74,21 @@ test.describe('Match', () => {
     expect(parseInt(scoreText?.trim() || '0')).toBe(321);
   });
 
-  test('entering 181 is rejected', async ({ page }) => {
+  test('entering 181 is rejected (numpad blocks 3rd digit)', async ({ page }) => {
+    // Numpad should block the "1" when buffer would become "181"
     await page.click('#np-1');
     await page.click('#np-8');
-    await page.click('#np-1');
-    await page.click('#np-ok');
-    await page.waitForTimeout(500);
+    await page.click('#np-1');  // This digit should be rejected (toast warning)
+    // Display should still show "18" because 181 > 180 is blocked at press time
+    const display = await page.locator('#np-display').textContent();
+    expect(display?.trim()).toBe('18');
 
-    // Score should remain at 501 (181 rejected)
+    await page.click('#np-ok');
+    await page.waitForTimeout(800);
+
+    // Score after entering 18: 501 - 18 = 483
     const scoreText = await page.locator('#match-score').textContent();
-    expect(parseInt(scoreText?.trim() || '0')).toBe(501);
+    expect(parseInt(scoreText?.trim() || '0')).toBe(483);
   });
 
   test('rounds appear in history list', async ({ page }) => {
@@ -139,43 +144,57 @@ test.describe('Match', () => {
   });
 
   test('single throw mode: 3 throws accumulate before saving', async ({ page }) => {
-    // First navigate to profile to enable single throw mode
+    test.slow(); // this test does many DB calls
+
+    // Exit current match (no throws entered yet so no confirmation)
     await page.click('#match-back');
     await page.waitForTimeout(500);
 
-    // Handle possible exit confirmation
+    // Handle optional confirmation dialog
     const dialogVisible = await page.locator('#ca-overlay.show').isVisible().catch(() => false);
     if (dialogVisible) {
       await page.locator('#ca-overlay.show .ca-btn.primary').click();
       await page.waitForTimeout(500);
     }
 
+    // Wait for home screen
+    await page.waitForSelector('#screen-home.active', { timeout: 10000 });
+
+    // Switch to single throw mode in profile
     await page.click('#nav-profile-btn');
-    await page.waitForSelector('#screen-profile.active', { timeout: 5000 });
+    await page.waitForSelector('#screen-profile.active', { timeout: 10000 });
     await page.click('#profile-mode-single');
+    await expect(page.locator('#profile-mode-single')).toHaveClass(/on/);
     await page.click('#profile-save');
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(2000);
 
-    // Start a new match
-    await startMatch(page, 501);
+    // Start a NEW match (will show modal with "kontynuuj" since prev unfinished)
+    await page.click('#nav-game-btn');
+    await page.waitForSelector('#game-modal.show', { timeout: 5000 });
+    await page.locator('#game-modal .block-btn:has-text("Solo")').click();
+    await page.waitForSelector('#screen-match.active', { timeout: 10000 });
 
-    // In single throw mode, enter 3 individual throws
-    await page.click('#np-2');
-    await page.click('#np-0');
-    await page.click('#np-ok');
-    await page.waitForTimeout(300);
+    // match-modal might show "kontynuuj or nowy" - pick 501 to start fresh
+    await page.waitForTimeout(1500);
+    const matchModalVisible = await page.locator('#match-modal.show').isVisible().catch(() => false);
+    if (matchModalVisible) {
+      await page.locator('#match-modal .match-type-btn:has-text("501")').first().click();
+      await page.waitForTimeout(1500);
+    }
 
-    await page.click('#np-2');
-    await page.click('#np-0');
-    await page.click('#np-ok');
-    await page.waitForTimeout(300);
+    // In single throw mode, enter 3 individual throws of 20 each
+    const throwOne = async () => {
+      await page.click('#np-2');
+      await page.click('#np-0');
+      await page.click('#np-ok');
+      await page.waitForTimeout(600);
+    };
+    await throwOne();
+    await throwOne();
+    await throwOne();
+    await page.waitForTimeout(1200);
 
-    await page.click('#np-2');
-    await page.click('#np-0');
-    await page.click('#np-ok');
-    await page.waitForTimeout(800);
-
-    // After 3 throws, total 60 should be subtracted
+    // After 3 throws of 20, total 60 should be subtracted: 501 - 60 = 441
     const scoreText = await page.locator('#match-score').textContent();
     expect(parseInt(scoreText?.trim() || '0')).toBe(441);
   });

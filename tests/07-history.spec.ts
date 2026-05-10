@@ -11,15 +11,15 @@ test.describe('History', () => {
   test('training tab active by default', async ({ page }) => {
     const trainingTab = page.locator('#history-tab-training');
     await expect(trainingTab).toBeVisible();
-    // Should have active/selected class
-    await expect(trainingTab).toHaveClass(/active|selected|current/);
+    // App uses .on class for active tab
+    await expect(trainingTab).toHaveClass(/\bon\b/);
   });
 
   test('switch to matches tab', async ({ page }) => {
     await page.click('#history-tab-matches');
     await page.waitForTimeout(500);
-    const matchesTab = page.locator('#history-tab-matches');
-    await expect(matchesTab).toHaveClass(/active|selected|current/);
+    await expect(page.locator('#history-tab-matches')).toHaveClass(/\bon\b/);
+    await expect(page.locator('#history-tab-training')).not.toHaveClass(/\bon\b/);
   });
 
   test('empty state message for no history', async ({ page }) => {
@@ -44,15 +44,17 @@ test.describe('History', () => {
   });
 
   test('back button returns to home', async ({ page }) => {
-    // Try nav home button
-    await page.click('#nav-home-btn');
-    await page.waitForTimeout(500);
+    // Click the back button in the history header
+    await page.click('#history-back-btn');
+    await page.waitForSelector('#screen-home.active', { timeout: 10000 });
     await expect(page.locator('#screen-home')).toHaveClass(/active/);
   });
 
   test('history items display after training', async ({ page }) => {
-    // First do a quick training to generate history
-    await page.click('#nav-home-btn');
+    test.slow();
+
+    // Go back to home first
+    await page.click('#history-back-btn');
     await page.waitForSelector('#screen-home.active', { timeout: 5000 });
 
     // Start first exercise
@@ -80,7 +82,7 @@ test.describe('History', () => {
     }
 
     // Wait for summary
-    await page.waitForSelector('#screen-summary.active', { timeout: 5000 });
+    await page.waitForSelector('#screen-summary.active', { timeout: 10000 });
     await page.click('#summary-home');
     await page.waitForSelector('#screen-home.active', { timeout: 5000 });
 
@@ -89,8 +91,9 @@ test.describe('History', () => {
     await page.waitForSelector('#screen-history.active', { timeout: 5000 });
 
     const historyList = page.locator('#history-list');
-    const items = historyList.locator('.history-item, .history-row, > *');
-    const count = await items.count();
-    expect(count).toBeGreaterThan(0);
+    // Should have some content (either items or empty state)
+    await expect(historyList).toBeVisible();
+    const hasItems = await historyList.locator('.hi, .hi-match, > div').count();
+    expect(hasItems).toBeGreaterThan(0);
   });
 });

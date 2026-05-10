@@ -135,16 +135,14 @@ test.describe('Training', () => {
   });
 
   test('exit confirmation when score > 0', async ({ page }) => {
-    // Make at least one throw to have score > 0
+    // Make at least one throw to have unsaved progress
     await clickThrow(page, 'single');
     await page.waitForTimeout(300);
 
     // Click back button
     await page.click('#training-back-btn');
-    await page.waitForTimeout(500);
-
-    // Should show confirmation dialog
-    await expect(page.locator('#ca-overlay')).toHaveClass(/show/);
+    // Should show confirmation dialog (app checks curThrows, rounds, or sessScore)
+    await expect(page.locator('#ca-overlay')).toHaveClass(/show/, { timeout: 5000 });
   });
 
   test('cancel exit stays on training', async ({ page }) => {
@@ -152,9 +150,9 @@ test.describe('Training', () => {
     await page.waitForTimeout(300);
 
     await page.click('#training-back-btn');
-    await page.waitForSelector('#ca-overlay.show', { timeout: 3000 });
+    await expect(page.locator('#ca-overlay')).toHaveClass(/show/, { timeout: 5000 });
 
-    // Cancel the dialog
+    // Cancel the dialog — click the "Anuluj" (outline) button
     await cancelDialog(page);
 
     // Should remain on training screen

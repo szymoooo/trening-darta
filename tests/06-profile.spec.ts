@@ -30,26 +30,32 @@ test.describe('Profile', () => {
 
   test('switch to single throw mode', async ({ page }) => {
     await page.click('#profile-mode-single');
+    // Button should have .on class immediately (client-side toggle)
+    await expect(page.locator('#profile-mode-single')).toHaveClass(/on/);
+    await expect(page.locator('#profile-mode-series')).not.toHaveClass(/on/);
+
     await page.click('#profile-save');
     await page.waitForTimeout(1000);
 
-    // Verify single mode is selected
-    const singleRadio = page.locator('#profile-mode-single');
-    await expect(singleRadio).toBeChecked();
+    // Still single after save
+    await expect(page.locator('#profile-mode-single')).toHaveClass(/on/);
   });
 
   test('switch back to series mode', async ({ page }) => {
     // First set to single
     await page.click('#profile-mode-single');
+    await expect(page.locator('#profile-mode-single')).toHaveClass(/on/);
     await page.click('#profile-save');
     await page.waitForTimeout(500);
 
     // Then switch back to series
     await page.click('#profile-mode-series');
+    await expect(page.locator('#profile-mode-series')).toHaveClass(/on/);
+    await expect(page.locator('#profile-mode-single')).not.toHaveClass(/on/);
     await page.click('#profile-save');
     await page.waitForTimeout(500);
 
-    await expect(page.locator('#profile-mode-series')).toBeChecked();
+    await expect(page.locator('#profile-mode-series')).toHaveClass(/on/);
   });
 
   test('avatar upload button visible', async ({ page }) => {
@@ -99,8 +105,7 @@ test.describe('Profile', () => {
   test('statistics section displays', async ({ page }) => {
     const stats = page.locator('#profile-stats');
     await expect(stats).toBeVisible();
-    // Should contain some numeric data or labels
-    const statsText = await stats.textContent();
-    expect(statsText?.length).toBeGreaterThan(0);
+    // Wait for async renderProfile to populate stats (it does a DB fetch)
+    await expect(stats).toContainText(/Pseudonim|Sesji|Najlepszy|Streak|Wynik|pkt|Błąd/i, { timeout: 10000 });
   });
 });

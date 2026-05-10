@@ -8,25 +8,26 @@ test.describe('Home Screen', () => {
   });
 
   test('displays user name and streak', async ({ page }) => {
-    // User name should appear somewhere on home screen
-    const homeScreen = page.locator('#screen-home');
-    await expect(homeScreen).toContainText(/testuser|Witaj|Cześć/i);
-    // Streak indicator should be visible
-    const streak = homeScreen.locator('[class*="streak"], .streak, .user-streak');
-    const streakExists = await streak.count();
-    if (streakExists > 0) {
-      await expect(streak.first()).toBeVisible();
-    }
+    // Wait for async renderHome to populate the fields
+    await expect(page.locator('#home-name')).not.toHaveText('—', { timeout: 10000 });
+    const name = await page.locator('#home-name').textContent();
+    expect(name && name.trim().length > 0).toBeTruthy();
+    // Streak indicator should be visible and populated
+    await expect(page.locator('#home-streak')).toBeVisible();
+    const streakText = await page.locator('#home-streak').textContent();
+    expect(streakText && streakText.length > 0 && !streakText.includes('Ładowanie')).toBeTruthy();
   });
 
   test('displays best score and session count', async ({ page }) => {
-    const homeScreen = page.locator('#screen-home');
-    // Check for stats section with numbers
-    const statsArea = homeScreen.locator('.stats, .user-stats, .score-box, [class*="stat"]');
-    const statsExist = await statsArea.count();
-    if (statsExist > 0) {
-      await expect(statsArea.first()).toBeVisible();
-    }
+    // Stats are populated async by renderHome()
+    await expect(page.locator('#stat-best')).toBeVisible();
+    await expect(page.locator('#stat-sess')).toBeVisible();
+    // Best score is a number or em-dash when no sessions
+    const bestText = await page.locator('#stat-best').textContent();
+    expect(bestText && bestText.trim().length > 0).toBeTruthy();
+    // Session count should be numeric (or initial "0")
+    const sessText = await page.locator('#stat-sess').textContent();
+    expect(sessText && /\d/.test(sessText)).toBeTruthy();
   });
 
   test('shows exercise list', async ({ page }) => {
