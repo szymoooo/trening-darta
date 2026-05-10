@@ -3,7 +3,19 @@
   "version": "1.0.0",
   "description": "DartPro - Aplikacja do treningu darta",
   "scripts": {
-    "test": "node tests.js"
+    "test": "npx playwright test",
+    "test:ui": "npx playwright test --ui",
+    "test:debug": "npx playwright test --debug",
+    "test:report": "npx playwright show-report",
+    "test:chromium": "npx playwright test --project=chromium",
+    "test:firefox": "npx playwright test --project=firefox",
+    "test:webkit": "npx playwright test --project=webkit",
+    "test:mobile": "npx playwright test --project=mobile-chrome",
+    "serve": "npx http-server . -p 5500 -c-1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "http-server": "^14.1.1"
   },
   "engines": {
     "node": ">=18"
