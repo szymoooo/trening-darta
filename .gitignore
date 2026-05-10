@@ -3,4 +3,5 @@ test-results/
 test-report/
 playwright-report/
 blob-report/
+screenshot-gallery/
 .playwright/

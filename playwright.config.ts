@@ -6,11 +6,16 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: [['html', { outputFolder: 'test-report' }], ['list']],
+  reporter: [
+    ['html', { outputFolder: 'test-report' }],
+    ['list'],
+    ['./tests/fixtures/screenshot-reporter.ts'],
+  ],
+  outputDir: './test-results',
   use: {
     baseURL: process.env.BASE_URL || 'http://localhost:5500',
     trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    screenshot: 'on', // capture screenshot after every test
     video: 'on-first-retry',
   },
   projects: [
