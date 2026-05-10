@@ -136,7 +136,7 @@ textarea.inp{resize:none;line-height:1.5}
 .bfill{height:6px;background:var(--accent);border-radius:3px;transition:width .5s}
 
 /* HISTORY */
-.hist-scroll{padding:13px 15px;flex:1;overflow-y:auto;padding-bottom:20px}
+.hist-scroll{padding:13px 15px;flex:1;overflow-y:auto;padding-bottom:90px}
 .hi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 15px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
 .hi-d{font-size:10px;color:var(--muted);margin-bottom:2px}
 .hi-sc{font-family:'Syne',sans-serif;font-size:21px;font-weight:700;color:var(--accent)}

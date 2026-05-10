@@ -6,7 +6,7 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 const HDR = {
   apikey: SB_KEY,
   Authorization: 'Bearer ' + SB_KEY,
-  'Content-Type': 'application/json'
+  'Content-Type': 'application/json; charset=utf-8'
 };
 
 async function sb(method, table, params = '', body = null) {
@@ -423,7 +423,15 @@ function recThrow(zone,pts,cc){
   }
 }
 function nextTarget(){S.training.ti++;renderTarget();}
-async function confirmExit(){if(S.training.sessScore>0){const c=await caConfirm('Masz niezapisany wynik. Na pewno chcesz wyjść?','⚠️','Trening w toku');if(c!==1)return;}goTab('home');}
+async function confirmExit(){
+  const t=S.training||{};
+  const hasUnsaved = (t.sessScore>0) || (t.curThrows && t.curThrows.length>0) || (t.rounds && t.rounds.length>0);
+  if(hasUnsaved){
+    const c=await caConfirm('Masz niezapisany wynik. Na pewno chcesz wyjść?','⚠️','Trening w toku');
+    if(c!==1)return;
+  }
+  goTab('home');
+}
 async function finishTraining(){
   const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
   const bonTotal=t.bonuses.reduce((a,b)=>a+b,0);

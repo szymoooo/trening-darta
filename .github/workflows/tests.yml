@@ -1,52 +1,47 @@
-name: DartPro Tests
+name: E2E Tests
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, refactor/*, feature/*]
   pull_request:
-    branches: [ main, master ]
+    branches: [main]
 
 jobs:
   test:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
-    name: Unit Tests
-
+    env:
+      CI: true
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
-
-      - name: Run unit tests
-        run: node tests.js
-
-      - name: Check HTML integrity
-        run: |
-          echo "Checking index.html structure..."
-          test -f index.html || (echo "❌ index.html missing" && exit 1)
-          grep -q "<!DOCTYPE html>" index.html && echo "✅ DOCTYPE present"
-          grep -q "</html>" index.html && echo "✅ Closing html tag"
-          grep -q "femoshkoumxikrcjhool.supabase.co" index.html && echo "✅ Supabase URL"
-          grep -q "function handleLogin" index.html && echo "✅ Auth logic"
-          grep -q "function renderDartboard" index.html && echo "✅ Dartboard SVG"
-          grep -q "const CHECKOUTS" index.html && echo "✅ Checkouts table"
-          grep -q "function startPolling" index.html && echo "✅ Multiplayer"
-          grep -q "function saveRound" index.html && echo "✅ Match logic"
-          grep -q "caWin\|showWinPopup" index.html && echo "✅ Win detection"
-          echo "All checks passed!"
-
-      - name: Generate test report
-        if: always()
-        run: |
-          node tests.js > test_output.txt 2>&1 || true
-          echo "Test run completed"
-
-      - name: Upload test results
-        if: always()
+          node-version: 22
+      - name: Install dependencies
+        run: npm install
+      - name: Install Playwright Chromium (CI runs only chromium)
+        run: npx playwright install --with-deps chromium
+      - name: Run Playwright tests
+        run: npx playwright test
+      - name: Upload Playwright HTML report
         uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: test-report/
+          retention-days: 30
+      - name: Upload screenshot gallery
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: screenshot-gallery
+          path: screenshot-gallery/
+          retention-days: 30
+      - name: Upload raw test results
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
         with:
           name: test-results
-          path: test_output.txt
+          path: test-results/
+          retention-days: 7
+

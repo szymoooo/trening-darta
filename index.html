@@ -35,8 +35,8 @@
     </div>
     <form class="form-col" onsubmit="event.preventDefault(); handleLogin();">
   <div id="login-error" class="err-msg"></div>
-  <div><label class="lbl">Pseudonim</label><input class="inp" id="login-username" type="text" placeholder="np. Kowalski" autocomplete="username" required/></div>
-  <div><label class="lbl">Hasło / PIN</label><input class="inp" id="login-password" type="password" placeholder="Twoje hasło lub 4-cyfrowy PIN" autocomplete="current-password" required/></div>
+  <div><label class="lbl">Pseudonim</label><input class="inp" id="login-username" type="text" placeholder="np. Kowalski" autocomplete="username"/></div>
+  <div><label class="lbl">Hasło / PIN</label><input class="inp" id="login-password" type="password" placeholder="Twoje hasło lub 4-cyfrowy PIN" autocomplete="current-password"/></div>
   <button type="submit" class="block-btn bb-primary" id="login-submit">Wejdź do aplikacji</button>
 </form>
     <div class="divrow">info</div>
@@ -130,7 +130,7 @@
 <!-- HISTORY -->
 <div id="screen-history" class="screen">
   <div class="hdr">
-    <button class="btn" onclick="goTab('home')">← Wróć</button>
+    <button class="btn" id="history-back-btn" onclick="goTab('home')">← Wróć</button>
     <div style="font-family:Syne;font-weight:700">Historia</div>
     <div style="width:56px"></div>
   </div>
@@ -139,6 +139,13 @@
     <button class="atab" id="history-tab-matches" onclick="switchHistoryTab('matches')">🏹 Mecze</button>
   </div>
   <div class="hist-scroll" id="history-list"></div>
+  <div class="bnav c5">
+    <button class="ni" onclick="goTab('home')"><span class="ni-ic">🏠</span><span class="ni-lb">Start</span></button>
+    <button class="ni on" onclick="goTab('history')"><span class="ni-ic">📊</span><span class="ni-lb">Historia</span></button>
+    <button class="ni" onclick="startFirst()"><span class="ni-ic">🎯</span><span class="ni-lb">Trenuj</span></button>
+    <button class="ni" onclick="showGameModal()"><span class="ni-ic">🏹</span><span class="ni-lb">501 / Online</span></button>
+    <button class="ni" onclick="goTab('profile')"><span class="ni-ic">👤</span><span class="ni-lb">Profil</span></button>
+  </div>
 </div>
 
 <!-- PROFILE -->
