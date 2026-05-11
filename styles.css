@@ -238,6 +238,9 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 .rule-type-badge{font-size:10px;padding:3px 7px;border-radius:10px;font-weight:600;flex-shrink:0;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
 .rule-type-badge.hit{background:rgba(74,222,128,.15);color:var(--success)}
 .rule-type-badge.bonus{background:rgba(232,255,71,.15);color:var(--accent)}
+.rule-mode-badge{font-size:10px;padding:3px 7px;border-radius:10px;font-weight:600;flex-shrink:0;cursor:pointer;border:none;font-family:'DM Sans',sans-serif}
+.rule-mode-badge.target{background:rgba(96,165,250,.15);color:#60a5fa}
+.rule-mode-badge.flat{background:rgba(148,163,184,.15);color:#94a3b8}
 .rule-del{width:26px;height:26px;border-radius:50%;border:1px solid rgba(248,113,113,.3);background:transparent;color:var(--danger);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .saving-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;margin-left:6px;animation:pulse .6s ease infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}

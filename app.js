@@ -60,16 +60,25 @@ function hideErr(){document.getElementById('login-error').classList.remove('show
 // ═══════════════════════════════════════════════
 function defaultRules(type){
   if(type==='shanghai') return[
-    {id:uid(),label:'Single',points:1,type:'hit',trigger:'single'},
-    {id:uid(),label:'Double',points:2,type:'hit',trigger:'double'},
-    {id:uid(),label:'Treble',points:3,type:'hit',trigger:'triple'},
-    {id:uid(),label:'Bonus Shanghai (S+D+T)',points:100,type:'bonus',trigger:'shanghai'}
+    {id:uid(),label:'Single',points:1,type:'hit',trigger:'single',mode:'target'},
+    {id:uid(),label:'Double',points:2,type:'hit',trigger:'double',mode:'target'},
+    {id:uid(),label:'Treble',points:3,type:'hit',trigger:'triple',mode:'target'},
+    {id:uid(),label:'Bonus Shanghai (S+D+T)',points:100,type:'bonus',trigger:'shanghai',mode:'flat'}
   ];
   return[
-    {id:uid(),label:'Trafiony double',points:50,type:'hit',trigger:'double'},
-    {id:uid(),label:'Trafiony BULL',points:50,type:'hit',trigger:'bull'},
-    {id:uid(),label:'Bonus za BULL',points:50,type:'bonus',trigger:'bull'}
+    {id:uid(),label:'Trafiony double',points:50,type:'hit',trigger:'double',mode:'flat'},
+    {id:uid(),label:'Trafiony BULL',points:50,type:'hit',trigger:'bull',mode:'flat'},
+    {id:uid(),label:'Bonus za BULL',points:50,type:'bonus',trigger:'bull',mode:'flat'}
   ];
+}
+
+// Zwraca 'target' (mnożnik × numer sektora) albo 'flat' (sztywne pkt).
+// Backward compat: stare ćwiczenia bez zapisanego mode — dla Shanghai S/D/T → target,
+// dla reszty → flat (czyli zachowanie jak wcześniej).
+function ruleMode(r, ex){
+  if(r.mode==='target'||r.mode==='flat') return r.mode;
+  if(ex&&ex.type==='shanghai'&&(r.trigger==='single'||r.trigger==='double'||r.trigger==='triple')) return 'target';
+  return 'flat';
 }
 
 function getRules(ex){
@@ -94,7 +103,7 @@ function renderNewRules(){
 }
 
 function addNewRule(){
-  NEW_RULES.push({id:uid(),label:'',points:0,type:'hit',trigger:'custom'});
+  NEW_RULES.push({id:uid(),label:'',points:0,type:'hit',trigger:'custom',mode:'flat'});
   renderNewRules();
   const inputs=document.querySelectorAll('#new-rules-list .rule-desc');
   if(inputs.length) inputs[inputs.length-1].focus();
@@ -103,12 +112,23 @@ function addNewRule(){
 function ruleRowHTML(r,idx,scope){
   const bc=r.type==='bonus'?'bonus':'hit';
   const bl=r.type==='bonus'?'bonus':'trafienie';
+  // Tryb liczenia — tylko dla 'hit' (bonusy zawsze flat)
+  let modeBtn='';
+  if(r.type==='hit'){
+    // Przy renderowaniu new-rules scope='new' → nie mamy ex, domyślamy się flat.
+    const exForMode=scope==='new'?null:S.exercises.find(e=>e.id===scope);
+    const m=ruleMode(r,exForMode);
+    const mLabel=m==='target'?'× cel':'stałe';
+    const mTitle=m==='target'?'Punkty = wartość × numer sektora (np. Double 15 = 30)':'Punkty = wartość wprost (np. zawsze 2 pkt)';
+    modeBtn=`<button class="rule-mode-badge ${m}" title="${mTitle}" onclick="toggleRuleMode('${scope}','${r.id}')">${mLabel}</button>`;
+  }
   return`<div class="rule-row">
     <input class="rule-desc" placeholder="Opis reguły..." value="${r.label||''}"
       oninput="updateRuleLabel('${scope}','${r.id}',this.value)"/>
     <input class="rule-pts" type="number" min="0" value="${r.points}"
       oninput="updateRulePoints('${scope}','${r.id}',+this.value)"/>
     <span class="rule-unit">pkt</span>
+    ${modeBtn}
     <button class="rule-type-badge ${bc}" onclick="toggleRuleType('${scope}','${r.id}')">${bl}</button>
     <button class="rule-del" onclick="removeRule('${scope}','${r.id}')">×</button>
   </div>`;
@@ -129,13 +149,23 @@ function toggleRuleType(scope,rid){
   if(scope==='new')renderNewRules();
   else{renderExRules(scope);scheduleAutoSave(scope);}
 }
+function toggleRuleMode(scope,rid){
+  const rules=scope==='new'?NEW_RULES:getRules(S.exercises.find(e=>e.id===scope));
+  const r=rules.find(r=>r.id===rid);if(!r)return;
+  if(r.type!=='hit')return; // bonusy zawsze flat
+  const exForMode=scope==='new'?null:S.exercises.find(e=>e.id===scope);
+  const curr=ruleMode(r,exForMode);
+  r.mode=curr==='target'?'flat':'target';
+  if(scope==='new')renderNewRules();
+  else{renderExRules(scope);scheduleAutoSave(scope);}
+}
 function removeRule(scope,rid){
   if(scope==='new'){NEW_RULES=NEW_RULES.filter(r=>r.id!==rid);renderNewRules();}
   else{const ex=S.exercises.find(e=>e.id===scope);if(!ex)return;ex.scoring=getRules(ex).filter(r=>r.id!==rid);renderExRules(scope);scheduleAutoSave(scope);}
 }
 function addExRule(exId){
   const ex=S.exercises.find(e=>e.id===exId);if(!ex)return;
-  const rules=getRules(ex);rules.push({id:uid(),label:'',points:0,type:'hit',trigger:'custom'});
+  const rules=getRules(ex);rules.push({id:uid(),label:'',points:0,type:'hit',trigger:'custom',mode:'flat'});
   ex.scoring=rules;renderExRules(exId);scheduleAutoSave(exId);
 }
 function renderExRules(exId){
@@ -382,13 +412,14 @@ function renderDartBtns(ex,target){
     const sr=rules.find(r=>r.trigger==='single')||{points:1};
     const dr=rules.find(r=>r.trigger==='double')||{points:2};
     const tr=rules.find(r=>r.trigger==='triple')||{points:3};
-    // W Shanghai wartości w regule (1/2/3) to MNOŻNIKI pola (Single x1, Double x2, Triple x3),
-    // więc realne punkty = numer sektora * mnożnik (np. double 15 = 30). Dla innych typów
-    // zachowujemy stare zachowanie (points = punkty wprost).
-    const mul=(ex.type==='shanghai'&&typeof target==='number')?target:1;
-    const sPts=sr.points*mul;
-    const dPts=dr.points*mul;
-    const tPts=tr.points*mul;
+    // Każda reguła 'hit' ma swój tryb (mode):
+    //  - 'target' → punkty = wartość × numer sektora (np. Double 15 = 2*15 = 30)
+    //  - 'flat'   → punkty = wartość wprost (np. Double = 2 pkt niezależnie od sektora)
+    // Backward compat: w Shanghai bez zapisanego mode S/D/T liczą się jako 'target'.
+    const mulIf=(r)=>(ruleMode(r,ex)==='target'&&typeof target==='number')?target:1;
+    const sPts=sr.points*mulIf(sr);
+    const dPts=dr.points*mulIf(dr);
+    const tPts=tr.points*mulIf(tr);
     el.className='dg dg4';
     el.innerHTML=`
       <button class="dbtn" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudło</div><div class="zsc cm">0</div></div></button>
