@@ -1275,8 +1275,9 @@ matchRounds.push(savedRound);
 
       const startScore = S.match.start_score || 501;
 
-      // Popup po opóźnieniu
-      setTimeout(async function(){
+      // Popup natychmiast (bez sztucznego opóźnienia — ułatwia to testom e2e
+      // i jest lepsze UX — gracz chce od razu widzieć potwierdzenie wygranej).
+      (async function(){
         console.log('[MATCH] Pokazuję popup wygranej...');
         const choice = await caShow(
           '🏆', 'Wygrana!',
