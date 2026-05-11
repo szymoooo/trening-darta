@@ -382,12 +382,19 @@ function renderDartBtns(ex,target){
     const sr=rules.find(r=>r.trigger==='single')||{points:1};
     const dr=rules.find(r=>r.trigger==='double')||{points:2};
     const tr=rules.find(r=>r.trigger==='triple')||{points:3};
+    // W Shanghai wartości w regule (1/2/3) to MNOŻNIKI pola (Single x1, Double x2, Triple x3),
+    // więc realne punkty = numer sektora * mnożnik (np. double 15 = 30). Dla innych typów
+    // zachowujemy stare zachowanie (points = punkty wprost).
+    const mul=(ex.type==='shanghai'&&typeof target==='number')?target:1;
+    const sPts=sr.points*mul;
+    const dPts=dr.points*mul;
+    const tPts=tr.points*mul;
     el.className='dg dg4';
     el.innerHTML=`
       <button class="dbtn" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudło</div><div class="zsc cm">0</div></div></button>
-      <button class="dbtn" onclick="recThrow('single',${sr.points},'s')"><div class="dbtn-in"><div class="zlbl">Single</div><div class="zsc cs">${sr.points} pkt</div></div></button>
-      <button class="dbtn" onclick="recThrow('double',${dr.points},'d')"><div class="dbtn-in"><div class="zlbl">Double</div><div class="zsc cd">${dr.points} pkt</div></div></button>
-      <button class="dbtn" onclick="recThrow('triple',${tr.points},'t')"><div class="dbtn-in"><div class="zlbl">Treble</div><div class="zsc ct">${tr.points} pkt</div></div></button>`;
+      <button class="dbtn" onclick="recThrow('single',${sPts},'s')"><div class="dbtn-in"><div class="zlbl">Single</div><div class="zsc cs">${sPts} pkt</div></div></button>
+      <button class="dbtn" onclick="recThrow('double',${dPts},'d')"><div class="dbtn-in"><div class="zlbl">Double</div><div class="zsc cd">${dPts} pkt</div></div></button>
+      <button class="dbtn" onclick="recThrow('triple',${tPts},'t')"><div class="dbtn-in"><div class="zlbl">Treble</div><div class="zsc ct">${tPts} pkt</div></div></button>`;
   }
 }
 function recThrow(zone,pts,cc){
