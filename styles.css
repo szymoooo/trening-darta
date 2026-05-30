@@ -339,3 +339,16 @@ body:has(#loading-overlay:not(.hidden)) .bnav{pointer-events:none}
 
 
 .ca-btn.danger{background:transparent;border:1.5px solid rgba(248,113,113,.4);color:var(--danger)}
+/* DODAJ TO NA KOŃCU styles.css */
+
+.sec-btn.sec-hit{border-color:rgba(74,222,128,.5);background:rgba(74,222,128,.06)}
+.sec-btn.sec-hit .sec-btn-pts{color:var(--success)}
+.sec-btn.sec-hit .sec-btn-lbl{color:var(--success)}
+
+.sec-btn.sec-neighbor{border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.05)}
+.sec-btn.sec-neighbor .sec-btn-pts{color:var(--warn)}
+.sec-btn.sec-neighbor .sec-btn-lbl{color:var(--warn)}
+
+.sec-btn.sec-miss{border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.04)}
+.sec-btn.sec-miss .sec-btn-pts{color:var(--danger)}
+.sec-btn.sec-miss .sec-btn-lbl{color:var(--danger)}
