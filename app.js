@@ -83,7 +83,7 @@ function getRules(ex){
 }
 
 function autoRules(ex){
-  return getRules(ex).map(r=>`${r.label}: ${r.points} pkt${r.type==='bonus'?' (bonus)':''}`).join('\n');
+  return getRules(ex).map(r=>`${r.label}: ${r.points} pkt${r.type==='bonus'?' (bonus)':''}`).join('<br>');
 }
 
 function initNewRules(type){
@@ -387,7 +387,7 @@ function renderTarget(){
   ne.className='tgt-num'+(ex.color==='c2'?' org':ex.color==='c3'?' blu':'');
   document.getElementById('training-target-label').textContent=target==='BULL'?'Byk':`Sektor ${target}`;
   const rules=ex.rules&&ex.rules.trim()?ex.rules:autoRules(ex);
-  const hl=document.getElementById('training-target-hint');hl.textContent=rules;hl.style.display='block';
+  const hl=document.getElementById('training-target-hint');hl.innerHTML=rules;hl.style.display='block';
   t.curThrows=[];
   renderChips(ex.throws_per_target);renderDartBtns(ex,target);
   document.getElementById('next-wrap').style.display='none';
