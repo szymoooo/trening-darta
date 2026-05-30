@@ -59,11 +59,15 @@ function hideErr(){document.getElementById('login-error').classList.remove('show
 //  SCORING — dynamiczne reguły
 // ═══════════════════════════════════════════════
 function defaultRules(type){
-  if(type==='shanghai') return[
+  if(type==='shanghai' || type==='sector_focus') return[
     {id:uid(),label:'Single',points:1,type:'hit',trigger:'single'},
     {id:uid(),label:'Double',points:2,type:'hit',trigger:'double'},
     {id:uid(),label:'Treble',points:3,type:'hit',trigger:'triple'},
     {id:uid(),label:'Bonus Shanghai (S+D+T)',points:100,type:'bonus',trigger:'shanghai'}
+  ];
+  if(type==='sections') return[
+    {id:uid(),label:'Trafiony sektor',points:5,type:'hit',trigger:'single'},
+    {id:uid(),label:'Przyległy sektor',points:1,type:'hit',trigger:'neighbor'}
   ];
   return[
     {id:uid(),label:'Trafiony double',points:50,type:'hit',trigger:'double'},
@@ -335,18 +339,45 @@ async function showAllDoneModal(active){
 }
 
 // ═══════════════════════════════════════════════
+//  DART NEIGHBORS MAP
+// ═══════════════════════════════════════════════
+const DART_NEIGHBORS={
+  1:[20,18],2:[15,17],3:[19,17],4:[18,13],5:[20,12],
+  6:[10,13],7:[16,19],8:[11,16],9:[14,12],10:[6,15],
+  11:[8,14],12:[5,9],13:[4,6],14:[9,11],15:[10,2],
+  16:[8,7],17:[2,3],18:[1,4],19:[3,7],20:[1,5]
+};
+
+// ═══════════════════════════════════════════════
 //  TRAINING
 // ═══════════════════════════════════════════════
 async function startTraining(exId){
   const ex=S.exercises.find(e=>e.id===exId);
   if(!ex||ex.enabled===false){await caAlert('To ćwiczenie jest aktualnie wyłączone przez admina.','🔒','Wyłączone');return}
-  S.training={exId,ti:0,curThrows:[],sessScore:0,bonuses:[],rounds:[]};
+  S.training={exId,ti:0,curThrows:[],sessScore:0,bonuses:[],rounds:[],chosenSector:null};
+  if(ex.type==='sector_focus'){
+    S.training._pendingExId=exId;
+    showScreen('sector-picker');
+    return;
+  }
   document.getElementById('training-title').textContent=ex.name;
   showScreen('training');renderTarget();
 }
+
+function confirmSector(sector){
+  const exId=S.training._pendingExId;
+  const ex=S.exercises.find(e=>e.id===exId);
+  if(!ex)return;
+  S.training={exId,ti:0,curThrows:[],sessScore:0,bonuses:[],rounds:[],chosenSector:sector};
+  ex._runtimeTargets=Array(11).fill(sector);
+  document.getElementById('training-title').textContent=ex.name+' — '+sector;
+  showScreen('training');renderTarget();
+}
+
 function renderTarget(){
   const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
-  const ti=t.ti,tot=ex.targets.length,target=ex.targets[ti];
+  const runtimeTargets=ex._runtimeTargets||ex.targets;
+  const ti=t.ti,tot=runtimeTargets.length,target=runtimeTargets[ti];
   document.getElementById('prog').style.width=(ti/tot*100)+'%';
   document.getElementById('rbadge').textContent=`Cel ${ti+1} z ${tot}`;
   document.getElementById('rname').textContent=ex.name;
@@ -354,7 +385,7 @@ function renderTarget(){
   const ne=document.getElementById('training-target-number');
   ne.textContent=target;
   ne.className='tgt-num'+(ex.color==='c2'?' org':ex.color==='c3'?' blu':'');
-  document.getElementById('training-target-label').textContent=target==='BULL'?'Byk':`Liczba ${target}`;
+  document.getElementById('training-target-label').textContent=target==='BULL'?'Byk':`Sektor ${target}`;
   const rules=ex.rules&&ex.rules.trim()?ex.rules:autoRules(ex);
   const hl=document.getElementById('training-target-hint');hl.textContent=rules;hl.style.display='block';
   t.curThrows=[];
@@ -363,14 +394,68 @@ function renderTarget(){
   document.getElementById('fin-wrap').style.display='none';
   document.getElementById('training-score').textContent=t.sessScore+' pkt';
   // Render dartboard with highlighted target
+  renderSFStats(ex);
   renderDartboard(target);
 }
+
+function renderSFStats(ex){
+  const el=document.getElementById('sf-stats-live');
+  if(!ex||ex.type!=='sector_focus'||!el){if(el)el.style.display='none';return;}
+  const t=S.training;
+  const allThrows=t.rounds.flatMap(r=>r.throwDetails||[]).concat(t.curThrows.map(th=>th.zone));
+  const s=allThrows.filter(z=>z==='single').length;
+  const d=allThrows.filter(z=>z==='double').length;
+  const tr=allThrows.filter(z=>z==='triple').length;
+  const m=allThrows.filter(z=>z==='miss').length;
+  const total=allThrows.length;
+  el.style.display='block';
+  el.innerHTML=`
+    <div class="sf-stats-title">Statystyki rzutów (${total}/33)</div>
+    <div class="sf-stats-grid">
+      <div class="sf-stat"><div class="sf-stat-val v-s">${s}</div><div class="sf-stat-lbl">Single</div></div>
+      <div class="sf-stat"><div class="sf-stat-val v-d">${d}</div><div class="sf-stat-lbl">Double</div></div>
+      <div class="sf-stat"><div class="sf-stat-val v-t">${tr}</div><div class="sf-stat-lbl">Triple</div></div>
+      <div class="sf-stat"><div class="sf-stat-val v-m">${m}</div><div class="sf-stat-lbl">Pudło</div></div>
+    </div>`;
+}
+
 function renderChips(n){
   document.getElementById('throws-row').innerHTML=Array(n).fill(0).map((_,i)=>`<div class="chip" id="chip-${i}">?</div>`).join('');
 }
+
 function renderDartBtns(ex,target){
   const el=document.getElementById('dart-btns');
   const rules=getRules(ex);const isBull=target==='BULL';
+  
+  if(ex.type==='sections'){
+    el.className='sec-btns';
+    const neighbors=DART_NEIGHBORS[typeof target==='number'?target:0]||[];
+    const neighStr=neighbors.length?neighbors.join(' lub '):'—';
+    el.innerHTML=`
+      <button class="sec-btn sec-hit" onclick="recThrow('single',5,'s')">
+        <div class="sec-btn-inner">
+          <div class="sec-btn-lbl">Sektor ${target}</div>
+          <div class="sec-btn-sub">✓ trafiłem!</div>
+          <div class="sec-btn-pts">5 pkt</div>
+        </div>
+      </button>
+      <button class="sec-btn sec-neighbor" onclick="recThrow('neighbor',1,'d')">
+        <div class="sec-btn-inner">
+          <div class="sec-btn-lbl">Przyległy</div>
+          <div class="sec-btn-sub">${neighStr}</div>
+          <div class="sec-btn-pts">1 pkt</div>
+        </div>
+      </button>
+      <button class="sec-btn sec-miss" onclick="recThrow('miss',0,'m')">
+        <div class="sec-btn-inner">
+          <div class="sec-btn-lbl">Pudło</div>
+          <div class="sec-btn-sub">nigdzie blisko</div>
+          <div class="sec-btn-pts">0 pkt</div>
+        </div>
+      </button>`;
+    return;
+  }
+  
   if(ex.type==='doubles'){
     const hitRule=rules.find(r=>r.type==='hit'&&r.trigger===(isBull?'bull':'double'))||rules.find(r=>r.type==='hit');
     const pts=hitRule?hitRule.points:50;
@@ -397,14 +482,24 @@ function renderDartBtns(ex,target){
       <button class="dbtn" onclick="recThrow('triple',${tPts},'t')"><div class="dbtn-in"><div class="zlbl">Treble</div><div class="zsc ct">${tPts} pkt</div></div></button>`;
   }
 }
+
 function recThrow(zone,pts,cc){
   const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
+  const runtimeTargets=ex._runtimeTargets||ex.targets;
   if(t.curThrows.length>=ex.throws_per_target)return;
-  console.log('[TRAINING] Rzut: zone='+zone+', pts='+pts+', rzut '+(t.curThrows.length+1)+'/'+ex.throws_per_target+', cel='+ex.targets[t.ti]);
+  console.log('[TRAINING] Rzut: zone='+zone+', pts='+pts+', rzut '+(t.curThrows.length+1)+'/'+ex.throws_per_target+', cel='+runtimeTargets[t.ti]);
   t.curThrows.push({zone,pts,cc});
   const i=t.curThrows.length-1;
   const chip=document.getElementById('chip-'+i);
-  if(chip){chip.className='chip f'+cc;chip.textContent=cc==='m'?'✗':cc==='s'?'S':cc==='d'?'D':'T';}
+  if(chip){
+    if(ex.type==='sections'){
+      chip.className='chip f'+cc;
+      chip.textContent=cc==='m'?'✗':cc==='d'?'↔':'✓';
+    }else{
+      chip.className='chip f'+cc;
+      chip.textContent=cc==='m'?'✗':cc==='s'?'S':cc==='d'?'D':'T';
+    }
+  }
   if(t.curThrows.length===ex.throws_per_target){
     const rndPts=t.curThrows.reduce((a,th)=>a+th.pts,0);
     let bonus=0;
@@ -412,15 +507,16 @@ function recThrow(zone,pts,cc){
     rules.filter(r=>r.type==='bonus').forEach(r=>{
       if(r.trigger==='shanghai'&&zones.includes('single')&&zones.includes('double')&&zones.includes('triple')){
         bonus+=r.points;showToast(`🎯 SHANGHAI! +${r.points} pkt`);
-      }else if(r.trigger==='bull'&&ex.targets[t.ti]==='BULL'&&zones.includes('bull')){
+      }else if(r.trigger==='bull'&&runtimeTargets[t.ti]==='BULL'&&zones.includes('bull')){
         bonus+=r.points;showToast(`🔴 BULL BONUS! +${r.points} pkt`);
       }
     });
     if(bonus>0)t.bonuses.push(bonus);
     t.sessScore+=rndPts+bonus;
-    t.rounds.push({target:ex.targets[t.ti],pts:rndPts,bonus});
+    t.rounds.push({target:runtimeTargets[t.ti],pts:rndPts,bonus,throwDetails:t.curThrows.map(th=>th.zone)});
     document.getElementById('training-score').textContent=t.sessScore+' pkt';
-    const isLast=t.ti>=ex.targets.length-1;
+    renderSFStats(ex);
+    const isLast=t.ti>=runtimeTargets.length-1;
     if(!isLast){
       // Auto-advance after short delay
       setTimeout(()=>nextTarget(), 400);
@@ -429,7 +525,15 @@ function recThrow(zone,pts,cc){
     }
   }
 }
-function nextTarget(){S.training.ti++;renderTarget();}
+
+function nextTarget(){
+  const t=S.training;
+  const ex=S.exercises.find(e=>e.id===t.exId);
+  const runtimeTargets=ex?._runtimeTargets||ex?.targets||[];
+  if(t.ti<runtimeTargets.length-1){t.ti++;renderTarget();}
+  else{document.getElementById('fin-wrap').style.display='block';}
+}
+
 async function confirmExit(){if(S.training.sessScore>0){const c=await caConfirm('Masz niezapisany wynik. Na pewno chcesz wyjść?','⚠️','Trening w toku');if(c!==1)return;}goTab('home');}
 async function finishTraining(){
   const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
@@ -441,6 +545,7 @@ async function finishTraining(){
       user_id:S.user.id,exercise_id:ex.id,exercise_name:ex.name,
       total_score:t.sessScore,base_score:t.sessScore-bonTotal,bonus_score:bonTotal
     });
+    if(!sessionRows)throw new Error('Nie udało się zapisać sesji');
     const session=sessionRows[0];
     if(t.rounds.length){
       await dbPost('throws',t.rounds.map((r,idx)=>({
@@ -448,6 +553,11 @@ async function finishTraining(){
       })));
     }
     const allSess=await dbGet('sessions',`user_id=eq.${S.user.id}&exercise_id=eq.${ex.id}&order=created_at.asc`);
+    if(ex._runtimeTargets)delete ex._runtimeTargets;
+    session.exerciseId=ex.id;
+    session._rounds=t.rounds;
+    session._exType=ex.type;
+    session._chosenSector=t.chosenSector;
     renderSummary(session,allSess||[]);showScreen('summary');
   }catch(e){await caAlert(e.message,'❌','Błąd zapisu');}
   finally{loading(false);}
@@ -479,6 +589,70 @@ function renderSummary(session,allSess){
     <div class="srow bon"><span class="sl">Bonusy łącznie</span><span class="sv">+${session.bonus_score} pkt</span></div>
     <div class="srow"><span class="sl">Rekord osobisty</span><span class="sv">${best} pkt</span></div>
     <div class="srow"><span class="sl">Liczba sesji</span><span class="sv">${scores.length}</span></div>`;
+  
+  // Statystyki rzutów dla Sections i Sector Focus
+  const rounds=session._rounds||[];
+  const exType=session._exType||'';
+  const sumStats=document.getElementById('sum-throw-stats');
+  if(rounds.length&&(exType==='sections'||exType==='sector_focus')){
+    const allZones=rounds.flatMap(r=>r.throwDetails||[]);
+    const totalThrows=allZones.length;
+    let statsHTML='';
+    if(exType==='sections'){
+      const hit=allZones.filter(z=>z==='single').length;
+      const neighbor=allZones.filter(z=>z==='neighbor'||z==='double').length;
+      const miss=allZones.filter(z=>z==='miss').length;
+      const hitPct=totalThrows>0?Math.round(hit/totalThrows*100):0;
+      const neighborPct=totalThrows>0?Math.round(neighbor/totalThrows*100):0;
+      const maxPts=rounds.length*3*5;
+      statsHTML=`
+        <div class="sec" style="margin-top:0;margin-bottom:11px">📊 Statystyki rzutów</div>
+        <div class="stable" style="margin-bottom:11px">
+          <div class="srow"><span class="sl">Rzutów łącznie</span><span class="sv">${totalThrows}</span></div>
+          <div class="srow bon"><span class="sl">🎯 Trafiony sektor</span><span class="sv">${hit}× (${hitPct}%)</span></div>
+          <div class="srow"><span class="sl">↔️ Przyległy sektor</span><span class="sv">${neighbor}×</span></div>
+          <div class="srow"><span class="sl">❌ Spudłowane</span><span class="sv">${miss}×</span></div>
+          <div class="srow"><span class="sl">Wynik / Max możliwy</span><span class="sv">${session.total_score} / ${maxPts} pkt</span></div>
+        </div>
+        <div class="chart-box" style="margin-bottom:11px">
+          <div class="sec" style="margin:0 0 10px">Celność</div>
+          <div class="brow">
+            <div class="bmeta"><span>🎯 Trafiony sektor</span><span>${hitPct}%</span></div>
+            <div class="bbg"><div class="bfill" style="width:${hitPct}%;background:var(--success)"></div></div>
+          </div>
+          <div class="brow" style="margin-top:7px">
+            <div class="bmeta"><span>↔️ Przyległy</span><span>${neighborPct}%</span></div>
+            <div class="bbg"><div class="bfill" style="width:${neighborPct}%;background:var(--warn)"></div></div>
+          </div>
+        </div>`;
+    }else if(exType==='sector_focus'){
+      const s=allZones.filter(z=>z==='single').length;
+      const d=allZones.filter(z=>z==='double').length;
+      const tr=allZones.filter(z=>z==='triple').length;
+      const m=allZones.filter(z=>z==='miss').length;
+      const hitPct=totalThrows>0?Math.round((s+d+tr)/totalThrows*100):0;
+      const chosenSector=session._chosenSector||'';
+      statsHTML=`
+        <div class="sec" style="margin-top:0;margin-bottom:11px">📊 Statystyki${chosenSector?' — sektor '+chosenSector:''}</div>
+        <div class="sf-stats-box" style="display:block;margin-bottom:11px">
+          <div class="sf-stats-title">Łącznie ${totalThrows} rzutów</div>
+          <div class="sf-stats-grid">
+            <div class="sf-stat"><div class="sf-stat-val v-s">${s}</div><div class="sf-stat-lbl">Single</div></div>
+            <div class="sf-stat"><div class="sf-stat-val v-d">${d}</div><div class="sf-stat-lbl">Double</div></div>
+            <div class="sf-stat"><div class="sf-stat-val v-t">${tr}</div><div class="sf-stat-lbl">Triple</div></div>
+            <div class="sf-stat"><div class="sf-stat-val v-m">${m}</div><div class="sf-stat-lbl">Pudło</div></div>
+          </div>
+        </div>
+        <div class="stable" style="margin-bottom:11px">
+          <div class="srow bon"><span class="sl">Trafione rzuty</span><span class="sv">${s+d+tr} / ${totalThrows} (${hitPct}%)</span></div>
+          <div class="srow"><span class="sl">Pudła</span><span class="sv">${m} (${100-hitPct}%)</span></div>
+        </div>`;
+    }
+    if(sumStats){sumStats.innerHTML=statsHTML;sumStats.style.display='block';}
+  }else{
+    if(sumStats)sumStats.style.display='none';
+  }
+  
   // Show "Next exercise" if there is one
   const active = S.exercises.filter(e => e.enabled !== false);
   const currentIdx = active.findIndex(e => e.id === session.exerciseId);
@@ -612,7 +786,7 @@ async function renderMatchHistory(el){
               <div class="hi-match-stat-lbl">Śr. seria</div>
             </div>
             <div class="hi-match-stat">
-              <div class="hi-match-stat-val" style="color:${m.status==='finished'?'var(--success)':(remaining<100?'var(--warn)':'var(--text)')}}">${m.status==='finished'?'0':remaining}</div>
+              <div class="hi-match-stat-val" style="color:${m.status==='finished'?'var(--success)':(remaining<100?'var(--warn)':'var(--text)')}">${m.status==='finished'?'0':remaining}</div>
               <div class="hi-match-stat-lbl">${m.status==='finished'?'Checkout':'Zostało'}</div>
             </div>
           </div>
@@ -1013,8 +1187,6 @@ async function startNewMatch(startScore){
 async function newMatch(){
   showMatchPopup(!!S.match);
 }
-
-
 
 function renderMatch(){
   const score=S.match?S.match.current_score:501;
@@ -1468,9 +1640,6 @@ async function renderLB(){
   }catch(e){el.innerHTML='<div class="empty"><span class="empty-ic">⚠️</span><div class="empty-t">Błąd</div></div>';}
 }
 
-// ═══════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════
 // ═══════════════════════════════════════════════
 //  MULTIPLAYER
 // ═══════════════════════════════════════════════
