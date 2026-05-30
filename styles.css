@@ -79,6 +79,27 @@ textarea.inp{resize:none;line-height:1.5}
 .badge{font-size:10px;padding:4px 9px;border-radius:20px;background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border);white-space:nowrap;flex-shrink:0}
 .badge.done{background:rgba(74,222,128,.1);color:var(--success);border-color:rgba(74,222,128,.2)}
 
+/* SECTOR PICKER */
+.picker-wrap{padding:20px 16px 44px;display:flex;flex-direction:column;gap:24px}
+.picker-hero{text-align:center;padding:10px 0}
+.picker-icon{font-size:56px;display:block;margin-bottom:16px}
+.picker-hero h2{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;margin-bottom:10px;color:var(--text)}
+.picker-hero p{font-size:14px;color:var(--muted);line-height:1.7;max-width:280px;margin:0 auto}
+.picker-hero p strong{color:var(--accent);font-weight:700}
+.sector-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.sector-btn{padding:0;border-radius:16px;border:2px solid var(--border2);background:var(--surface);cursor:pointer;transition:all .2s ease;text-align:center;position:relative;overflow:hidden}
+.sector-btn:hover{border-color:var(--accent);background:rgba(232,255,71,.06);transform:translateY(-2px);box-shadow:0 4px 12px rgba(232,255,71,.1)}
+.sector-btn:active{transform:scale(.95)}
+.sector-btn-inner{padding:28px 8px}
+.sector-num{font-family:'Syne',sans-serif;font-size:42px;font-weight:800;color:var(--accent);line-height:1;margin-bottom:6px}
+.sector-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;font-weight:700;opacity:.8}
+.picker-rules{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px}
+.picker-rules-title{font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:16px;text-align:center}
+.rule-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text)}
+.rule-item:last-child{border-bottom:none;padding-bottom:0}
+.rule-item:first-child{padding-top:0}
+.rule-pts{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--accent)}
+
 /* TRAINING */
 .prog-wrap{height:3px;background:var(--surface2);flex-shrink:0}
 .prog-fill{height:3px;background:var(--accent);transition:width .3s}
@@ -129,6 +150,18 @@ textarea.inp{resize:none;line-height:1.5}
 .sec-btn.sec-miss{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.06)}
 .sec-btn.sec-miss .sec-btn-pts{color:var(--danger)}
 .sec-btn.sec-miss .sec-btn-lbl{color:var(--danger)}
+
+/* SF STATS BOX */
+.sf-stats-box{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px}
+.sf-stats-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;text-align:center;margin-bottom:10px;font-weight:600}
+.sf-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.sf-stat{text-align:center;background:var(--surface);border-radius:10px;padding:10px 4px}
+.sf-stat-val{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;line-height:1;margin-bottom:4px}
+.sf-stat-val.v-s{color:var(--success)}
+.sf-stat-val.v-d{color:var(--info)}
+.sf-stat-val.v-t{color:var(--accent)}
+.sf-stat-val.v-m{color:var(--danger)}
+.sf-stat-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
 
 .sbar{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--border);margin-top:2px;margin-bottom:4px}
 .sbar-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
