@@ -74,6 +74,38 @@
   </div>
 </div>
 
+<!-- SECTOR PICKER -->
+<div id="screen-sector-picker" class="screen">
+  <div class="hdr">
+    <button class="btn" onclick="goTab('home')">← Wróć</button>
+    <div style="font-family:Syne;font-weight:700;font-size:15px">Sector Focus</div>
+    <div style="width:56px"></div>
+  </div>
+  <div class="scroll picker-wrap">
+    <div class="picker-hero">
+      <span class="picker-icon">🎯</span>
+      <h2>Wybierz sektor</h2>
+      <p>Rzucisz <strong>11 serii po 3 lotki</strong> w wybrany sektor.<br>Po każdej lotce zaznacz co trafiłeś.</p>
+    </div>
+    <div class="sector-grid">
+      <button class="sector-btn" onclick="confirmSector(15)"><div class="sector-btn-inner"><div class="sector-num">15</div><div class="sector-lbl">Sektor</div></div></button>
+      <button class="sector-btn" onclick="confirmSector(16)"><div class="sector-btn-inner"><div class="sector-num">16</div><div class="sector-lbl">Sektor</div></div></button>
+      <button class="sector-btn" onclick="confirmSector(17)"><div class="sector-btn-inner"><div class="sector-num">17</div><div class="sector-lbl">Sektor</div></div></button>
+      <button class="sector-btn" onclick="confirmSector(18)"><div class="sector-btn-inner"><div class="sector-num">18</div><div class="sector-lbl">Sektor</div></div></button>
+      <button class="sector-btn" onclick="confirmSector(19)"><div class="sector-btn-inner"><div class="sector-num">19</div><div class="sector-lbl">Sektor</div></div></button>
+      <button class="sector-btn" onclick="confirmSector(20)"><div class="sector-btn-inner"><div class="sector-num">20</div><div class="sector-lbl">Sektor</div></div></button>
+    </div>
+    <div class="picker-rules">
+      <div class="picker-rules-title">⚡ Punktacja</div>
+      <div class="rule-item"><span>🎯 Single</span><span class="rule-pts">1 pkt</span></div>
+      <div class="rule-item"><span>✌️ Double</span><span class="rule-pts">2 pkt</span></div>
+      <div class="rule-item"><span>🔥 Triple</span><span class="rule-pts">3 pkt</span></div>
+      <div class="rule-item"><span>❌ Pudło</span><span class="rule-pts">0 pkt</span></div>
+      <div class="rule-item"><span>🏆 Bonus Shanghai (S+D+T w serii)</span><span class="rule-pts">+10 pkt</span></div>
+    </div>
+  </div>
+</div>
+
 <!-- TRAINING -->
 <div id="screen-training" class="screen">
   <div class="hdr">
@@ -93,6 +125,7 @@
       <div class="throws-hdr">Rzuty w tej rundzie</div>
       <div class="throws-row" id="throws-row"></div>
     </div>
+    <div class="sf-stats-box" id="sf-stats-live" style="display:none"></div>
     <div id="dart-btns" class="dg dg4"></div>
     <div class="sbar"><div class="sbar-l">Wynik sesji</div><div class="sbar-v" id="training-score">0 pkt</div></div>
     <div id="next-wrap" style="display:none"><button class="block-btn bb-outline" id="training-next" onclick="nextTarget()">Następny cel →</button></div>
@@ -119,6 +152,7 @@
       <div class="sec" style="margin:0 0 11px">Postęp – ostatnie 5 sesji</div>
       <div id="sum-bars"></div>
     </div>
+    <div id="sum-throw-stats" style="display:none"></div>
     <div class="g10" style="margin-top:4px" id="sum-action-btns">
       <button class="block-btn bb-primary" id="summary-next" onclick="startNextExercise()" style="display:none">▶️ Następne ćwiczenie</button>
       <button class="block-btn bb-outline" id="summary-repeat" onclick="repeatCurrentExercise()">🔁 Powtórz to ćwiczenie</button>
@@ -435,6 +469,7 @@
 <!-- MATCH TOOLTIP -->
 <div class="match-tooltip" id="match-tooltip" style="display:none">
   <div class="tooltip-title">
+
     💡 Jak wpisywać wyniki?
     <button class="tooltip-close" id="tooltip-close" onclick="dismissTooltip()">×</button>
   </div>
