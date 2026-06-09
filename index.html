@@ -138,6 +138,7 @@ textarea.inp{resize:none;line-height:1.5}
 .chip.fd{border-style:solid;border-color:var(--info);background:rgba(96,165,250,.15);color:var(--info)}
 .chip.ft{border-style:solid;border-color:var(--accent);background:rgba(232,255,71,.15);color:#0a0a0f}
 .chip.fm{border-style:solid;border-color:var(--danger);background:rgba(248,113,113,.1);color:var(--danger)}
+.chip.fn{border-style:solid;border-color:var(--warn);background:rgba(251,191,36,.12);color:var(--warn)}
 .dg{display:grid;gap:6px;margin-bottom:8px}
 .dg2{grid-template-columns:1fr 1fr}.dg3{grid-template-columns:1fr 1fr 1fr}.dg4{grid-template-columns:1fr 1fr 1fr 1fr}
 .dbtn{padding:0;border-radius:10px;border:1.5px solid var(--border2);background:var(--surface);cursor:pointer;transition:all .15s;text-align:center}
@@ -150,6 +151,8 @@ textarea.inp{resize:none;line-height:1.5}
 .dbtn.hd{border-color:rgba(96,165,250,.5);background:rgba(96,165,250,.07)}
 .dbtn.ht{border-color:rgba(232,255,71,.5);background:rgba(232,255,71,.07)}
 .dbtn.hm{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.06)}
+.dbtn.hn{border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.06)}
+.zsc.cn{color:var(--warn)}
 .sbar{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--border);margin-top:2px;margin-bottom:4px}
 .sbar-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
 .sbar-v{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;color:var(--accent)}
@@ -640,9 +643,11 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
         <div class="erow"><label class="lbl">Opis</label><input class="inp" id="new-ds" placeholder="Krótki opis"/></div>
         <div class="erow">
           <label class="lbl">Typ</label>
-          <div class="type-grid">
-            <button class="topt on" id="nt-shanghai" onclick="selNewType('shanghai')">🎯 Shanghai<br><small style="opacity:.7">3 lotki / liczba</small></button>
+          <div class="type-grid" style="grid-template-columns:1fr 1fr">
+            <button class="topt on" id="nt-shanghai" onclick="selNewType('shanghai')">🎯 Shanghai<br><small style="opacity:.7">mnożnik × sektor</small></button>
             <button class="topt" id="nt-doubles" onclick="selNewType('doubles')">✌️ Doublesy<br><small style="opacity:.7">1 lotka / double</small></button>
+            <button class="topt" id="nt-sections" onclick="selNewType('sections')">📍 Sections<br><small style="opacity:.7">trafiony/sąsiad/pudło</small></button>
+            <button class="topt" id="nt-custom" onclick="selNewType('custom')">⚙️ Własny<br><small style="opacity:.7">dowolne reguły</small></button>
           </div>
         </div>
         <div class="erow"><label class="lbl">Sektory (przecinkami, np. 10,11,12 lub BULL)</label><input class="inp" id="new-tg" placeholder="10,11,12,13,14,15"/></div>
@@ -912,6 +917,16 @@ function defaultRules(type){
     {id:uid(),label:'Treble',points:3,type:'hit',trigger:'triple'},
     {id:uid(),label:'Bonus Shanghai (S+D+T)',points:100,type:'bonus',trigger:'shanghai'}
   ];
+  if(type==='sections') return[
+    {id:uid(),label:'Trafiony sektor',points:5,type:'hit',trigger:'single'},
+    {id:uid(),label:'Przylegly sektor',points:1,type:'hit',trigger:'neighbor'},
+    {id:uid(),label:'Pudlo',points:0,type:'hit',trigger:'miss'}
+  ];
+  if(type==='custom') return[
+    {id:uid(),label:'Trafienie',points:10,type:'hit',trigger:'single'},
+    {id:uid(),label:'Pudlo',points:0,type:'hit',trigger:'miss'}
+  ];
+  // doubles
   return[
     {id:uid(),label:'Trafiony double',points:50,type:'hit',trigger:'double'},
     {id:uid(),label:'Trafiony BULL',points:50,type:'hit',trigger:'bull'},
@@ -930,10 +945,11 @@ function autoRules(ex, target){
   const sectorVal = isBull ? 25 : (typeof target==='number' ? target : parseInt(target)||0);
   return getRules(ex).map(r=>{
     let pts = r.points;
-    // Dla ćwiczeń Shanghai: mnożniki (1,2,3) × sektor
-    if(ex.type!=='doubles' && !isBull && r.type==='hit' && r.points<=3 && sectorVal>0){
+    // Shanghai: mnoznik (1/2/3) x wartosc sektora
+    if(ex.type==='shanghai' && !isBull && r.type==='hit' && r.points<=3 && sectorVal>0){
       pts = r.points * sectorVal;
     }
+    // Sections i custom i doubles: stala wartosc z reguly, bez mnozenia
     return `${r.label}: ${pts} pkt${r.type==='bonus'?' (bonus)':''}`;
   }).join('\n');
 }
@@ -1228,44 +1244,83 @@ function renderDartBtns(ex,target){
   const el=document.getElementById('dart-btns');
   const rules=getRules(ex);
   const isBull=target==='BULL';
-  // Wartość liczbowa sektora (BULL = 25)
   const sectorVal=isBull?25:(typeof target==='number'?target:parseInt(target)||0);
+  const type=ex.type||'custom';
 
-  if(ex.type==='doubles'){
-    // Dla doubles: reguła określa punkty bezpośrednio (np. 50 za double)
-    // NIE mnożymy przez sektor — double to stała wartość z reguły
+  // ── SECTIONS: przyciski generowane z triggerow regul ──
+  if(type==='sections'){
+    // Pobierz reguły hit (nie bonus) — one definiują przyciski
+    const hitRules=rules.filter(r=>r.type==='hit');
+    // Dobierz liczbę kolumn
+    const cols=hitRules.length<=2?'dg2':hitRules.length===3?'dg3':'dg4';
+    el.className='dg '+cols;
+    // Mapowanie trigger → styl chipa
+    const trigCc={single:'s',double:'d',triple:'t',miss:'m',neighbor:'n',bull:'d',custom:'s'};
+    const trigCls={single:'hs',double:'hd',triple:'ht',miss:'hm',neighbor:'hn',bull:'hd',custom:'hs'};
+    const trigScCls={single:'cs',double:'cd',triple:'ct',miss:'cm',neighbor:'cn',bull:'cd',custom:'cs'};
+    el.innerHTML=hitRules.map(r=>{
+      const cc=trigCc[r.trigger]||'s';
+      const hcls=trigCls[r.trigger]||'hs';
+      const scls=trigScCls[r.trigger]||'cs';
+      return `<button class="dbtn ${hcls}" onclick="recThrow('${r.trigger}',${r.points},'${cc}')">
+        <div class="dbtn-in">
+          <div class="zlbl">${r.label}</div>
+          <div class="zsc ${scls}">${r.points} pkt</div>
+        </div></button>`;
+    }).join('');
+    return;
+  }
+
+  // ── DOUBLES: stała wartość z reguły, bez mnożenia ──
+  if(type==='doubles'){
     const hitRule=rules.find(r=>r.type==='hit'&&r.trigger===(isBull?'bull':'double'))||rules.find(r=>r.type==='hit');
     const pts=hitRule?hitRule.points:50;
     el.className='dg dg2';
     el.innerHTML=`
-      <button class="dbtn" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudło</div><div class="zsc cm">0 pkt</div></div></button>
-      <button class="dbtn" onclick="recThrow('${isBull?'bull':'double'}',${pts},'d')"><div class="dbtn-in"><div class="zlbl">${isBull?'BULL':'Double'}</div><div class="zsc cd">${pts} pkt</div></div></button>`;
-  }else{
-    // Dla Shanghai: mnożnik z reguły × wartość sektora
-    // Reguła points=1 → single = 1×sektor, points=2 → double = 2×sektor, points=3 → triple = 3×sektor
+      <button class="dbtn hm" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudlo</div><div class="zsc cm">0 pkt</div></div></button>
+      <button class="dbtn hd" onclick="recThrow('${isBull?'bull':'double'}',${pts},'d')"><div class="dbtn-in"><div class="zlbl">${isBull?'BULL':'Double'}</div><div class="zsc cd">${pts} pkt</div></div></button>`;
+    return;
+  }
+
+  // ── SHANGHAI: mnoznik z reguly × wartosc sektora ──
+  if(type==='shanghai'){
     const srRule=rules.find(r=>r.trigger==='single')||{points:1};
     const drRule=rules.find(r=>r.trigger==='double')||{points:2};
     const trRule=rules.find(r=>r.trigger==='triple')||{points:3};
-
-    // Jeśli reguła ma points > 3 zakładamy że to stała wartość (nie mnożnik)
-    // Jeśli points <= 3 i target jest liczbą — mnożymy przez sektor
-    const calcPts=(rule,mult)=>{
-      if(isBull) return rule.points; // BULL — zawsze stała wartość
-      if(rule.points<=3&&sectorVal>0) return rule.points*sectorVal; // mnożnik × sektor
-      return rule.points; // stała wartość
+    const calcPts=(rule)=>{
+      if(isBull) return rule.points;
+      if(rule.points<=3&&sectorVal>0) return rule.points*sectorVal;
+      return rule.points;
     };
-
-    const spts=calcPts(srRule,1);
-    const dpts=calcPts(drRule,2);
-    const tpts=calcPts(trRule,3);
-
+    const spts=calcPts(srRule);
+    const dpts=calcPts(drRule);
+    const tpts=calcPts(trRule);
     el.className='dg dg4';
     el.innerHTML=`
-      <button class="dbtn" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudło</div><div class="zsc cm">0</div></div></button>
-      <button class="dbtn" onclick="recThrow('single',${spts},'s')"><div class="dbtn-in"><div class="zlbl">Single</div><div class="zsc cs">${spts} pkt</div></div></button>
-      <button class="dbtn" onclick="recThrow('double',${dpts},'d')"><div class="dbtn-in"><div class="zlbl">Double</div><div class="zsc cd">${dpts} pkt</div></div></button>
-      <button class="dbtn" onclick="recThrow('triple',${tpts},'t')"><div class="dbtn-in"><div class="zlbl">Treble</div><div class="zsc ct">${tpts} pkt</div></div></button>`;
+      <button class="dbtn hm" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudlo</div><div class="zsc cm">0</div></div></button>
+      <button class="dbtn hs" onclick="recThrow('single',${spts},'s')"><div class="dbtn-in"><div class="zlbl">Single</div><div class="zsc cs">${spts} pkt</div></div></button>
+      <button class="dbtn hd" onclick="recThrow('double',${dpts},'d')"><div class="dbtn-in"><div class="zlbl">Double</div><div class="zsc cd">${dpts} pkt</div></div></button>
+      <button class="dbtn ht" onclick="recThrow('triple',${tpts},'t')"><div class="dbtn-in"><div class="zlbl">Treble</div><div class="zsc ct">${tpts} pkt</div></div></button>`;
+    return;
   }
+
+  // ── CUSTOM / INNE: stała wartość z reguły, przyciski z triggerow ──
+  const hitRules=rules.filter(r=>r.type==='hit');
+  const cols=hitRules.length<=2?'dg2':hitRules.length===3?'dg3':'dg4';
+  el.className='dg '+cols;
+  const trigCc2={single:'s',double:'d',triple:'t',miss:'m',neighbor:'n',bull:'d',custom:'s'};
+  const trigCls2={single:'hs',double:'hd',triple:'ht',miss:'hm',neighbor:'hn',bull:'hd',custom:'hs'};
+  const trigScCls2={single:'cs',double:'cd',triple:'ct',miss:'cm',neighbor:'cn',bull:'cd',custom:'cs'};
+  el.innerHTML=hitRules.map(r=>{
+    const cc=trigCc2[r.trigger]||'s';
+    const hcls=trigCls2[r.trigger]||'hs';
+    const scls=trigScCls2[r.trigger]||'cs';
+    return `<button class="dbtn ${hcls}" onclick="recThrow('${r.trigger}',${r.points},'${cc}')">
+      <div class="dbtn-in">
+        <div class="zlbl">${r.label}</div>
+        <div class="zsc ${scls}">${r.points} pkt</div>
+      </div></button>`;
+  }).join('');
 }
 function recThrow(zone,pts,cc){
   const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
@@ -1274,7 +1329,8 @@ function recThrow(zone,pts,cc){
   t.curThrows.push({zone,pts,cc});
   const i=t.curThrows.length-1;
   const chip=document.getElementById('chip-'+i);
-  if(chip){chip.className='chip f'+cc;chip.textContent=cc==='m'?'✗':cc==='s'?'S':cc==='d'?'D':'T';}
+  const chipText={m:'✗',s:'S',d:'D',t:'T',n:'N',b:'B'};
+  if(chip){chip.className='chip f'+cc;chip.textContent=chipText[cc]||cc.toUpperCase();}
   if(t.curThrows.length===ex.throws_per_target){
     const rndPts=t.curThrows.reduce((a,th)=>a+th.pts,0);
     let bonus=0;
@@ -1353,9 +1409,9 @@ function renderSummary(session,allSess){
   const throwsDetail = document.getElementById('sum-throws-detail');
   const rounds = S.training?.rounds || [];
   if(throwsDetail && rounds.length){
-    const ZONE_LABEL = {single:'S',double:'D',triple:'T',miss:'✗',bull:'BULL',double_bull:'DB'};
-    const ZONE_CLASS = {single:'s',double:'d',triple:'t',miss:'m',bull:'d',double_bull:'d'};
-    const ZONE_FULL  = {single:'Single',double:'Double',triple:'Treble',miss:'Pudło',bull:'BULL',double_bull:'Double BULL'};
+    const ZONE_LABEL = {single:'S',double:'D',triple:'T',miss:'✗',bull:'BULL',double_bull:'DB',neighbor:'N',custom:'H'};
+    const ZONE_CLASS = {single:'s',double:'d',triple:'t',miss:'m',bull:'d',double_bull:'d',neighbor:'n',custom:'s'};
+    const ZONE_FULL  = {single:'Single',double:'Double',triple:'Treble',miss:'Pudło',bull:'BULL',double_bull:'Double BULL',neighbor:'Przyległy',custom:'Trafienie'};
     throwsDetail.style.display = 'block';
     throwsDetail.innerHTML = `
       <div class="throws-detail">
@@ -2240,8 +2296,10 @@ function aTab(t){
 }
 function selNewType(t){
   S.newType=t;
-  document.getElementById('nt-shanghai').classList.toggle('on',t==='shanghai');
-  document.getElementById('nt-doubles').classList.toggle('on',t==='doubles');
+  ['shanghai','doubles','sections','custom'].forEach(tp=>{
+    const el=document.getElementById('nt-'+tp);
+    if(el) el.classList.toggle('on',t===tp);
+  });
   initNewRules(t);
 }
 async function addExercise(){
@@ -2294,7 +2352,9 @@ function renderAdminEx(){
         <div class="erow"><label class="lbl">Opis</label>
           <input class="inp" data-id="${ex.id}" data-f="description" value="${ex.description||''}" oninput="localUpdate(this);scheduleAutoSave('${ex.id}')"/></div>
         <div class="erow"><label class="lbl">Typ</label>
-          <div style="font-size:13px;color:var(--muted);padding:8px 0">${ex.type==='shanghai'?'🎯 Shanghai (3 lotki / liczba)':'✌️ Doublesy (1 lotka / double)'}</div></div>
+          <div style="font-size:13px;color:var(--muted);padding:8px 0">${
+            {shanghai:'🎯 Shanghai (mnożnik × sektor)',doubles:'✌️ Doublesy (stała wartość)',sections:'📍 Sections (trafiony/sąsiad/pudło)',custom:'⚙️ Własny typ'}[ex.type]||('⚙️ '+ex.type)
+          }</div></div>
         <div class="erow"><label class="lbl">Sektory</label>
           <div style="font-size:13px;color:var(--muted);padding:8px 0">${ex.targets.join(', ')}</div></div>
         <div class="scoring-panel">
