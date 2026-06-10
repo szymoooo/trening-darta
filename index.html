@@ -1335,11 +1335,16 @@ function recThrow(zone,pts,cc){
     const rndPts=t.curThrows.reduce((a,th)=>a+th.pts,0);
     let bonus=0;
     const rules=getRules(ex);const zones=t.curThrows.map(th=>th.zone);
+    const target=ex.targets[t.ti];
+    const isBullTarget=(target==='BULL'||target===25);
     rules.filter(r=>r.type==='bonus').forEach(r=>{
       if(r.trigger==='shanghai'&&zones.includes('single')&&zones.includes('double')&&zones.includes('triple')){
-        bonus+=r.points;showToast(`🎯 SHANGHAI! +${r.points} pkt`);
-      }else if(r.trigger==='bull'&&ex.targets[t.ti]==='BULL'&&zones.includes('bull')){
-        bonus+=r.points;showToast(`🔴 BULL BONUS! +${r.points} pkt`);
+        bonus+=r.points;showToast('🎯 SHANGHAI! +'+r.points+' pkt');
+      }else if(r.trigger==='bull'&&isBullTarget&&zones.includes('bull')){
+        bonus+=r.points;showToast('🔴 BULL BONUS! +'+r.points+' pkt');
+      }else if(r.trigger==='double'&&zones.includes('double')){
+        // Bonus za trafienie double (np. w cwiczeniu doubles)
+        bonus+=r.points;showToast('✌️ DOUBLE BONUS! +'+r.points+' pkt');
       }
     });
     if(bonus>0)t.bonuses.push(bonus);
@@ -1373,16 +1378,31 @@ async function finishTraining(){
         session_id:session.id,target:String(r.target),zone:'round',points:r.pts+r.bonus,throw_order:idx
       })));
     }
-    const allSess=await dbGet('sessions',`user_id=eq.${S.user.id}&exercise_id=eq.${ex.id}&order=created_at.asc`);
-    renderSummary(session,allSess||[]);showScreen('summary');
+    const todayStr=new Date().toISOString().slice(0,10);
+    // Sesje tego cwiczenia (do wykresu postepow)
+    const exSess=await dbGet('sessions',`user_id=eq.${S.user.id}&exercise_id=eq.${ex.id}&order=created_at.asc`);
+    // Wszystkie sesje usera z dzisiaj (do sprawdzenia ktore cwiczenia zrobione)
+    const todaySess=await dbGet('sessions',`user_id=eq.${S.user.id}&created_at=gte.${todayStr}T00:00:00&select=exercise_id`);
+    renderSummary(session,exSess||[],todaySess||[]);showScreen('summary');
   }catch(e){await caAlert(e.message,'❌','Błąd zapisu');}
   finally{loading(false);}
 }
-function startNextExercise(){
+async function startNextExercise(){
   const active = S.exercises.filter(e=>e.enabled!==false);
   const currentId = S.training?.exId;
   const currentIdx = active.findIndex(e=>e.id===currentId);
-  const nextEx = active[currentIdx+1];
+  // Pobierz dzisiejsze sesje zeby wiedziec co juz zrobione
+  let todayDoneIds = [currentId];
+  try{
+    const todayStr = new Date().toISOString().slice(0,10);
+    const todaySess = await dbGet('sessions',`user_id=eq.${S.user.id}&created_at=gte.${todayStr}T00:00:00&select=exercise_id`);
+    todayDoneIds = (todaySess||[]).map(s=>s.exercise_id);
+    if(!todayDoneIds.includes(currentId)) todayDoneIds.push(currentId);
+  }catch(e){ /* ignoruj blad, uzyj tylko currentId */ }
+  // Najpierw szukaj po biezacym, potem przed
+  const afterCurrent = active.filter((e,i)=>i>currentIdx&&!todayDoneIds.includes(e.id));
+  const beforeCurrent = active.filter((e,i)=>i<currentIdx&&!todayDoneIds.includes(e.id));
+  const nextEx = afterCurrent[0]||beforeCurrent[0]||null;
   if(nextEx) startTraining(nextEx.id);
   else goTab('home');
 }
@@ -1393,7 +1413,7 @@ function repeatCurrentExercise(){
   else startFirst();
 }
 
-function renderSummary(session,allSess){
+function renderSummary(session,allSess,todaySessAll){
   const scores=allSess.map(s=>s.total_score);
   const best=Math.max(...scores);const isPB=session.total_score===best&&scores.length>1;
   document.getElementById('sum-trophy').textContent=isPB?'🏆':'🎯';
@@ -1442,19 +1462,22 @@ function renderSummary(session,allSess){
   } else if(throwsDetail){
     throwsDetail.style.display = 'none';
   }
-  // Show "Next exercise" if there is one
+  // ── LOGIKA "NASTEPNE CWICZENIE" ──
+  // Zbierz id cwiczen zrobionych dzis (z parametru todaySessAll + wlasnie ukonczone)
   const active = S.exercises.filter(e => e.enabled !== false);
-  const currentIdx = active.findIndex(e => e.id === session.exerciseId);
-  const todayStr = new Date().toISOString().slice(0,10);
-  // allSess zawiera wszystkie sesje tego ćwiczenia — pobierz wszystkie sesje usera dziś
-  const todayDoneIds = (allSess||[])
-    .filter(s => s.created_at && s.created_at.slice(0,10) === todayStr)
-    .map(s => s.exercise_id);
-  // Dodaj właśnie ukończone
-  if(!todayDoneIds.includes(session.exerciseId)) todayDoneIds.push(session.exerciseId);
+  const todayDoneIds = (todaySessAll||[]).map(s => s.exercise_id);
+  // Dodaj wlasnie ukonczone (moze jeszcze nie byc w todaySessAll jesli swiezo zapisane)
+  if(!todayDoneIds.includes(session.exercise_id)) todayDoneIds.push(session.exercise_id);
 
-  // Znajdź kolejne NIEZROBIONE (pomijaj zrobione dziś)
-  const nextUndone = active.find((e,i) => i > currentIdx && !todayDoneIds.includes(e.id));
+  const currentExId = session.exercise_id || S.training?.exId;
+  const currentIdx = active.findIndex(e => e.id === currentExId);
+
+  // Szukaj PIERWSZEGO niezrobionego dziś z CALEJ listy (nie tylko od currentIdx+1)
+  // Priorytet: najpierw te po biezacym, potem te przed biezacym
+  const afterCurrent = active.filter((e,i) => i > currentIdx && !todayDoneIds.includes(e.id));
+  const beforeCurrent = active.filter((e,i) => i < currentIdx && !todayDoneIds.includes(e.id));
+  const nextUndone = afterCurrent[0] || beforeCurrent[0] || null;
+
   const nextBtn = document.getElementById('sum-next-btn');
   if(nextBtn){
     if(nextUndone){
