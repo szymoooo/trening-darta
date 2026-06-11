@@ -1273,12 +1273,19 @@ function renderDartBtns(ex,target){
 
   // ── DOUBLES: stała wartość z reguły, bez mnożenia ──
   if(type==='doubles'){
-    const hitRule=rules.find(r=>r.type==='hit'&&r.trigger===(isBull?'bull':'double'))||rules.find(r=>r.type==='hit');
-    const pts=hitRule?hitRule.points:50;
+    const trigger=isBull?'bull':'double';
+    const hitRule=rules.find(r=>r.type==='hit'&&r.trigger===trigger)||rules.find(r=>r.type==='hit');
+    const hitPts=hitRule?hitRule.points:50;
+    // Szukaj reguły bonus o tym samym trigger
+    const bonusRule=rules.find(r=>r.type==='bonus'&&r.trigger===trigger);
+    // Fallback dla BULL: jesli brak reguły bonus/bull → bonus = wartość hit/bull (podwojenie)
+    const bonusPts=bonusRule?bonusRule.points:(isBull?hitPts:0);
+    const totalPts=hitPts+bonusPts;
+    const bonusLabel=bonusPts>0?` <span style="font-size:10px;opacity:.7">(+${bonusPts}★)</span>`:'';
     el.className='dg dg2';
     el.innerHTML=`
       <button class="dbtn hm" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudlo</div><div class="zsc cm">0 pkt</div></div></button>
-      <button class="dbtn hd" onclick="recThrow('${isBull?'bull':'double'}',${pts},'d')"><div class="dbtn-in"><div class="zlbl">${isBull?'BULL':'Double'}</div><div class="zsc cd">${pts} pkt</div></div></button>`;
+      <button class="dbtn hd" onclick="recThrow('${trigger}',${hitPts},'d')"><div class="dbtn-in"><div class="zlbl">${isBull?'🔴 BULL':'Double'}</div><div class="zsc cd">${totalPts} pkt${bonusLabel}</div></div></button>`;
     return;
   }
 
@@ -1337,16 +1344,31 @@ function recThrow(zone,pts,cc){
     const rules=getRules(ex);const zones=t.curThrows.map(th=>th.zone);
     const target=ex.targets[t.ti];
     const isBullTarget=(target==='BULL'||target===25);
-    rules.filter(r=>r.type==='bonus').forEach(r=>{
+    const bonusRules=rules.filter(r=>r.type==='bonus');
+    bonusRules.forEach(r=>{
       if(r.trigger==='shanghai'&&zones.includes('single')&&zones.includes('double')&&zones.includes('triple')){
         bonus+=r.points;showToast('🎯 SHANGHAI! +'+r.points+' pkt');
       }else if(r.trigger==='bull'&&isBullTarget&&zones.includes('bull')){
         bonus+=r.points;showToast('🔴 BULL BONUS! +'+r.points+' pkt');
-      }else if(r.trigger==='double'&&zones.includes('double')){
-        // Bonus za trafienie double (np. w cwiczeniu doubles)
+      }else if(r.trigger==='double'&&zones.includes('double')&&ex.type!=='shanghai'){
         bonus+=r.points;showToast('✌️ DOUBLE BONUS! +'+r.points+' pkt');
       }
     });
+    // FALLBACK dla doubles + BULL:
+    // Jesli trafiono bull, cel=BULL, brak bonusu → dolicz wartość HIT (bull lub double lub pierwsza)
+    if(ex.type==='doubles'&&isBullTarget&&zones.includes('bull')&&bonus===0){
+      const hasBullBonus=bonusRules.some(r=>r.trigger==='bull');
+      if(!hasBullBonus){
+        // Szukaj: najpierw hit/bull, potem hit/double, potem pierwsza hit
+        const bullHitRule=rules.find(r=>r.type==='hit'&&r.trigger==='bull')
+          ||rules.find(r=>r.type==='hit'&&r.trigger==='double')
+          ||rules.find(r=>r.type==='hit');
+        if(bullHitRule){
+          bonus+=bullHitRule.points;
+          showToast('🔴 BULL BONUS! +'+bullHitRule.points+' pkt');
+        }
+      }
+    }
     if(bonus>0)t.bonuses.push(bonus);
     t.sessScore+=rndPts+bonus;
     t.rounds.push({target:ex.targets[t.ti],pts:rndPts,bonus,throws:[...t.curThrows]});
