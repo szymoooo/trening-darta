@@ -138,6 +138,7 @@ textarea.inp{resize:none;line-height:1.5}
 .chip.fd{border-style:solid;border-color:var(--info);background:rgba(96,165,250,.15);color:var(--info)}
 .chip.ft{border-style:solid;border-color:var(--accent);background:rgba(232,255,71,.15);color:#0a0a0f}
 .chip.fm{border-style:solid;border-color:var(--danger);background:rgba(248,113,113,.1);color:var(--danger)}
+.chip.fn{border-style:solid;border-color:var(--warn);background:rgba(251,191,36,.12);color:var(--warn)}
 .dg{display:grid;gap:6px;margin-bottom:8px}
 .dg2{grid-template-columns:1fr 1fr}.dg3{grid-template-columns:1fr 1fr 1fr}.dg4{grid-template-columns:1fr 1fr 1fr 1fr}
 .dbtn{padding:0;border-radius:10px;border:1.5px solid var(--border2);background:var(--surface);cursor:pointer;transition:all .15s;text-align:center}
@@ -150,9 +151,24 @@ textarea.inp{resize:none;line-height:1.5}
 .dbtn.hd{border-color:rgba(96,165,250,.5);background:rgba(96,165,250,.07)}
 .dbtn.ht{border-color:rgba(232,255,71,.5);background:rgba(232,255,71,.07)}
 .dbtn.hm{border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.06)}
+.dbtn.hn{border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.06)}
+.zsc.cn{color:var(--warn)}
 .sbar{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid var(--border);margin-top:2px;margin-bottom:4px}
 .sbar-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}
 .sbar-v{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;color:var(--accent)}
+.throws-detail{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:11px}
+.td-hdr{display:flex;justify-content:space-between;align-items:center;padding:11px 15px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);background:var(--surface2)}
+.td-row{display:grid;grid-template-columns:50px 1fr auto;align-items:center;gap:8px;padding:9px 15px;border-bottom:1px solid var(--border)}
+.td-row:last-child{border-bottom:none}
+.td-target{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--accent)}
+.td-throws{display:flex;gap:5px;flex-wrap:wrap}
+.td-chip{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;white-space:nowrap}
+.td-chip.s{background:rgba(74,222,128,.12);color:var(--success);border:1px solid rgba(74,222,128,.25)}
+.td-chip.d{background:rgba(96,165,250,.12);color:var(--info);border:1px solid rgba(96,165,250,.25)}
+.td-chip.t{background:rgba(232,255,71,.12);color:var(--accent);border:1px solid rgba(232,255,71,.25)}
+.td-chip.m{background:rgba(248,113,113,.08);color:var(--danger);border:1px solid rgba(248,113,113,.2)}
+.td-pts{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text);white-space:nowrap}
+.td-pts.bonus{color:var(--accent)}
 .btoast{position:fixed;top:65px;left:50%;transform:translateX(-50%);background:var(--accent);color:#0a0a0f;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;padding:8px 14px;border-radius:30px;z-index:9999;opacity:0;pointer-events:none;transition:opacity .25s;white-space:nowrap;max-width:calc(100vw - 32px);text-align:center}
 .btoast.show{opacity:1}
 
@@ -295,50 +311,6 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 .empty-t{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:5px;color:var(--text)}
 .empty-s{font-size:12px;line-height:1.5}
 .dartboard-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px;margin-top:8px}
-
-/* ── WARMUP TIMER ── */
-.warmup-card{background:linear-gradient(135deg,rgba(232,255,71,.07),rgba(255,107,53,.05));border:1.5px solid rgba(232,255,71,.25);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:13px}
-.warmup-card:active{transform:scale(.98)}
-.warmup-icon-wrap{width:44px;height:44px;border-radius:50%;background:rgba(232,255,71,.12);border:2px solid rgba(232,255,71,.3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
-.warmup-info{flex:1;min-width:0}
-.warmup-title{font-family:'Syne',sans-serif;font-weight:800;font-size:14px;color:var(--accent)}
-.warmup-desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
-.warmup-badge{font-size:10px;padding:4px 10px;border-radius:20px;background:rgba(232,255,71,.1);color:var(--accent);border:1px solid rgba(232,255,71,.2);flex-shrink:0;font-weight:600}
-
-.warmup-sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
-.warmup-sheet-overlay.show{opacity:1;pointer-events:all}
-.warmup-sheet{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:0 0 max(24px,env(safe-area-inset-bottom));transform:translateY(30px);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
-.warmup-sheet-overlay.show .warmup-sheet{transform:translateY(0)}
-.ws-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 0}
-.ws-header{padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
-.ws-header-title{font-family:'Syne',sans-serif;font-weight:800;font-size:18px}
-.ws-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0 4px;line-height:1}
-.ws-body{padding:20px}
-.ws-desc{background:rgba(232,255,71,.05);border:1px solid rgba(232,255,71,.15);border-radius:12px;padding:12px 14px;margin-bottom:20px}
-.ws-desc p{font-size:12px;color:var(--muted);line-height:1.65}
-.ws-desc p strong{color:var(--text)}
-.ws-ring-wrap{display:flex;flex-direction:column;align-items:center;margin-bottom:20px}
-.ws-ring{position:relative;width:180px;height:180px}
-.ws-ring svg{transform:rotate(-90deg);width:180px;height:180px}
-.ws-ring-bg{stroke:var(--surface2);stroke-width:10;fill:none}
-.ws-ring-fill{stroke:var(--accent);stroke-width:10;fill:none;stroke-linecap:round;transition:stroke-dashoffset .5s linear}
-.ws-ring-fill.warning{stroke:var(--accent2)}
-.ws-ring-fill.urgent{stroke:var(--danger)}
-.ws-time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.ws-time-val{font-family:'Syne',sans-serif;font-size:38px;font-weight:800;line-height:1;color:var(--text)}
-.ws-time-lbl{font-size:11px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.8px}
-.ws-duration-row{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:20px}
-.ws-dur-btn{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.ws-dur-btn:active{transform:scale(.92)}
-.ws-dur-btn:disabled{opacity:.3;cursor:not-allowed}
-.ws-dur-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;min-width:80px;text-align:center;color:var(--accent)}
-.ws-dur-unit{font-size:12px;color:var(--muted);margin-left:4px}
-.ws-btns{display:flex;gap:8px}
-.ws-start-btn{flex:1;padding:15px;border-radius:14px;border:none;background:var(--accent);color:#0a0a0f;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;cursor:pointer;transition:all .15s}
-.ws-start-btn:active{transform:scale(.97)}
-.ws-start-btn.pause{background:rgba(232,255,71,.15);color:var(--accent);border:1.5px solid rgba(232,255,71,.4)}
-.ws-stop-btn{padding:15px 20px;border-radius:14px;border:1.5px solid rgba(248,113,113,.3);background:transparent;color:var(--danger);font-family:'Syne',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;white-space:nowrap}
-.ws-stop-btn:active{transform:scale(.97)}
 .dartboard-title{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;text-align:center;margin-bottom:8px}
 .board-highlight-pulse{animation:boardPulse 1s ease infinite}
 @keyframes boardPulse{0%,100%{opacity:.5}50%{opacity:1}}
@@ -516,6 +488,7 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
       <div class="sum-lbl">punktów</div>
     </div>
     <div class="stable" id="sum-break"></div>
+    <div id="sum-throws-detail" style="display:none"></div>
     <div class="chart-box" id="sum-chart" style="display:none">
       <div class="sec" style="margin:0 0 11px">Postęp – ostatnie 5 sesji</div>
       <div id="sum-bars"></div>
@@ -670,9 +643,11 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
         <div class="erow"><label class="lbl">Opis</label><input class="inp" id="new-ds" placeholder="Krótki opis"/></div>
         <div class="erow">
           <label class="lbl">Typ</label>
-          <div class="type-grid">
-            <button class="topt on" id="nt-shanghai" onclick="selNewType('shanghai')">🎯 Shanghai<br><small style="opacity:.7">3 lotki / liczba</small></button>
+          <div class="type-grid" style="grid-template-columns:1fr 1fr">
+            <button class="topt on" id="nt-shanghai" onclick="selNewType('shanghai')">🎯 Shanghai<br><small style="opacity:.7">mnożnik × sektor</small></button>
             <button class="topt" id="nt-doubles" onclick="selNewType('doubles')">✌️ Doublesy<br><small style="opacity:.7">1 lotka / double</small></button>
+            <button class="topt" id="nt-sections" onclick="selNewType('sections')">📍 Sections<br><small style="opacity:.7">trafiony/sąsiad/pudło</small></button>
+            <button class="topt" id="nt-custom" onclick="selNewType('custom')">⚙️ Własny<br><small style="opacity:.7">dowolne reguły</small></button>
           </div>
         </div>
         <div class="erow"><label class="lbl">Sektory (przecinkami, np. 10,11,12 lub BULL)</label><input class="inp" id="new-tg" placeholder="10,11,12,13,14,15"/></div>
@@ -942,6 +917,16 @@ function defaultRules(type){
     {id:uid(),label:'Treble',points:3,type:'hit',trigger:'triple'},
     {id:uid(),label:'Bonus Shanghai (S+D+T)',points:100,type:'bonus',trigger:'shanghai'}
   ];
+  if(type==='sections') return[
+    {id:uid(),label:'Trafiony sektor',points:5,type:'hit',trigger:'single'},
+    {id:uid(),label:'Przylegly sektor',points:1,type:'hit',trigger:'neighbor'},
+    {id:uid(),label:'Pudlo',points:0,type:'hit',trigger:'miss'}
+  ];
+  if(type==='custom') return[
+    {id:uid(),label:'Trafienie',points:10,type:'hit',trigger:'single'},
+    {id:uid(),label:'Pudlo',points:0,type:'hit',trigger:'miss'}
+  ];
+  // doubles
   return[
     {id:uid(),label:'Trafiony double',points:50,type:'hit',trigger:'double'},
     {id:uid(),label:'Trafiony BULL',points:50,type:'hit',trigger:'bull'},
@@ -955,8 +940,18 @@ function getRules(ex){
   return defaultRules(ex.type);
 }
 
-function autoRules(ex){
-  return getRules(ex).map(r=>`${r.label}: ${r.points} pkt${r.type==='bonus'?' (bonus)':''}`).join('\n');
+function autoRules(ex, target){
+  const isBull = target==='BULL';
+  const sectorVal = isBull ? 25 : (typeof target==='number' ? target : parseInt(target)||0);
+  return getRules(ex).map(r=>{
+    let pts = r.points;
+    // Shanghai: mnoznik (1/2/3) x wartosc sektora
+    if(ex.type==='shanghai' && !isBull && r.type==='hit' && r.points<=3 && sectorVal>0){
+      pts = r.points * sectorVal;
+    }
+    // Sections i custom i doubles: stala wartosc z reguly, bez mnozenia
+    return `${r.label}: ${pts} pkt${r.type==='bonus'?' (bonus)':''}`;
+  }).join('\n');
 }
 
 function initNewRules(type){
@@ -1154,34 +1149,15 @@ async function renderHome(){
   const todaySess=all.filter(s=>s.created_at.slice(0,10)===todayStr);
   const active=S.exercises.filter(e=>e.enabled!==false);
   document.getElementById('ex-list').innerHTML=active.length
-    ?[
-      // Kafelek rozgrzewki zawsze na #1
-      `<div class="warmup-card" onclick="openWarmup()">
-        <div class="warmup-icon-wrap">🔥</div>
-        <div class="warmup-info">
-          <div class="warmup-title">Rozgrzewka</div>
-          <div class="warmup-desc">Czas dla siebie — rozgrzej stawy, nastaw się mentalnie</div>
-        </div>
-        <div class="warmup-badge">⏱ Timer</div>
-      </div>`,
-      ...active.map((ex,i)=>{
+    ?active.map((ex,i)=>{
         const done=todaySess.some(s=>s.exercise_id===ex.id);
         return`<div class="exc" onclick="startTraining('${ex.id}')">
           <div class="exn ${ex.color}">${i+1}</div>
           <div class="ex-inf"><div class="ex-nm">${ex.name}</div><div class="ex-ds">${ex.description||''}</div></div>
           <div class="badge${done?' done':''}"> ${done?'✓ Zrobione':'Start'}</div>
         </div>`;
-      })
-    ].join('')
-    :`<div class="warmup-card" onclick="openWarmup()">
-        <div class="warmup-icon-wrap">🔥</div>
-        <div class="warmup-info">
-          <div class="warmup-title">Rozgrzewka</div>
-          <div class="warmup-desc">Czas dla siebie — rozgrzej stawy, nastaw się mentalnie</div>
-        </div>
-        <div class="warmup-badge">⏱ Timer</div>
-      </div>
-      <div class="empty"><span class="empty-ic">😴</span><div class="empty-t">Brak aktywnych ćwiczeń</div></div>`;
+      }).join('')
+    :`<div class="empty"><span class="empty-ic">😴</span><div class="empty-t">Brak aktywnych ćwiczeń</div></div>`;
   const recent=all.slice(0,3);
   document.getElementById('mini-hist').innerHTML=recent.length
     ?recent.map(s=>`<div class="hi">
@@ -1251,7 +1227,7 @@ function renderTarget(){
   ne.textContent=target;
   ne.className='tgt-num'+(ex.color==='c2'?' org':ex.color==='c3'?' blu':'');
   document.getElementById('tgt-lbl').textContent=target==='BULL'?'Byk':`Liczba ${target}`;
-  const rules=ex.rules&&ex.rules.trim()?ex.rules:autoRules(ex);
+  const rules=ex.rules&&ex.rules.trim()?ex.rules:autoRules(ex,target);
   const hl=document.getElementById('tgt-hint');hl.textContent=rules;hl.style.display='block';
   t.curThrows=[];
   renderChips(ex.throws_per_target);renderDartBtns(ex,target);
@@ -1266,25 +1242,92 @@ function renderChips(n){
 }
 function renderDartBtns(ex,target){
   const el=document.getElementById('dart-btns');
-  const rules=getRules(ex);const isBull=target==='BULL';
-  if(ex.type==='doubles'){
-    const hitRule=rules.find(r=>r.type==='hit'&&r.trigger===(isBull?'bull':'double'))||rules.find(r=>r.type==='hit');
-    const pts=hitRule?hitRule.points:50;
+  const rules=getRules(ex);
+  const isBull=target==='BULL';
+  const sectorVal=isBull?25:(typeof target==='number'?target:parseInt(target)||0);
+  const type=ex.type||'custom';
+
+  // ── SECTIONS: przyciski generowane z triggerow regul ──
+  if(type==='sections'){
+    // Pobierz reguły hit (nie bonus) — one definiują przyciski
+    const hitRules=rules.filter(r=>r.type==='hit');
+    // Dobierz liczbę kolumn
+    const cols=hitRules.length<=2?'dg2':hitRules.length===3?'dg3':'dg4';
+    el.className='dg '+cols;
+    // Mapowanie trigger → styl chipa
+    const trigCc={single:'s',double:'d',triple:'t',miss:'m',neighbor:'n',bull:'d',custom:'s'};
+    const trigCls={single:'hs',double:'hd',triple:'ht',miss:'hm',neighbor:'hn',bull:'hd',custom:'hs'};
+    const trigScCls={single:'cs',double:'cd',triple:'ct',miss:'cm',neighbor:'cn',bull:'cd',custom:'cs'};
+    el.innerHTML=hitRules.map(r=>{
+      const cc=trigCc[r.trigger]||'s';
+      const hcls=trigCls[r.trigger]||'hs';
+      const scls=trigScCls[r.trigger]||'cs';
+      return `<button class="dbtn ${hcls}" onclick="recThrow('${r.trigger}',${r.points},'${cc}')">
+        <div class="dbtn-in">
+          <div class="zlbl">${r.label}</div>
+          <div class="zsc ${scls}">${r.points} pkt</div>
+        </div></button>`;
+    }).join('');
+    return;
+  }
+
+  // ── DOUBLES: stała wartość z reguły, bez mnożenia ──
+  if(type==='doubles'){
+    const trigger=isBull?'bull':'double';
+    const hitRule=rules.find(r=>r.type==='hit'&&r.trigger===trigger)||rules.find(r=>r.type==='hit');
+    const hitPts=hitRule?hitRule.points:50;
+    // Szukaj reguły bonus o tym samym trigger
+    const bonusRule=rules.find(r=>r.type==='bonus'&&r.trigger===trigger);
+    // Fallback dla BULL: jesli brak reguły bonus/bull → bonus = wartość hit/bull (podwojenie)
+    const bonusPts=bonusRule?bonusRule.points:(isBull?hitPts:0);
+    const totalPts=hitPts+bonusPts;
+    const bonusLabel=bonusPts>0?` <span style="font-size:10px;opacity:.7">(+${bonusPts}★)</span>`:'';
     el.className='dg dg2';
     el.innerHTML=`
-      <button class="dbtn" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudło</div><div class="zsc cm">0 pkt</div></div></button>
-      <button class="dbtn" onclick="recThrow('${isBull?'bull':'double'}',${pts},'d')"><div class="dbtn-in"><div class="zlbl">${isBull?'BULL':'Double'}</div><div class="zsc cd">${pts} pkt</div></div></button>`;
-  }else{
-    const sr=rules.find(r=>r.trigger==='single')||{points:1};
-    const dr=rules.find(r=>r.trigger==='double')||{points:2};
-    const tr=rules.find(r=>r.trigger==='triple')||{points:3};
+      <button class="dbtn hm" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudlo</div><div class="zsc cm">0 pkt</div></div></button>
+      <button class="dbtn hd" onclick="recThrow('${trigger}',${hitPts},'d')"><div class="dbtn-in"><div class="zlbl">${isBull?'🔴 BULL':'Double'}</div><div class="zsc cd">${totalPts} pkt${bonusLabel}</div></div></button>`;
+    return;
+  }
+
+  // ── SHANGHAI: mnoznik z reguly × wartosc sektora ──
+  if(type==='shanghai'){
+    const srRule=rules.find(r=>r.trigger==='single')||{points:1};
+    const drRule=rules.find(r=>r.trigger==='double')||{points:2};
+    const trRule=rules.find(r=>r.trigger==='triple')||{points:3};
+    const calcPts=(rule)=>{
+      if(isBull) return rule.points;
+      if(rule.points<=3&&sectorVal>0) return rule.points*sectorVal;
+      return rule.points;
+    };
+    const spts=calcPts(srRule);
+    const dpts=calcPts(drRule);
+    const tpts=calcPts(trRule);
     el.className='dg dg4';
     el.innerHTML=`
-      <button class="dbtn" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudło</div><div class="zsc cm">0</div></div></button>
-      <button class="dbtn" onclick="recThrow('single',${sr.points},'s')"><div class="dbtn-in"><div class="zlbl">Single</div><div class="zsc cs">${sr.points} pkt</div></div></button>
-      <button class="dbtn" onclick="recThrow('double',${dr.points},'d')"><div class="dbtn-in"><div class="zlbl">Double</div><div class="zsc cd">${dr.points} pkt</div></div></button>
-      <button class="dbtn" onclick="recThrow('triple',${tr.points},'t')"><div class="dbtn-in"><div class="zlbl">Treble</div><div class="zsc ct">${tr.points} pkt</div></div></button>`;
+      <button class="dbtn hm" onclick="recThrow('miss',0,'m')"><div class="dbtn-in"><div class="zlbl">Pudlo</div><div class="zsc cm">0</div></div></button>
+      <button class="dbtn hs" onclick="recThrow('single',${spts},'s')"><div class="dbtn-in"><div class="zlbl">Single</div><div class="zsc cs">${spts} pkt</div></div></button>
+      <button class="dbtn hd" onclick="recThrow('double',${dpts},'d')"><div class="dbtn-in"><div class="zlbl">Double</div><div class="zsc cd">${dpts} pkt</div></div></button>
+      <button class="dbtn ht" onclick="recThrow('triple',${tpts},'t')"><div class="dbtn-in"><div class="zlbl">Treble</div><div class="zsc ct">${tpts} pkt</div></div></button>`;
+    return;
   }
+
+  // ── CUSTOM / INNE: stała wartość z reguły, przyciski z triggerow ──
+  const hitRules=rules.filter(r=>r.type==='hit');
+  const cols=hitRules.length<=2?'dg2':hitRules.length===3?'dg3':'dg4';
+  el.className='dg '+cols;
+  const trigCc2={single:'s',double:'d',triple:'t',miss:'m',neighbor:'n',bull:'d',custom:'s'};
+  const trigCls2={single:'hs',double:'hd',triple:'ht',miss:'hm',neighbor:'hn',bull:'hd',custom:'hs'};
+  const trigScCls2={single:'cs',double:'cd',triple:'ct',miss:'cm',neighbor:'cn',bull:'cd',custom:'cs'};
+  el.innerHTML=hitRules.map(r=>{
+    const cc=trigCc2[r.trigger]||'s';
+    const hcls=trigCls2[r.trigger]||'hs';
+    const scls=trigScCls2[r.trigger]||'cs';
+    return `<button class="dbtn ${hcls}" onclick="recThrow('${r.trigger}',${r.points},'${cc}')">
+      <div class="dbtn-in">
+        <div class="zlbl">${r.label}</div>
+        <div class="zsc ${scls}">${r.points} pkt</div>
+      </div></button>`;
+  }).join('');
 }
 function recThrow(zone,pts,cc){
   const t=S.training,ex=S.exercises.find(e=>e.id===t.exId);
@@ -1293,21 +1336,42 @@ function recThrow(zone,pts,cc){
   t.curThrows.push({zone,pts,cc});
   const i=t.curThrows.length-1;
   const chip=document.getElementById('chip-'+i);
-  if(chip){chip.className='chip f'+cc;chip.textContent=cc==='m'?'✗':cc==='s'?'S':cc==='d'?'D':'T';}
+  const chipText={m:'✗',s:'S',d:'D',t:'T',n:'N',b:'B'};
+  if(chip){chip.className='chip f'+cc;chip.textContent=chipText[cc]||cc.toUpperCase();}
   if(t.curThrows.length===ex.throws_per_target){
     const rndPts=t.curThrows.reduce((a,th)=>a+th.pts,0);
     let bonus=0;
     const rules=getRules(ex);const zones=t.curThrows.map(th=>th.zone);
-    rules.filter(r=>r.type==='bonus').forEach(r=>{
+    const target=ex.targets[t.ti];
+    const isBullTarget=(target==='BULL'||target===25);
+    const bonusRules=rules.filter(r=>r.type==='bonus');
+    bonusRules.forEach(r=>{
       if(r.trigger==='shanghai'&&zones.includes('single')&&zones.includes('double')&&zones.includes('triple')){
-        bonus+=r.points;showToast(`🎯 SHANGHAI! +${r.points} pkt`);
-      }else if(r.trigger==='bull'&&ex.targets[t.ti]==='BULL'&&zones.includes('bull')){
-        bonus+=r.points;showToast(`🔴 BULL BONUS! +${r.points} pkt`);
+        bonus+=r.points;showToast('🎯 SHANGHAI! +'+r.points+' pkt');
+      }else if(r.trigger==='bull'&&isBullTarget&&zones.includes('bull')){
+        bonus+=r.points;showToast('🔴 BULL BONUS! +'+r.points+' pkt');
+      }else if(r.trigger==='double'&&zones.includes('double')&&ex.type!=='shanghai'){
+        bonus+=r.points;showToast('✌️ DOUBLE BONUS! +'+r.points+' pkt');
       }
     });
+    // FALLBACK dla doubles + BULL:
+    // Jesli trafiono bull, cel=BULL, brak bonusu → dolicz wartość HIT (bull lub double lub pierwsza)
+    if(ex.type==='doubles'&&isBullTarget&&zones.includes('bull')&&bonus===0){
+      const hasBullBonus=bonusRules.some(r=>r.trigger==='bull');
+      if(!hasBullBonus){
+        // Szukaj: najpierw hit/bull, potem hit/double, potem pierwsza hit
+        const bullHitRule=rules.find(r=>r.type==='hit'&&r.trigger==='bull')
+          ||rules.find(r=>r.type==='hit'&&r.trigger==='double')
+          ||rules.find(r=>r.type==='hit');
+        if(bullHitRule){
+          bonus+=bullHitRule.points;
+          showToast('🔴 BULL BONUS! +'+bullHitRule.points+' pkt');
+        }
+      }
+    }
     if(bonus>0)t.bonuses.push(bonus);
     t.sessScore+=rndPts+bonus;
-    t.rounds.push({target:ex.targets[t.ti],pts:rndPts,bonus});
+    t.rounds.push({target:ex.targets[t.ti],pts:rndPts,bonus,throws:[...t.curThrows]});
     document.getElementById('sess-score').textContent=t.sessScore+' pkt';
     const isLast=t.ti>=ex.targets.length-1;
     if(!isLast){
@@ -1336,16 +1400,31 @@ async function finishTraining(){
         session_id:session.id,target:String(r.target),zone:'round',points:r.pts+r.bonus,throw_order:idx
       })));
     }
-    const allSess=await dbGet('sessions',`user_id=eq.${S.user.id}&exercise_id=eq.${ex.id}&order=created_at.asc`);
-    renderSummary(session,allSess||[]);showScreen('summary');
+    const todayStr=new Date().toISOString().slice(0,10);
+    // Sesje tego cwiczenia (do wykresu postepow)
+    const exSess=await dbGet('sessions',`user_id=eq.${S.user.id}&exercise_id=eq.${ex.id}&order=created_at.asc`);
+    // Wszystkie sesje usera z dzisiaj (do sprawdzenia ktore cwiczenia zrobione)
+    const todaySess=await dbGet('sessions',`user_id=eq.${S.user.id}&created_at=gte.${todayStr}T00:00:00&select=exercise_id`);
+    renderSummary(session,exSess||[],todaySess||[]);showScreen('summary');
   }catch(e){await caAlert(e.message,'❌','Błąd zapisu');}
   finally{loading(false);}
 }
-function startNextExercise(){
+async function startNextExercise(){
   const active = S.exercises.filter(e=>e.enabled!==false);
   const currentId = S.training?.exId;
   const currentIdx = active.findIndex(e=>e.id===currentId);
-  const nextEx = active[currentIdx+1];
+  // Pobierz dzisiejsze sesje zeby wiedziec co juz zrobione
+  let todayDoneIds = [currentId];
+  try{
+    const todayStr = new Date().toISOString().slice(0,10);
+    const todaySess = await dbGet('sessions',`user_id=eq.${S.user.id}&created_at=gte.${todayStr}T00:00:00&select=exercise_id`);
+    todayDoneIds = (todaySess||[]).map(s=>s.exercise_id);
+    if(!todayDoneIds.includes(currentId)) todayDoneIds.push(currentId);
+  }catch(e){ /* ignoruj blad, uzyj tylko currentId */ }
+  // Najpierw szukaj po biezacym, potem przed
+  const afterCurrent = active.filter((e,i)=>i>currentIdx&&!todayDoneIds.includes(e.id));
+  const beforeCurrent = active.filter((e,i)=>i<currentIdx&&!todayDoneIds.includes(e.id));
+  const nextEx = afterCurrent[0]||beforeCurrent[0]||null;
   if(nextEx) startTraining(nextEx.id);
   else goTab('home');
 }
@@ -1356,7 +1435,7 @@ function repeatCurrentExercise(){
   else startFirst();
 }
 
-function renderSummary(session,allSess){
+function renderSummary(session,allSess,todaySessAll){
   const scores=allSess.map(s=>s.total_score);
   const best=Math.max(...scores);const isPB=session.total_score===best&&scores.length>1;
   document.getElementById('sum-trophy').textContent=isPB?'🏆':'🎯';
@@ -1368,19 +1447,59 @@ function renderSummary(session,allSess){
     <div class="srow bon"><span class="sl">Bonusy łącznie</span><span class="sv">+${session.bonus_score} pkt</span></div>
     <div class="srow"><span class="sl">Rekord osobisty</span><span class="sv">${best} pkt</span></div>
     <div class="srow"><span class="sl">Liczba sesji</span><span class="sv">${scores.length}</span></div>`;
-  // Show "Next exercise" if there is one
+  // ── TABELKA SZCZEGÓŁÓW RZUTÓW ──
+  const throwsDetail = document.getElementById('sum-throws-detail');
+  const rounds = S.training?.rounds || [];
+  if(throwsDetail && rounds.length){
+    const ZONE_LABEL = {single:'S',double:'D',triple:'T',miss:'✗',bull:'BULL',double_bull:'DB',neighbor:'N',custom:'H'};
+    const ZONE_CLASS = {single:'s',double:'d',triple:'t',miss:'m',bull:'d',double_bull:'d',neighbor:'n',custom:'s'};
+    const ZONE_FULL  = {single:'Single',double:'Double',triple:'Treble',miss:'Pudło',bull:'BULL',double_bull:'Double BULL',neighbor:'Przyległy',custom:'Trafienie'};
+    throwsDetail.style.display = 'block';
+    throwsDetail.innerHTML = `
+      <div class="throws-detail">
+        <div class="td-hdr">
+          <span>Sektor</span><span>Rzuty (S=single D=double T=treble)</span><span>Suma</span>
+        </div>
+        ${rounds.map(r=>{
+          const throwsArr = r.throws || [];
+          const chipsHtml = throwsArr.map(th=>{
+            const zone = th.zone || 'miss';
+            const lbl  = ZONE_LABEL[zone] || zone;
+            const cls  = ZONE_CLASS[zone] || 'm';
+            const full = ZONE_FULL[zone]  || zone;
+            // Pokaż pts tylko gdy > 0
+            const ptsLabel = th.pts > 0 ? ` ${th.pts}` : '';
+            return `<span class="td-chip ${cls}" title="${full} = ${th.pts} pkt">${lbl}${ptsLabel}</span>`;
+          }).join('');
+          const totalPts = r.pts + (r.bonus||0);
+          const ptsClass = r.bonus > 0 ? 'bonus' : '';
+          const bonusInfo = r.bonus > 0 ? ` <span style="font-size:10px;color:var(--accent)">+${r.bonus}★</span>` : '';
+          return `<div class="td-row">
+            <div class="td-target">${r.target}</div>
+            <div class="td-throws">${chipsHtml || '<span style="color:var(--muted);font-size:12px">brak rzutów</span>'}</div>
+            <div class="td-pts ${ptsClass}">${totalPts} pkt${bonusInfo}</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+  } else if(throwsDetail){
+    throwsDetail.style.display = 'none';
+  }
+  // ── LOGIKA "NASTEPNE CWICZENIE" ──
+  // Zbierz id cwiczen zrobionych dzis (z parametru todaySessAll + wlasnie ukonczone)
   const active = S.exercises.filter(e => e.enabled !== false);
-  const currentIdx = active.findIndex(e => e.id === session.exerciseId);
-  const todayStr = new Date().toISOString().slice(0,10);
-  // allSess zawiera wszystkie sesje tego ćwiczenia — pobierz wszystkie sesje usera dziś
-  const todayDoneIds = (allSess||[])
-    .filter(s => s.created_at && s.created_at.slice(0,10) === todayStr)
-    .map(s => s.exercise_id);
-  // Dodaj właśnie ukończone
-  if(!todayDoneIds.includes(session.exerciseId)) todayDoneIds.push(session.exerciseId);
+  const todayDoneIds = (todaySessAll||[]).map(s => s.exercise_id);
+  // Dodaj wlasnie ukonczone (moze jeszcze nie byc w todaySessAll jesli swiezo zapisane)
+  if(!todayDoneIds.includes(session.exercise_id)) todayDoneIds.push(session.exercise_id);
 
-  // Znajdź kolejne NIEZROBIONE (pomijaj zrobione dziś)
-  const nextUndone = active.find((e,i) => i > currentIdx && !todayDoneIds.includes(e.id));
+  const currentExId = session.exercise_id || S.training?.exId;
+  const currentIdx = active.findIndex(e => e.id === currentExId);
+
+  // Szukaj PIERWSZEGO niezrobionego dziś z CALEJ listy (nie tylko od currentIdx+1)
+  // Priorytet: najpierw te po biezacym, potem te przed biezacym
+  const afterCurrent = active.filter((e,i) => i > currentIdx && !todayDoneIds.includes(e.id));
+  const beforeCurrent = active.filter((e,i) => i < currentIdx && !todayDoneIds.includes(e.id));
+  const nextUndone = afterCurrent[0] || beforeCurrent[0] || null;
+
   const nextBtn = document.getElementById('sum-next-btn');
   if(nextBtn){
     if(nextUndone){
@@ -2222,8 +2341,10 @@ function aTab(t){
 }
 function selNewType(t){
   S.newType=t;
-  document.getElementById('nt-shanghai').classList.toggle('on',t==='shanghai');
-  document.getElementById('nt-doubles').classList.toggle('on',t==='doubles');
+  ['shanghai','doubles','sections','custom'].forEach(tp=>{
+    const el=document.getElementById('nt-'+tp);
+    if(el) el.classList.toggle('on',t===tp);
+  });
   initNewRules(t);
 }
 async function addExercise(){
@@ -2276,7 +2397,9 @@ function renderAdminEx(){
         <div class="erow"><label class="lbl">Opis</label>
           <input class="inp" data-id="${ex.id}" data-f="description" value="${ex.description||''}" oninput="localUpdate(this);scheduleAutoSave('${ex.id}')"/></div>
         <div class="erow"><label class="lbl">Typ</label>
-          <div style="font-size:13px;color:var(--muted);padding:8px 0">${ex.type==='shanghai'?'🎯 Shanghai (3 lotki / liczba)':'✌️ Doublesy (1 lotka / double)'}</div></div>
+          <div style="font-size:13px;color:var(--muted);padding:8px 0">${
+            {shanghai:'🎯 Shanghai (mnożnik × sektor)',doubles:'✌️ Doublesy (stała wartość)',sections:'📍 Sections (trafiony/sąsiad/pudło)',custom:'⚙️ Własny typ'}[ex.type]||('⚙️ '+ex.type)
+          }</div></div>
         <div class="erow"><label class="lbl">Sektory</label>
           <div style="font-size:13px;color:var(--muted);padding:8px 0">${ex.targets.join(', ')}</div></div>
         <div class="scoring-panel">
@@ -2913,154 +3036,6 @@ window.addEventListener('popstate',(e)=>{
 });
 
 // ═══════════════════════════════════════════════
-//  WARMUP TIMER
-// ═══════════════════════════════════════════════
-const WARMUP={
-  durationMin:10,  // aktualne ustawienie (minuty)
-  totalSec:600,    // całkowity czas w sekundach
-  remainSec:600,   // pozostały czas
-  running:false,
-  interval:null,
-  circumference:502.65  // 2*π*80
-};
-
-function openWarmup(){
-  // reset do stanu idle jeśli nie biegnie
-  if(!WARMUP.running){
-    WARMUP.durationMin=10;
-    WARMUP.totalSec=600;
-    WARMUP.remainSec=600;
-    warmupUpdateUI(false);
-  }
-  document.getElementById('warmup-overlay').classList.add('show');
-}
-
-function closeWarmup(){
-  // zamknij tylko jeśli timer nie biegnie (lub zatrzymaj go)
-  if(WARMUP.running) warmupStop();
-  document.getElementById('warmup-overlay').classList.remove('show');
-}
-
-function warmupOverlayClick(e){
-  if(e.target===document.getElementById('warmup-overlay')) closeWarmup();
-}
-
-function warmupAdjust(delta){
-  if(WARMUP.running) return; // zablokuj podczas biegu
-  const newMin=WARMUP.durationMin+delta;
-  if(newMin<10||newMin>60) return; // min 10, max 60 minut
-  WARMUP.durationMin=newMin;
-  WARMUP.totalSec=newMin*60;
-  WARMUP.remainSec=newMin*60;
-  // blokuj przycisk minus gdy 10 min
-  document.getElementById('ws-dur-minus').disabled=(newMin<=10);
-  document.getElementById('ws-dur-plus').disabled=(newMin>=60);
-  document.getElementById('ws-dur-val').textContent=newMin;
-  warmupUpdateRing(1.0);
-  warmupUpdateTimeDisplay(WARMUP.remainSec);
-}
-
-function warmupToggle(){
-  if(WARMUP.running){
-    // Pause
-    clearInterval(WARMUP.interval);
-    WARMUP.interval=null;
-    WARMUP.running=false;
-    const btn=document.getElementById('ws-start-btn');
-    btn.textContent='▶ Wznów';
-    btn.classList.remove('pause');
-    // pokazz czas na etykiecie
-    document.getElementById('ws-time-lbl').textContent='pauza';
-  }else{
-    // Start / Resume
-    if(WARMUP.remainSec<=0){
-      // Restart
-      WARMUP.remainSec=WARMUP.totalSec;
-      warmupUpdateRing(1.0);
-    }
-    WARMUP.running=true;
-    const btn=document.getElementById('ws-start-btn');
-    btn.textContent='⏸ Pauza';
-    btn.classList.add('pause');
-    document.getElementById('ws-stop-btn').style.display='block';
-    document.getElementById('ws-duration-row').style.opacity='0.35';
-    document.getElementById('ws-dur-minus').disabled=true;
-    document.getElementById('ws-dur-plus').disabled=true;
-    document.getElementById('ws-time-lbl').textContent='pozostało';
-    WARMUP.interval=setInterval(warmupTick,1000);
-  }
-}
-
-function warmupTick(){
-  WARMUP.remainSec--;
-  const ratio=WARMUP.remainSec/WARMUP.totalSec;
-  warmupUpdateRing(ratio);
-  warmupUpdateTimeDisplay(WARMUP.remainSec);
-  // Zmiana koloru pod koniec
-  const fill=document.getElementById('ws-ring-fill');
-  if(WARMUP.remainSec<=60) fill.classList.add('urgent');
-  else if(WARMUP.remainSec<=120) fill.classList.add('warning');
-  else fill.classList.remove('warning','urgent');
-  if(WARMUP.remainSec<=0){
-    clearInterval(WARMUP.interval);
-    WARMUP.interval=null;
-    WARMUP.running=false;
-    warmupFinished();
-  }
-}
-
-function warmupUpdateRing(ratio){
-  const offset=WARMUP.circumference*(1-ratio);
-  document.getElementById('ws-ring-fill').style.strokeDashoffset=offset;
-}
-
-function warmupUpdateTimeDisplay(sec){
-  const m=Math.floor(sec/60);
-  const s=sec%60;
-  document.getElementById('ws-time-val').textContent=
-    String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
-}
-
-function warmupStop(){
-  clearInterval(WARMUP.interval);
-  WARMUP.interval=null;
-  WARMUP.running=false;
-  WARMUP.remainSec=WARMUP.totalSec;
-  warmupUpdateUI(false);
-}
-
-function warmupFinished(){
-  warmupUpdateUI(false);
-  // Dźwięk (wibracja jeśli dostępna)
-  if(navigator.vibrate) navigator.vibrate([200,100,200,100,400]);
-  document.getElementById('ws-time-lbl').textContent='gotowe!';
-  document.getElementById('ws-ring-fill').classList.remove('warning','urgent');
-  // Zamknij sheet po chwili i pokaż toast
-  setTimeout(()=>{
-    document.getElementById('warmup-overlay').classList.remove('show');
-    showToast('🔥 Rozgrzewka zakończona! Czas na trening!');
-  },1200);
-}
-
-function warmupUpdateUI(running){
-  const btn=document.getElementById('ws-start-btn');
-  const stopBtn=document.getElementById('ws-stop-btn');
-  const durRow=document.getElementById('ws-duration-row');
-  btn.textContent='▶ Start';
-  btn.classList.remove('pause');
-  stopBtn.style.display='none';
-  durRow.style.opacity='1';
-  const min=WARMUP.durationMin;
-  document.getElementById('ws-dur-minus').disabled=(min<=10);
-  document.getElementById('ws-dur-plus').disabled=(min>=60);
-  document.getElementById('ws-dur-val').textContent=min;
-  document.getElementById('ws-time-lbl').textContent='minuty';
-  warmupUpdateRing(1.0);
-  warmupUpdateTimeDisplay(WARMUP.totalSec);
-  document.getElementById('ws-ring-fill').classList.remove('warning','urgent');
-}
-
-// ═══════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════
 // Block pull-to-refresh during active sessions
@@ -3108,47 +3083,6 @@ document.addEventListener('touchmove', function(e){
   finally{loading(false);initNewRules('shanghai');}
 })();
 </script>
-<!-- WARMUP TIMER SHEET -->
-<div class="warmup-sheet-overlay" id="warmup-overlay" onclick="warmupOverlayClick(event)">
-  <div class="warmup-sheet" id="warmup-sheet">
-    <div class="ws-handle"></div>
-    <div class="ws-header">
-      <div class="ws-header-title">🔥 Rozgrzewka</div>
-      <button class="ws-close" onclick="closeWarmup()">×</button>
-    </div>
-    <div class="ws-body">
-      <div class="ws-desc">
-        <p><strong>Rozgrzewka jest obowiązkowa!</strong> Zanim zaczniesz ćwiczenia lub mecz, poświęć chwilę na rozgrzanie stawów nadgarstka i łokcia, poprawę płynności rzutu oraz kalibrację odległości. Twoje ciało Ci podziękuje 🙏</p>
-      </div>
-      <div class="ws-ring-wrap">
-        <div class="ws-ring">
-          <svg viewBox="0 0 180 180">
-            <circle class="ws-ring-bg" cx="90" cy="90" r="80"/>
-            <circle class="ws-ring-fill" id="ws-ring-fill" cx="90" cy="90" r="80"
-              stroke-dasharray="502.65"
-              stroke-dashoffset="0"/>
-          </svg>
-          <div class="ws-time">
-            <div class="ws-time-val" id="ws-time-val">10:00</div>
-            <div class="ws-time-lbl" id="ws-time-lbl">minuty</div>
-          </div>
-        </div>
-      </div>
-      <div class="ws-duration-row" id="ws-duration-row">
-        <button class="ws-dur-btn" id="ws-dur-minus" onclick="warmupAdjust(-5)" disabled>−</button>
-        <div>
-          <span class="ws-dur-val" id="ws-dur-val">10</span><span class="ws-dur-unit">min</span>
-        </div>
-        <button class="ws-dur-btn" id="ws-dur-plus" onclick="warmupAdjust(+5)">+</button>
-      </div>
-      <div class="ws-btns">
-        <button class="ws-start-btn" id="ws-start-btn" onclick="warmupToggle()">▶ Start</button>
-        <button class="ws-stop-btn" id="ws-stop-btn" onclick="warmupStop()" style="display:none">⏹ Stop</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="ca-overlay" id="ca-overlay">
   <div class="ca-box">
     <div class="ca-icon" id="ca-icon"></div>
