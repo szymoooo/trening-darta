@@ -114,7 +114,7 @@ textarea.inp{resize:none;line-height:1.5}
 .c3{background:rgba(96,165,250,.1);color:var(--info)}.c4{background:rgba(74,222,128,.1);color:var(--success)}.c5{background:rgba(251,191,36,.1);color:var(--warn)}
 .ex-inf{flex:1;min-width:0}
 .ex-nm{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ex-ds{font-size:12px;color:var(--text);line-height:1.4}
+.ex-ds{font-size:12px;color:var(--muted);line-height:1.4}
 .badge{font-size:10px;padding:4px 9px;border-radius:20px;background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--border);white-space:nowrap;flex-shrink:0}
 .badge.done{background:rgba(74,222,128,.1);color:var(--success);border-color:rgba(74,222,128,.2)}
 
@@ -129,7 +129,7 @@ textarea.inp{resize:none;line-height:1.5}
 .tgt-num{font-family:'Syne',sans-serif;font-size:clamp(34px,9vw,50px);font-weight:800;line-height:1;margin-bottom:2px;color:var(--accent)}
 .tgt-num.org{color:var(--accent2)}.tgt-num.blu{color:var(--info)}
 .tgt-lbl{font-size:12px;color:var(--muted)}
-.tgt-hint{font-size:11px;color:var(--text);margin-top:6px;background:var(--surface2);border-radius:8px;padding:6px 10px;text-align:left;line-height:1.5;white-space:pre-line}
+.tgt-hint{font-size:11px;color:var(--muted);margin-top:6px;background:var(--surface2);border-radius:8px;padding:6px 10px;text-align:left;line-height:1.5;white-space:pre-line}
 .throws-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:8px;margin-bottom:8px}
 .throws-hdr{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;text-align:center}
 .throws-row{display:flex;gap:7px;justify-content:center;flex-wrap:wrap}
@@ -239,8 +239,8 @@ textarea.inp{resize:none;line-height:1.5}
 .sp-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 16px}
 .modal-box{background:var(--surface);border-radius:20px 20px 0 0;padding:20px;width:100%;max-width:430px;max-height:80vh;overflow-y:auto;transform:translateY(20px);transition:transform .2s}
 .modal-overlay.show .modal-box{transform:translateY(0)}
-.modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;margin-bottom:14px;display:flex;justify-content:center;align-items:center;position:relative;min-height:24px;text-align:center}
-.modal-close{position:absolute;right:0;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
+.modal-title{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer}
 .checkout-table{width:100%;border-collapse:collapse}
 .checkout-table th{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
 .checkout-table td{padding:8px 8px;font-size:13px;border-bottom:1px solid var(--border)}
@@ -317,9 +317,9 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 .warmup-sheet{background:var(--surface);border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:0 0 max(24px,env(safe-area-inset-bottom));transform:translateY(30px);transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
 .warmup-sheet-overlay.show .warmup-sheet{transform:translateY(0)}
 .ws-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 0}
-.ws-header{padding:16px 20px 12px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid var(--border);position:relative;min-height:24px}
-.ws-header-title{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;text-align:center}
-.ws-close{position:absolute;right:20px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0;line-height:1}
+.ws-header{padding:16px 20px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.ws-header-title{font-family:'Syne',sans-serif;font-weight:800;font-size:18px}
+.ws-close{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0 4px;line-height:1}
 .ws-body{padding:18px 20px 4px}
 .ws-desc{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;margin-bottom:18px}
 .ws-desc p{font-size:13px;color:var(--text);line-height:1.65}
@@ -486,12 +486,11 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
 <div id="screen-training" class="screen">
   <div class="hdr">
     <button class="btn" onclick="confirmExit()">← Wróć</button>
-    <div style="font-family:Syne;font-weight:700;font-size:15px" id="tr-title">Trening</div>
-    <div style="font-size:12px;color:var(--muted)" id="tr-step">1/1</div>
+    <div style="font-family:Syne;font-weight:700;font-size:15px;flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8px" id="tr-title">Trening</div>
+    <span class="rbadge" id="rbadge">1/1</span>
   </div>
   <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
   <div class="tr-scroll">
-    <div class="rnd-hdr"><span class="rbadge" id="rbadge">Cel 1 z 6</span><span class="rname" id="rname">—</span></div>
     <div class="tgt-box">
       <div class="tgt-num" id="tgt-num">10</div>
       <div class="tgt-lbl" id="tgt-lbl">Cel</div>
@@ -1298,15 +1297,14 @@ function renderTarget(){
   const targets=t._targets||ex.targets;  // runtime targets (sector_focus) lub domyślne
   const ti=t.ti,tot=targets.length,target=targets[ti];
   document.getElementById('prog').style.width=(ti/tot*100)+'%';
-  document.getElementById('rbadge').textContent=`Cel ${ti+1} z ${tot}`;
-  document.getElementById('rname').textContent=ex.name;
-  document.getElementById('tr-step').textContent=`${ti+1}/${tot}`;
+  document.getElementById('rbadge').textContent=`${ti+1}/${tot}`;
+  document.getElementById('tr-title').textContent=ex.name;
   const ne=document.getElementById('tgt-num');
   ne.textContent=target;
   ne.className='tgt-num'+(ex.color==='c2'?' org':ex.color==='c3'?' blu':'');
   document.getElementById('tgt-lbl').textContent=target==='BULL'?'Byk':`Liczba ${target}`;
   const rules=ex.rules&&ex.rules.trim()?ex.rules:autoRules(ex);
-  const hl=document.getElementById('tgt-hint');hl.innerHTML=rules;hl.style.display='block';
+  const hl=document.getElementById('tgt-hint');hl.textContent=rules;hl.style.display='block';
   t.curThrows=[];
   renderChips(ex.throws_per_target);renderDartBtns(ex,target);
   document.getElementById('next-wrap').style.display='none';
@@ -2886,7 +2884,9 @@ const WARMUP={
   paused:false,
   interval:null,
   circumference:502.65,  // 2*π*80
-  audioCtx:null
+  audioCtx:null,
+  endTime:null,          // wall-clock: kiedy timer ma się skończyć
+  listenersBound:false   // guard: nie dodawaj listenerów wielokrotnie
 };
 
 function openWarmup(){
@@ -2924,8 +2924,10 @@ function warmupAdjust(delta){
 
 function warmupToggle(){
   if(WARMUP.running){
-    // Pauza
+    // Pauza — najpierw odczytaj ile faktycznie zostało (wall-clock)
+    WARMUP.remainSec=Math.max(0,Math.round((WARMUP.endTime-Date.now())/1000));
     clearInterval(WARMUP.interval);WARMUP.interval=null;
+    WARMUP.endTime=null;
     WARMUP.running=false;WARMUP.paused=true;
     const btn=document.getElementById('ws-start-btn');
     btn.textContent='▶ Wznów';btn.classList.remove('pause');
@@ -2933,6 +2935,7 @@ function warmupToggle(){
   }else{
     // Start / Wznów
     if(WARMUP.remainSec<=0){WARMUP.remainSec=WARMUP.totalSec;warmupUpdateRing(1.0);}
+    WARMUP.endTime=Date.now()+WARMUP.remainSec*1000;  // zapamiętaj kiedy koniec (wall-clock)
     WARMUP.running=true;WARMUP.paused=false;
     const btn=document.getElementById('ws-start-btn');
     btn.textContent='⏸ Pauza';btn.classList.add('pause');
@@ -2941,22 +2944,41 @@ function warmupToggle(){
     document.getElementById('ws-dur-minus').disabled=true;
     document.getElementById('ws-dur-plus').disabled=true;
     document.getElementById('ws-time-lbl').textContent='pozostało';
+    bindWarmupVisibilityListeners();  // nasłuchuj powrotu z tła
     WARMUP.interval=setInterval(warmupTick,1000);
   }
 }
 
+// Podpina jednorazowo listenery wykrywające powrót z tła/blokady ekranu
+function bindWarmupVisibilityListeners(){
+  if(WARMUP.listenersBound) return;
+  WARMUP.listenersBound=true;
+  document.addEventListener('visibilitychange',()=>{
+    if(!document.hidden&&WARMUP.running) warmupTick();
+  });
+  window.addEventListener('focus',()=>{
+    if(WARMUP.running) warmupTick();
+  });
+  window.addEventListener('pageshow',()=>{
+    if(WARMUP.running) warmupTick();
+  });
+}
+
 function warmupTick(){
-  WARMUP.remainSec--;
-  const ratio=WARMUP.remainSec/WARMUP.totalSec;
-  warmupUpdateRing(ratio);warmupUpdateTimeDisplay(WARMUP.remainSec);
+  // Zawsze obliczaj z wall-clock — działa też po powrocie z tła/blokady ekranu
+  const remain=Math.max(0,Math.round((WARMUP.endTime-Date.now())/1000));
+  WARMUP.remainSec=remain;
+  const ratio=remain/WARMUP.totalSec;
+  warmupUpdateRing(ratio);warmupUpdateTimeDisplay(remain);
   const fill=document.getElementById('ws-ring-fill');
-  if(WARMUP.remainSec<=60&&WARMUP.remainSec>0) fill.classList.add('urgent');
-  else if(WARMUP.remainSec<=120) fill.classList.add('warning');
+  if(remain<=60&&remain>0) fill.classList.add('urgent');
+  else if(remain<=120) fill.classList.add('warning');
   else fill.classList.remove('warning','urgent');
   // Dźwięk odliczania ostatnie 5 sekund
-  if(WARMUP.remainSec>0&&WARMUP.remainSec<=5) warmupBeep(WARMUP.remainSec);
-  if(WARMUP.remainSec<=0){
+  if(remain>0&&remain<=5) warmupBeep(remain);
+  if(remain<=0){
     clearInterval(WARMUP.interval);WARMUP.interval=null;WARMUP.running=false;
+    WARMUP.endTime=null;
     warmupBeepFinal();warmupFinished();
   }
 }
@@ -3005,6 +3027,7 @@ function warmupUpdateTimeDisplay(sec){
 function warmupStop(){
   clearInterval(WARMUP.interval);WARMUP.interval=null;
   WARMUP.running=false;WARMUP.paused=false;
+  WARMUP.endTime=null;
   WARMUP.remainSec=WARMUP.totalSec;
   warmupUpdateUI(false);
 }
@@ -3024,14 +3047,14 @@ function warmupDone(){
   document.getElementById('warmup-overlay').classList.remove('show');
   // Reset do stanu wyjściowego
   WARMUP.durationMin=10;WARMUP.totalSec=600;WARMUP.remainSec=600;
-  WARMUP.running=false;WARMUP.paused=false;
+  WARMUP.running=false;WARMUP.paused=false;WARMUP.endTime=null;
   warmupUpdateUI(false);
   showToast('🔥 Rozgrzewka zakończona! Czas na trening!');
 }
 
 function warmupRestart(){
   // Reset i wróć do ustawień timera
-  WARMUP.remainSec=WARMUP.totalSec;
+  WARMUP.remainSec=WARMUP.totalSec;WARMUP.endTime=null;
   document.getElementById('ws-controls').style.display='block';
   document.getElementById('ws-duration-row').style.display='flex';
   document.getElementById('ws-finished-msg').style.display='none';
@@ -3250,7 +3273,7 @@ document.addEventListener('touchmove', function(e){
 <div class="sector-picker-modal" id="sector-picker-modal" onclick="closeSectorPicker(event)">
   <div class="sector-picker-box">
     <div class="sp-handle"></div>
-    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:4px;text-align:center">🎯 Wybierz sektor</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:18px;margin-bottom:4px">🎯 Wybierz sektor</div>
     <div id="sector-picker-content"></div>
   </div>
 </div>
