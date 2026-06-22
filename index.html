@@ -1310,7 +1310,7 @@ function renderTarget(){
   const ne=document.getElementById('tgt-num');
   ne.textContent=target;
   ne.className='tgt-num'+(ex.color==='c2'?' org':ex.color==='c3'?' blu':'');
-  document.getElementById('tgt-lbl').textContent=target==='BULL'?'Byk':`Liczba ${target}`;
+  document.getElementById('tgt-lbl').textContent=target==='BULL'?'BULL':`Liczba ${target}`;
   const rules=ex.rules&&ex.rules.trim()?ex.rules:autoRules(ex);
   const hl=document.getElementById('tgt-hint');hl.textContent=rules;hl.style.display='block';
   t.curThrows=[];
