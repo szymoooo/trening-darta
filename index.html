@@ -173,6 +173,13 @@ textarea.inp{resize:none;line-height:1.5}
 .bmeta{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px}
 .bbg{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden}
 .bfill{height:6px;background:var(--accent);border-radius:3px;transition:width .5s}
+.sum-rnd-row{display:flex;justify-content:space-between;align-items:center;padding:9px 14px;border-bottom:1px solid var(--border)}
+.sum-rnd-row:last-child{border-bottom:none}
+.sum-rnd-left{display:flex;flex-direction:column;gap:5px}
+.sum-rnd-tgt{font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.3px}
+.sum-rnd-chips{display:flex;gap:5px}
+.sum-rnd-pts{font-size:13px;font-weight:600;white-space:nowrap;padding-left:8px;text-align:right}
+.sum-rnd-bonus{display:block;font-size:10px;color:var(--accent);font-weight:500;text-align:right}
 
 /* HISTORY */
 .hist-scroll{padding:13px 15px;flex:1;overflow-y:auto;padding-bottom:20px}
@@ -522,6 +529,7 @@ input:checked+.tog-sl:before{transform:translateX(19px);background:var(--accent)
       <div class="sum-lbl">punktów</div>
     </div>
     <div class="stable" id="sum-break"></div>
+    <div class="stable" id="sum-rounds" style="display:none;margin-bottom:11px"></div>
     <div class="chart-box" id="sum-chart" style="display:none">
       <div class="sec" style="margin:0 0 11px">Postęp – ostatnie 5 sesji</div>
       <div id="sum-bars"></div>
@@ -1407,7 +1415,7 @@ function recThrow(zone,pts,cc){
     }
     if(bonus>0)t.bonuses.push(bonus);
     t.sessScore+=rndPts+bonus;
-    t.rounds.push({target:targets[t.ti],pts:rndPts,bonus});
+    t.rounds.push({target:targets[t.ti],pts:rndPts,bonus,throws:[...t.curThrows]});
     document.getElementById('sess-score').textContent=t.sessScore+' pkt';
     const isLast=t.ti>=targets.length-1;
     if(!isLast){
@@ -1440,7 +1448,7 @@ async function finishTraining(){
       })));
     }
     const allSess=await dbGet('sessions',`user_id=eq.${S.user.id}&exercise_id=eq.${ex.id}&order=created_at.asc`);
-    renderSummary(session,allSess||[]);showScreen('summary');
+    renderSummary(session,allSess||[],t.rounds);showScreen('summary');
   }catch(e){await caAlert(e.message,'❌','Błąd zapisu');}
   finally{loading(false);}
 }
@@ -1459,7 +1467,7 @@ function repeatCurrentExercise(){
   else startFirst();
 }
 
-function renderSummary(session,allSess){
+function renderSummary(session,allSess,rounds){
   const scores=allSess.map(s=>s.total_score);
   const best=Math.max(...scores);const isPB=session.total_score===best&&scores.length>1;
   document.getElementById('sum-trophy').textContent=isPB?'🏆':'🎯';
@@ -1492,6 +1500,29 @@ function renderSummary(session,allSess){
       nextBtn.onclick = () => startTraining(nextUndone.id);
     } else {
       nextBtn.style.display = 'none';
+    }
+  }
+  // ── Breakdown rzutów per cel ──
+  const roundsEl=document.getElementById('sum-rounds');
+  if(roundsEl){
+    const ex=S.exercises.find(e=>e.id===session.exerciseId);
+    const exType=ex?(ex.type||'').toLowerCase():'';
+    function chipLbl(cc){
+      if(exType==='sections') return cc==='m'?'✗':cc==='s'?'S':cc==='t'?'✓':'?';
+      return cc==='m'?'✗':cc==='s'?'S':cc==='d'?'D':cc==='t'?'T':'?';
+    }
+    if(rounds&&rounds.length){
+      roundsEl.style.display='block';
+      roundsEl.innerHTML=`<div class="srow" style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;padding:9px 14px 7px;border-bottom:1px solid var(--border)">Rzuty per cel</div>`
+        +rounds.map(r=>{
+          const tgtLabel=r.target==='BULL'?'🎯 BULL':`Sektor ${r.target}`;
+          const totalPts=r.pts+(r.bonus||0);
+          const bonusTag=r.bonus>0?`<span class="sum-rnd-bonus">+${r.bonus} bonus</span>`:'';
+          const chipsHtml=(r.throws||[]).map(th=>`<div class="chip f${th.cc}">${chipLbl(th.cc)}</div>`).join('');
+          return`<div class="sum-rnd-row"><div class="sum-rnd-left"><span class="sum-rnd-tgt">${tgtLabel}</span><div class="sum-rnd-chips">${chipsHtml}</div></div><div class="sum-rnd-pts">${totalPts} pkt${bonusTag}</div></div>`;
+        }).join('');
+    }else{
+      roundsEl.style.display='none';
     }
   }
   const recent=allSess.slice(-5);
