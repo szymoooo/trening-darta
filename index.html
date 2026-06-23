@@ -136,7 +136,7 @@ textarea.inp{resize:none;line-height:1.5}
 .chip{width:32px;height:32px;border-radius:50%;border:1.5px dashed var(--border2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .2s}
 .chip.fs{border-style:solid;border-color:var(--success);background:rgba(74,222,128,.15);color:var(--success)}
 .chip.fd{border-style:solid;border-color:var(--info);background:rgba(96,165,250,.15);color:var(--info)}
-.chip.ft{border-style:solid;border-color:var(--accent);background:rgba(232,255,71,.15);color:#0a0a0f}
+.chip.ft{border-style:solid;border-color:var(--accent);background:rgba(232,255,71,.15);color:var(--accent)}
 .chip.fm{border-style:solid;border-color:var(--danger);background:rgba(248,113,113,.1);color:var(--danger)}
 .dg{display:grid;gap:6px;margin-bottom:8px}
 .dg2{grid-template-columns:1fr 1fr}.dg3{grid-template-columns:1fr 1fr 1fr}.dg4{grid-template-columns:1fr 1fr 1fr 1fr}
@@ -1312,7 +1312,7 @@ function renderTarget(){
   ne.className='tgt-num'+(ex.color==='c2'?' org':ex.color==='c3'?' blu':'');
   document.getElementById('tgt-lbl').textContent=target==='BULL'?'BULL':`Liczba ${target}`;
   const rules=ex.rules&&ex.rules.trim()?ex.rules:autoRules(ex);
-  const hl=document.getElementById('tgt-hint');hl.textContent=rules;hl.style.display='block';
+  const hl=document.getElementById('tgt-hint');hl.textContent=rules.replace(/<br\s*\/?>/gi,'\n');hl.style.display='block';
   t.curThrows=[];
   renderChips(ex.throws_per_target);renderDartBtns(ex,target);
   document.getElementById('next-wrap').style.display='none';
